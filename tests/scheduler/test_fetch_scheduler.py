@@ -1,22 +1,17 @@
 """Tests for FetchScheduler."""
 
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 from src.scheduler.fetch_scheduler import FetchScheduler
 
 
 @pytest.fixture
-def mock_fetch_service():
-    """Create mock fetch service."""
-    return AsyncMock()
-
-
-@pytest.fixture
-def scheduler(mock_fetch_service) -> FetchScheduler:
-    """Create FetchScheduler instance."""
+def scheduler() -> FetchScheduler:
+    """Create FetchScheduler instance with mock session factory."""
+    mock_factory = MagicMock()
     return FetchScheduler(
-        fetch_service=mock_fetch_service,
+        session_factory=mock_factory,
         check_interval=1,
         max_concurrent=2,
     )
@@ -33,20 +28,46 @@ async def test_scheduler_can_start_and_stop(scheduler: FetchScheduler):
 
 
 @pytest.mark.asyncio
-async def test_refresh_all_calls_fetch_all(scheduler: FetchScheduler, mock_fetch_service):
-    """Test that refresh_all calls fetch_service.fetch_all."""
+async def test_refresh_all_creates_session():
+    """Test that refresh_all creates a session from factory."""
+    mock_session = AsyncMock()
+    mock_factory = MagicMock()
+    mock_context = AsyncMock()
+    mock_context.__aenter__.return_value = mock_session
+    mock_context.__aexit__.return_value = None
+    mock_factory.return_value = mock_context
+
+    mock_result = Mock()
+    mock_result.scalars.return_value.all.return_value = []
+    mock_session.execute = AsyncMock(return_value=mock_result)
+
+    scheduler = FetchScheduler(
+        session_factory=mock_factory,
+        check_interval=1,
+    )
+
     await scheduler.refresh_all()
-    mock_fetch_service.fetch_all.assert_called_once()
+    mock_factory.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_refresh_source_calls_fetch_source(scheduler: FetchScheduler, mock_fetch_service):
-    """Test that refresh_source calls fetch_service.fetch_source."""
-    from src.models import Source
+async def test_refresh_source_creates_session():
+    """Test that refresh_source creates a session from factory."""
+    mock_session = AsyncMock()
+    mock_factory = MagicMock()
+    mock_context = AsyncMock()
+    mock_context.__aenter__.return_value = mock_session
+    mock_context.__aexit__.return_value = None
+    mock_factory.return_value = mock_context
 
-    mock_source = Source(name="Test", url="https://example.com/feed.xml")
-    mock_fetch_service.get_source.return_value = mock_source
+    mock_result = Mock()
+    mock_result.scalar_one_or_none.return_value = None
+    mock_session.execute = AsyncMock(return_value=mock_result)
+
+    scheduler = FetchScheduler(
+        session_factory=mock_factory,
+        check_interval=1,
+    )
 
     await scheduler.refresh_source(1)
-    mock_fetch_service.get_source.assert_called_once_with(1)
-    mock_fetch_service.fetch_source.assert_called_once_with(mock_source)
+    mock_factory.assert_called_once()

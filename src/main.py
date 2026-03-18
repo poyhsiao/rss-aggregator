@@ -8,6 +8,7 @@ from fastapi.responses import Response
 from src.api.deps import get_scheduler, set_scheduler
 from src.api.routes import feed, health, keys, logs, sources, stats
 from src.config import settings
+from src.scheduler.fetch_scheduler import FetchScheduler
 
 
 @asynccontextmanager
@@ -16,16 +17,12 @@ async def lifespan(app: FastAPI):
     if settings.scheduler_enabled:
         from src.db.database import async_session_factory
 
-        from src.services.fetch_service import FetchService
-
-        async with async_session_factory() as session:
-            fetch_service = FetchService(session)
-            scheduler = FetchScheduler(
-                fetch_service=fetch_service,
-                check_interval=settings.scheduler_interval,
-            )
-            set_scheduler(scheduler)
-            await scheduler.start()
+        scheduler = FetchScheduler(
+            session_factory=async_session_factory,
+            check_interval=settings.scheduler_interval,
+        )
+        set_scheduler(scheduler)
+        await scheduler.start()
 
     yield
 
