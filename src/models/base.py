@@ -3,10 +3,10 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
 
-class Base(DeclarativeBase):
+class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
     """SQLAlchemy declarative base for all models."""
 
     pass
@@ -16,10 +16,10 @@ class TimestampMixin:
     """Mixin for created_at, updated_at, and deleted_at timestamps."""
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
+        DateTime, default_factory=func.now, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), onupdate=func.now(), nullable=False
+        DateTime, default_factory=func.now, nullable=False
     )
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True, default=None
