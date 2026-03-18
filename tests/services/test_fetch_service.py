@@ -83,3 +83,22 @@ async def test_fetch_source_stores_items(
     feed_items = list(items.scalars().all())
     assert len(feed_items) == 1
     assert feed_items[0].title == "Test Item"
+
+
+@pytest.mark.asyncio
+async def test_clean_google_url_extracts_real_url(fetch_service: FetchService):
+    """Test that Google redirect URLs are cleaned."""
+    google_url = "https://www.google.com/url?rct=j&sa=t&url=https://health.ettoday.net/news/3134776&ct=ga&cd=CAIyIjViYTVlY2E4N2I3NTFhZWU6Y29tLnR3OnpoLVRXOlRXOlI&usg=AOvVaw0CLRKoRhjB3ZWnFmflI7QP"
+    expected = "https://health.ettoday.net/news/3134776"
+
+    result = fetch_service._clean_google_url(google_url)
+    assert result == expected
+
+
+@pytest.mark.asyncio
+async def test_clean_google_url_returns_original_for_non_google(fetch_service: FetchService):
+    """Test that non-Google URLs are returned unchanged."""
+    normal_url = "https://example.com/article"
+
+    result = fetch_service._clean_google_url(normal_url)
+    assert result == normal_url

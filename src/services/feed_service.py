@@ -93,7 +93,16 @@ class FeedService:
             query = query.order_by(order_col.asc())
 
         result = await self.session.execute(query)
-        return list(result.unique().scalars().all())
+        items = list(result.unique().scalars().all())
+
+        seen_links: set[str] = set()
+        deduplicated_items: list[FeedItem] = []
+        for item in items:
+            if item.link not in seen_links:
+                seen_links.add(item.link)
+                deduplicated_items.append(item)
+
+        return deduplicated_items
 
     def _generate_rss_xml(self, items: list[FeedItem]) -> str:
         """Generate RSS 2.0 XML from items.

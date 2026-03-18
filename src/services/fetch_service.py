@@ -3,6 +3,7 @@
 import asyncio
 from datetime import datetime
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import feedparser
 import httpx
@@ -10,11 +11,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.models import ErrorLog, FeedItem, Source
+from src.models import FeedItem, FetchLog, Source
+from src.services.stats_service import StatsService
 
 
 class FetchService:
     """Service for fetching and parsing RSS feeds."""
+
+    GOOGLE_URL_PREFIX = "https://www.google.com/url"
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize the service with a database session.
@@ -23,9 +27,30 @@ class FetchService:
             session: AsyncSession for database operations.
         """
         self.session = session
+        self.stats_service = StatsService(session)
         self.timeout = settings.fetch_timeout
         self.retry_count = settings.fetch_retry_count
         self.retry_delay = settings.fetch_retry_delay
+
+    def _clean_google_url(self, url: str) -> str:
+        """Extract real URL from Google redirect URL.
+
+        Args:
+            url: Potential Google redirect URL.
+
+        Returns:
+            Clean URL if Google redirect, otherwise original URL.
+        """
+        if not url.startswith(self.GOOGLE_URL_PREFIX):
+            return url
+
+        try:
+            parsed = urlparse(url)
+            params = parse_qs(parsed.query)
+            real_urls = params.get("url", [])
+            return real_urls[0] if real_urls else url
+        except Exception:
+            return url
 
     def parse_rss(self, content: str) -> list[dict[str, Any]]:
         """Parse RSS/Atom feed content.
@@ -40,9 +65,10 @@ class FetchService:
         items = []
 
         for entry in feed.entries:
+            raw_link = entry.get("link", "")
             item: dict[str, Any] = {
                 "title": entry.get("title", ""),
-                "link": entry.get("link", ""),
+                "link": self._clean_google_url(raw_link),
                 "description": entry.get("summary") or entry.get("description"),
             }
 
@@ -59,30 +85,25 @@ class FetchService:
         return items
 
     async def fetch_source(self, source: Source) -> list[FeedItem]:
-        """Fetch and store RSS feed for a source.
-
-        Args:
-            source: Source to fetch.
-
-        Returns:
-            List of stored FeedItem instances.
-        """
-        content = await self._fetch_with_retry(source.url)
+        """Fetch and store RSS feed for a source."""
+        content = await self._fetch_with_retry(source.id, source.url)
 
         if content is None:
+            await self._log_error(source.id, f"Failed to fetch {source.url}")
+            source.last_error = "Fetch failed"
+            await self.stats_service.increment_stats(successful=False)
+            await self.session.flush()
             return []
 
         items = self.parse_rss(content)
         stored_items = []
 
-        # Soft delete old items
         old_items = await self.session.execute(
             select(FeedItem).where(FeedItem.source_id == source.id)
         )
         for old_item in old_items.scalars().all():
             old_item.soft_delete()
 
-        # Store new items
         for item_data in items[: settings.max_feed_items]:
             feed_item = FeedItem(
                 source_id=source.id,
@@ -94,22 +115,15 @@ class FetchService:
             self.session.add(feed_item)
             stored_items.append(feed_item)
 
-        # Update source status
         source.last_fetched_at = datetime.utcnow()
         source.last_error = None
 
-        await self.session.flush()
+        await self._log_success(source.id, len(stored_items))
+        await self.stats_service.increment_stats(successful=True)
         return stored_items
 
-    async def _fetch_with_retry(self, url: str) -> str | None:
-        """Fetch URL with retry logic.
-
-        Args:
-            url: URL to fetch.
-
-        Returns:
-            Content string or None if all retries failed.
-        """
+    async def _fetch_with_retry(self, source_id: int | None, url: str) -> str | None:
+        """Fetch URL with retry logic."""
         for attempt in range(self.retry_count):
             try:
                 async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -120,20 +134,38 @@ class FetchService:
                 if attempt < self.retry_count - 1:
                     await asyncio.sleep(self.retry_delay)
                 else:
-                    await self._log_error(url, str(e))
                     return None
         return None
 
-    async def _log_error(self, url: str, error_message: str) -> None:
+    async def _log_error(self, source_id: int | None, error_message: str) -> None:
         """Log fetch error.
 
         Args:
-            url: URL that failed.
+            source_id: Source ID.
             error_message: Error message.
         """
-        log = ErrorLog(
-            error_type="FetchError",
-            error_message=f"Failed to fetch {url}: {error_message}",
+        log = FetchLog(
+            source_id=source_id,
+            status="error",
+            log_type="FetchError",
+            message=error_message,
+        )
+        self.session.add(log)
+        await self.session.flush()
+
+    async def _log_success(self, source_id: int, items_count: int) -> None:
+        """Log fetch success.
+
+        Args:
+            source_id: Source ID.
+            items_count: Number of items fetched.
+        """
+        log = FetchLog(
+            source_id=source_id,
+            status="success",
+            log_type="FetchSuccess",
+            message=f"Successfully fetched {items_count} items",
+            items_count=items_count,
         )
         self.session.add(log)
         await self.session.flush()
@@ -158,4 +190,5 @@ class FetchService:
             items = await self.fetch_source(source)
             results[source.id] = items
 
+        await self.session.commit()
         return results

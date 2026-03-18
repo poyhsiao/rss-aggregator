@@ -1,6 +1,6 @@
 """Dependency injection for FastAPI."""
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,23 +70,36 @@ async def get_fetch_service(
 
 
 async def require_api_key(
-    x_api_key: str = Header(..., alias="X-API-Key"),
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
     auth_service: AuthService = Depends(get_auth_service),
     rate_limiter: RateLimiter = Depends(get_rate_limiter),
-) -> str:
+) -> Optional[str]:
     """Validate API key and check rate limit.
 
+    If REQUIRE_API_KEY is set to false in environment, skips validation.
+
     Args:
-        x_api_key: API key from header.
+        x_api_key: API key from header (optional if REQUIRE_API_KEY=false).
         auth_service: Auth service instance.
         rate_limiter: Rate limiter instance.
 
     Returns:
-        Validated API key.
+        Validated API key or None if validation is disabled.
 
     Raises:
         HTTPException: If key is invalid or rate limited.
     """
+    # Skip validation if REQUIRE_API_KEY is false
+    if not settings.require_api_key:
+        return None
+
+    # API key is required when validation is enabled
+    if not x_api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="API key required",
+        )
+
     if not rate_limiter.is_allowed(x_api_key):
         reset_time = rate_limiter.get_reset_time(x_api_key)
         raise HTTPException(

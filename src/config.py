@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     # API Key
     default_api_key: str = ""
+    require_api_key: bool = True
 
     # Rate Limiting
     rate_limit_requests: int = 60

@@ -11,9 +11,10 @@ RUN uv sync --frozen --no-dev
 COPY src/ ./src/
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
+COPY scripts/entrypoint.sh /app/entrypoint.sh
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
-CMD uv run alembic upgrade head && uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
+CMD ["/app/entrypoint.sh"]
