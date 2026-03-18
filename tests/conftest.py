@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures."""
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import async_session_factory, engine
@@ -13,7 +14,7 @@ def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def db_session():
     """Create a test database session."""
     async with engine.begin() as conn:
