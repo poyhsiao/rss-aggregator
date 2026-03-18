@@ -101,4 +101,4 @@ See `.env.example` for all available configuration options.
 
 ## License
 
-MIT
+Apache-2.0
