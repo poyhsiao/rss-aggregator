@@ -9,6 +9,7 @@ dependencies = [
     "alembic",
     "fastapi",
     "feedparser",
+    "greenlet>=3.3.2",
     "httpx",
     "pydantic-settings",
     "python-multipart",
