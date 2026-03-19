@@ -35,3 +35,11 @@ htmlcov/
 # Build
 dist/
 *.egg-info/
+
+# Git Worktrees
+.worktrees/
+
+# Frontend (Vue 3)
+web/node_modules/
+web/dist/
+web/.vite/
