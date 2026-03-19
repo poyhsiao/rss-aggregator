@@ -1,0 +1,63 @@
+{
+  "common": {
+    "loading": "載入中...",
+    "error": "發生錯誤",
+    "success": "操作成功",
+    "cancel": "取消",
+    "confirm": "確認",
+    "delete": "刪除",
+    "edit": "編輯",
+    "save": "儲存",
+    "add": "新增",
+    "refresh": "刷新"
+  },
+  "auth": {
+    "title": "歡迎使用 RSS Aggregator",
+    "description": "請輸入您的 API Key 以繼續",
+    "placeholder": "輸入 API Key",
+    "verify": "驗證",
+    "verifying": "驗證中...",
+    "invalid": "API Key 無效，請重新輸入",
+    "failed": "驗證失敗，請稍後再試"
+  },
+  "nav": {
+    "feed": "Feed",
+    "sources": "Sources",
+    "keys": "Keys",
+    "stats": "Stats",
+    "logs": "Logs"
+  },
+  "feed": {
+    "title": "Feed",
+    "sort_time": "時間排序",
+    "sort_source": "來源排序",
+    "search_placeholder": "關鍵字搜尋...",
+    "empty": "目前沒有文章"
+  },
+  "sources": {
+    "title": "Sources",
+    "add": "新增來源",
+    "name": "名稱",
+    "url": "URL",
+    "active": "啟用",
+    "inactive": "停用",
+    "last_fetched": "最後抓取",
+    "empty": "沒有 RSS 來源"
+  },
+  "keys": {
+    "title": "API Keys",
+    "add": "新增 Key",
+    "empty": "沒有 API Key"
+  },
+  "stats": {
+    "title": "Statistics",
+    "total_requests": "總請求數",
+    "successful_fetches": "成功抓取",
+    "failed_fetches": "失敗抓取",
+    "daily_trend": "每日趨勢"
+  },
+  "logs": {
+    "title": "Error Logs",
+    "empty": "沒有錯誤記錄"
+  }
+}

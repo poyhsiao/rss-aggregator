@@ -1,0 +1,63 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "add": "Add",
+    "refresh": "Refresh"
+  },
+  "auth": {
+    "title": "Welcome to RSS Aggregator",
+    "description": "Please enter your API Key to continue",
+    "placeholder": "Enter API Key",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "invalid": "Invalid API Key, please try again",
+    "failed": "Verification failed, please try again later"
+  },
+  "nav": {
+    "feed": "Feed",
+    "sources": "Sources",
+    "keys": "Keys",
+    "stats": "Stats",
+    "logs": "Logs"
+  },
+  "feed": {
+    "title": "Feed",
+    "sort_time": "Sort by Time",
+    "sort_source": "Sort by Source",
+    "search_placeholder": "Search keywords...",
+    "empty": "No articles yet"
+  },
+  "sources": {
+    "title": "Sources",
+    "add": "Add Source",
+    "name": "Name",
+    "url": "URL",
+    "active": "Active",
+    "inactive": "Inactive",
+    "last_fetched": "Last Fetched",
+    "empty": "No RSS sources"
+  },
+  "keys": {
+    "title": "API Keys",
+    "add": "Add Key",
+    "empty": "No API keys"
+  },
+  "stats": {
+    "title": "Statistics",
+    "total_requests": "Total Requests",
+    "successful_fetches": "Successful Fetches",
+    "failed_fetches": "Failed Fetches",
+    "daily_trend": "Daily Trend"
+  },
+  "logs": {
+    "title": "Error Logs",
+    "empty": "No error records"
+  }
+}

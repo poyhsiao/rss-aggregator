@@ -1,0 +1,69 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import api from '@/api'
+
+const STORAGE_KEY = 'rss-api-key'
+
+export const useAuthStore = defineStore('auth', () => {
+  const apiKey = ref<string | null>(null)
+  const isValid = ref(false)
+  const isVerifying = ref(false)
+  const isInitialized = ref(false)
+  const error = ref<string | null>(null)
+
+  const hasKey = computed(() => !!apiKey.value)
+
+  async function init(): Promise<void> {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      apiKey.value = stored
+      await verifyKey(stored)
+    }
+    isInitialized.value = true
+  }
+
+  async function verifyKey(key: string): Promise<boolean> {
+    isVerifying.value = true
+    error.value = null
+
+    try {
+      await api.get('/sources', {
+        headers: { 'X-API-Key': key }
+      })
+      
+      apiKey.value = key
+      isValid.value = true
+      localStorage.setItem(STORAGE_KEY, key)
+      return true
+    } catch (e: unknown) {
+      const axiosError = e as { response?: { status?: number } }
+      if (axiosError.response?.status === 401) {
+        error.value = 'invalid'
+      } else {
+        error.value = 'failed'
+      }
+      isValid.value = false
+      return false
+    } finally {
+      isVerifying.value = false
+    }
+  }
+
+  function logout(): void {
+    apiKey.value = null
+    isValid.value = false
+    localStorage.removeItem(STORAGE_KEY)
+  }
+
+  return {
+    apiKey,
+    isValid,
+    isVerifying,
+    isInitialized,
+    error,
+    hasKey,
+    init,
+    verifyKey,
+    logout,
+  }
+})
