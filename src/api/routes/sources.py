@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from src.api.deps import get_scheduler, get_source_service, require_api_key
 from src.services.source_service import SourceService
+from src.utils.time import to_iso_string
 
 router = APIRouter(prefix="/sources", tags=["sources"])
 
@@ -35,6 +36,8 @@ class SourceResponse(BaseModel):
     is_active: bool
     last_fetched_at: str | None
     last_error: str | None
+    created_at: str
+    updated_at: str
 
     class Config:
         from_attributes = True
@@ -60,8 +63,10 @@ async def list_sources(
             url=s.url,
             fetch_interval=s.fetch_interval,
             is_active=s.is_active,
-            last_fetched_at=s.last_fetched_at.isoformat() if s.last_fetched_at else None,
+            last_fetched_at=to_iso_string(s.last_fetched_at),
             last_error=s.last_error,
+            created_at=to_iso_string(s.created_at) or "",
+            updated_at=to_iso_string(s.updated_at) or "",
         )
         for s in sources
     ]
@@ -91,6 +96,8 @@ async def create_source(
         is_active=source.is_active,
         last_fetched_at=None,
         last_error=None,
+        created_at=to_iso_string(source.created_at) or "",
+        updated_at=to_iso_string(source.updated_at) or "",
     )
 
 
@@ -135,8 +142,10 @@ async def get_source(
         url=source.url,
         fetch_interval=source.fetch_interval,
         is_active=source.is_active,
-        last_fetched_at=source.last_fetched_at.isoformat() if source.last_fetched_at else None,
+        last_fetched_at=to_iso_string(source.last_fetched_at),
         last_error=source.last_error,
+        created_at=to_iso_string(source.created_at) or "",
+        updated_at=to_iso_string(source.updated_at) or "",
     )
 
 
@@ -162,8 +171,10 @@ async def update_source(
         url=source.url,
         fetch_interval=source.fetch_interval,
         is_active=source.is_active,
-        last_fetched_at=source.last_fetched_at.isoformat() if source.last_fetched_at else None,
+        last_fetched_at=to_iso_string(source.last_fetched_at),
         last_error=source.last_error,
+        created_at=to_iso_string(source.created_at) or "",
+        updated_at=to_iso_string(source.updated_at) or "",
     )
 
 

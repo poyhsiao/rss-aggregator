@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from src.models import FeedItem, Source
+from src.utils.time import to_iso_string
 
 
 class FeedService:
@@ -143,3 +144,39 @@ class FeedService:
                 ).text = item.source.name
 
         return ET.tostring(rss, encoding="unicode", xml_declaration=True)
+
+    async def get_feed_items(
+        self,
+        sort_by: str = "published_at",
+        sort_order: str = "desc",
+        valid_time: int | None = None,
+        keywords: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Get feed items as list of dictionaries.
+
+        Args:
+            sort_by: Sort field ("published_at" or "source").
+            sort_order: Sort direction ("asc" or "desc").
+            valid_time: Time range in hours (None = all items).
+            keywords: Semicolon-separated keywords for title filtering.
+
+        Returns:
+            List of feed item dictionaries.
+        """
+        items = await self._fetch_items(
+            sort_by=sort_by,
+            sort_order=sort_order,
+            valid_time=valid_time,
+            keywords=keywords,
+        )
+        return [
+            {
+                "id": item.id,
+                "title": item.title,
+                "link": item.link,
+                "description": item.description or "",
+                "source": item.source.name if item.source else "",
+                "published_at": to_iso_string(item.published_at),
+            }
+            for item in items
+        ]

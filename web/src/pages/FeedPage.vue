@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RefreshCw, Clock, Database } from 'lucide-vue-next'
 import { getFeed } from '@/api/feed'
+import { refreshAllSources } from '@/api/sources'
 import type { FeedItem } from '@/types/feed'
 import { formatDate } from '@/utils/format'
 import Input from '@/components/ui/Input.vue'
@@ -11,6 +13,7 @@ const { t } = useI18n()
 
 const feedItems = ref<FeedItem[]>([])
 const loading = ref(true)
+const refreshing = ref(false)
 const sortBy = ref<'published_at' | 'source'>('published_at')
 const keywords = ref('')
 
@@ -23,6 +26,16 @@ async function fetchFeed(): Promise<void> {
     })
   } finally {
     loading.value = false
+  }
+}
+
+async function handleRefreshAll(): Promise<void> {
+  refreshing.value = true
+  try {
+    await refreshAllSources()
+    await fetchFeed()
+  } finally {
+    refreshing.value = false
   }
 }
 
@@ -42,18 +55,33 @@ watch([sortBy, keywords], () => {
         <Button
           :variant="sortBy === 'published_at' ? 'default' : 'outline'"
           size="sm"
+          :title="t('feed.sort_time')"
           @click="sortBy = 'published_at'"
         >
+          <Clock class="h-4 w-4 mr-2" />
           {{ t('feed.sort_time') }}
         </Button>
         <Button
           :variant="sortBy === 'source' ? 'default' : 'outline'"
           size="sm"
+          :title="t('feed.sort_source')"
           @click="sortBy = 'source'"
         >
+          <Database class="h-4 w-4 mr-2" />
           {{ t('feed.sort_source') }}
         </Button>
-        
+
+        <Button
+          variant="outline"
+          size="sm"
+          :title="t('feed.refresh')"
+          :disabled="refreshing"
+          @click="handleRefreshAll"
+        >
+          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4 mr-2" />
+          {{ t('feed.refresh') }}
+        </Button>
+
         <Input
           v-model="keywords"
           :placeholder="t('feed.search_placeholder')"

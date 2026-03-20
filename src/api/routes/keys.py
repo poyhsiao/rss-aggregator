@@ -1,9 +1,10 @@
 """API key management routes."""
 
+import re
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,11 +13,31 @@ from src.models import APIKey
 
 router = APIRouter(prefix="/keys", tags=["api-keys"])
 
+KEY_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
+MIN_KEY_LENGTH = 16
+MAX_KEY_LENGTH = 255
+
 
 class APIKeyCreate(BaseModel):
     """Schema for creating an API key."""
 
     name: str | None = None
+    key: str | None = None
+
+    @field_validator("key")
+    @classmethod
+    def validate_key(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+
+        if len(v) < MIN_KEY_LENGTH:
+            raise ValueError(f"Key must be at least {MIN_KEY_LENGTH} characters")
+        if len(v) > MAX_KEY_LENGTH:
+            raise ValueError(f"Key must be at most {MAX_KEY_LENGTH} characters")
+        if not KEY_PATTERN.match(v):
+            raise ValueError("Key can only contain letters, numbers, hyphens, and underscores")
+
+        return v
 
 
 class APIKeyResponse(BaseModel):
@@ -51,7 +72,16 @@ async def create_key(
     _: str = Depends(require_api_key),
 ) -> APIKeyResponse:
     """Create a new API key."""
-    key = secrets.token_urlsafe(32)
+    if data.key:
+        result = await session.execute(
+            select(APIKey).where(APIKey.key == data.key)
+        )
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Key already exists")
+        key = data.key
+    else:
+        key = secrets.token_urlsafe(32)
+
     api_key = APIKey(key=key, name=data.name)
     session.add(api_key)
     await session.commit()

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import get_session, require_api_key
 from src.models import FetchLog
+from src.utils.time import to_iso_string
 
 router = APIRouter(prefix="/logs", tags=["logs"])
 
@@ -59,7 +60,7 @@ async def get_logs(
             log_type=log.log_type,
             message=log.message,
             items_count=log.items_count,
-            created_at=log.created_at.isoformat(),
+            created_at=to_iso_string(log.created_at) or "",
         )
         for log in logs
     ]

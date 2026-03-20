@@ -19,6 +19,20 @@ async function fetchLogs(): Promise<void> {
   }
 }
 
+function getStatusClasses(status: string): string {
+  if (status === 'error') {
+    return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+  }
+  return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+}
+
+function getTextClasses(status: string): string {
+  if (status === 'error') {
+    return 'text-red-700 dark:text-red-400'
+  }
+  return 'text-green-700 dark:text-green-400'
+}
+
 onMounted(fetchLogs)
 </script>
 
@@ -38,18 +52,22 @@ onMounted(fetchLogs)
       <div
         v-for="log in logs"
         :key="log.id"
-        class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800"
+        class="p-4 rounded-xl border"
+        :class="getStatusClasses(log.status)"
       >
-        <div class="flex items-center justify-between mb-1">
-          <span class="font-medium text-red-700 dark:text-red-400">
-            {{ log.error_type }}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+          <span class="font-medium" :class="getTextClasses(log.status)">
+            {{ log.log_type }}
+            <span v-if="log.items_count !== null" class="text-sm opacity-75">
+              ({{ log.items_count }} items)
+            </span>
           </span>
           <span class="text-sm text-neutral-500">
             {{ formatDate(log.created_at) }}
           </span>
         </div>
         <p class="text-sm text-neutral-600 dark:text-neutral-400">
-          {{ log.error_message }}
+          {{ log.message }}
         </p>
       </div>
     </div>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#22c55e"/>
+  
+  <!-- RSS feed symbol -->
+  <g fill="#ffffff">
+    <!-- Center dot -->
+    <circle cx="160" cy="352" r="32"/>
+    
+    <!-- First arc -->
+    <path d="M160 256 a96 96 0 0 1 96 96" stroke="#ffffff" stroke-width="32" fill="none" stroke-linecap="round"/>
+    
+    <!-- Second arc -->
+    <path d="M160 160 a192 192 0 0 1 192 192" stroke="#ffffff" stroke-width="32" fill="none" stroke-linecap="round"/>
+    
+    <!-- Third arc -->
+    <path d="M160 64 a288 288 0 0 1 288 288" stroke="#ffffff" stroke-width="32" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

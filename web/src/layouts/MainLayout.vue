@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Languages } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
@@ -33,12 +34,13 @@ const menuItems = computed(() => [
         </div>
         
         <div class="flex items-center gap-2">
-          <Button variant="ghost" size="icon" @click="toggleTheme">
+          <Button variant="ghost" size="icon" @click="toggleTheme" :title="t('theme.toggle')">
             <span v-if="isDark">☀️</span>
             <span v-else>🌙</span>
           </Button>
-          
-          <Button variant="ghost" size="icon" @click="toggleLocale">
+
+          <Button variant="ghost" size="icon" @click="toggleLocale" :title="t('language.switch')">
+            <Languages class="h-4 w-4" />
             {{ locale === 'zh' ? '中' : 'EN' }}
           </Button>
         </div>

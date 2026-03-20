@@ -32,32 +32,70 @@
     "sort_time": "時間排序",
     "sort_source": "來源排序",
     "search_placeholder": "關鍵字搜尋...",
-    "empty": "目前沒有文章"
+    "empty": "目前沒有文章",
+    "refresh": "一鍵更新"
   },
   "sources": {
     "title": "Sources",
     "add": "新增來源",
+    "edit": "編輯來源",
     "name": "名稱",
     "url": "URL",
     "active": "啟用",
     "inactive": "停用",
     "last_fetched": "最後抓取",
-    "empty": "沒有 RSS 來源"
+    "created_at": "建立時間",
+    "updated_at": "更新時間",
+    "refresh_all": "一鍵更新",
+    "empty": "沒有 RSS 來源",
+    "name_placeholder": "輸入來源名稱",
+    "url_placeholder": "輸入 RSS URL",
+    "name_required": "名稱為必填",
+    "url_required": "URL 為必填",
+    "url_invalid": "請輸入有效的 URL",
+    "created": "來源已新增",
+    "updated": "來源已更新",
+    "deleted": "來源已刪除"
   },
   "keys": {
     "title": "API Keys",
     "add": "新增 Key",
-    "empty": "沒有 API Key"
+    "empty": "沒有 API Key",
+    "name_optional": "名稱 (選填)",
+    "name_placeholder": "輸入名稱以便識別",
+    "key_created": "Key 已建立",
+    "save_warning": "請立即複製此 Key，關閉後將無法再次查看完整內容",
+    "use_custom_key": "自訂 API Key",
+    "custom_key_placeholder": "輸入自訂的 API Key",
+    "key_requirements": "需 {min}-{max} 字符，僅限英文、數字、連字符和底線",
+    "key_too_short": "Key 至少需要 {min} 個字符",
+    "key_too_long": "Key 最多 {max} 個字符",
+    "key_invalid_chars": "Key 只能包含英文、數字、連字符和底線",
+    "key_exists": "此 Key 已存在",
+    "copy": "複製",
+    "copied": "已複製",
+    "copy_failed": "複製失敗",
+    "created": "API Key 已建立",
+    "delete_confirm": "確定要刪除此 Key 嗎？",
+    "deleted": "API Key 已刪除"
   },
   "stats": {
     "title": "Statistics",
     "total_requests": "總請求數",
     "successful_fetches": "成功抓取",
     "failed_fetches": "失敗抓取",
-    "daily_trend": "每日趨勢"
+    "daily_trend": "每日趨勢",
+    "date": "日期",
+    "requests": "請求數"
   },
   "logs": {
     "title": "Error Logs",
     "empty": "沒有錯誤記錄"
+  },
+  "theme": {
+    "toggle": "切換主題"
+  },
+  "language": {
+    "switch": "切換語言"
   }
 }

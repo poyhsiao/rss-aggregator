@@ -8,6 +8,7 @@ export async function getKeys(): Promise<ApiKey[]> {
 
 export interface CreateKeyData {
   name?: string
+  key?: string
 }
 
 export async function createKey(data?: CreateKeyData): Promise<ApiKey> {

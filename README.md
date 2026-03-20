@@ -99,6 +99,81 @@ See `.env.example` for all available configuration options.
 | `SCHEDULER_INTERVAL` | Fetch interval in seconds | `60` |
 | `DEFAULT_SOURCES` | Comma-separated RSS URLs | - |
 
+## Frontend
+
+A Vue 3 web application is available in the `web/` directory.
+
+### Quick Start
+
+```bash
+cd web
+pnpm install
+pnpm dev
+```
+
+### Build for Production
+
+```bash
+pnpm build
+```
+
+### Generate PWA Icons
+
+```bash
+pnpm generate-icons
+```
+
+### Features
+
+- **API Key Authentication**: Secure access with localStorage persistence
+- **5 Pages**: Feed, Sources, Keys, Stats, Logs
+- **Dark/Light Theme**: System preference detection with manual toggle
+- **i18n**: Chinese/English support
+- **PWA**: Installable on desktop and mobile
+- **Responsive**: Desktop sidebar + Mobile bottom navigation
+
+### Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Vue 3 + TypeScript |
+| Build | Vite |
+| Styling | Tailwind CSS |
+| State | Pinia |
+| Routing | Vue Router |
+| i18n | vue-i18n |
+| UI Components | radix-vue |
+| Charts | Chart.js + vue-chartjs |
+| Validation | Zod |
+| Icons | Lucide Icons |
+
+### Project Structure
+
+```
+web/
+├── src/
+│   ├── api/           # Axios instance + API modules
+│   ├── components/    # UI components + dialogs
+│   ├── composables/   # Vue composables (useAuth, useTheme, etc.)
+│   ├── locales/       # i18n JSON files
+│   ├── pages/         # Route page components
+│   ├── stores/        # Pinia stores
+│   ├── styles/        # Global CSS
+│   └── utils/         # Helper functions
+├── public/
+│   ├── icons/         # PWA icons (generated)
+│   └── manifest.json  # PWA manifest
+└── scripts/           # Build scripts
+```
+
+### Configuration
+
+Set the API base URL in `.env`:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8000
+```
+
 ## License
 
 Apache-2.0

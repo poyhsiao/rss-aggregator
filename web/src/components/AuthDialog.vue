@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { ShieldCheck } from 'lucide-vue-next'
 import Dialog from '@/components/ui/Dialog.vue'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
@@ -57,11 +58,13 @@ async function handleVerify(): Promise<void> {
       </div>
       
       <div class="mt-6">
-        <Button 
+        <Button
           class="w-full"
           :disabled="!apiKey || isVerifying"
           @click="handleVerify"
+          :title="t('auth.verify')"
         >
+          <ShieldCheck v-if="!isVerifying" class="h-4 w-4 mr-2" />
           <span v-if="isVerifying">{{ t('auth.verifying') }}</span>
           <span v-else>{{ t('auth.verify') }}</span>
         </Button>

@@ -1,8 +1,9 @@
 export interface ErrorLog {
   id: number
   source_id: number | null
-  error_type: string
-  error_message: string
+  status: 'success' | 'error'
+  log_type: string
+  message: string
+  items_count: number | null
   created_at: string
-  updated_at: string
 }
