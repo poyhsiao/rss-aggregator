@@ -33,7 +33,18 @@
     "sort_source": "Sort by Source",
     "search_placeholder": "Search keywords...",
     "empty": "No articles yet",
-    "refresh": "Refresh All"
+    "refresh": "Refresh All",
+    "preview_feed": "Preview Feed",
+    "preview_title": "{format} Preview",
+    "preview_source_title": "Source Preview",
+    "download": "Download {format}",
+    "format_rss": "RSS",
+    "format_json": "JSON",
+    "format_markdown": "Markdown",
+    "item": "item",
+    "items": "items",
+    "view_source": "Source",
+    "view_preview": "Preview"
   },
   "sources": {
     "title": "Sources",
@@ -55,7 +66,8 @@
     "url_invalid": "Please enter a valid URL",
     "created": "Source created",
     "updated": "Source updated",
-    "deleted": "Source deleted"
+    "deleted": "Source deleted",
+    "view_data": "Preview Feed"
   },
   "keys": {
     "title": "API Keys",
@@ -89,7 +101,7 @@
     "requests": "Requests"
   },
   "logs": {
-    "title": "Error Logs",
+    "title": "Logs",
     "empty": "No error records"
   },
   "theme": {

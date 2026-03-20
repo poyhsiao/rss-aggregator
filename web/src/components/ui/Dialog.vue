@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { watch } from 'vue'
 import { cn } from '@/utils/cn'
 
 const props = withDefaults(defineProps<{
   open: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 }>(), {
   open: false,
+  size: 'lg',
 })
 
 const emit = defineEmits<{
@@ -23,6 +26,17 @@ watch(() => props.open, (isOpen) => {
 function close(): void {
   emit('update:open', false)
 }
+
+const sizeClasses = computed(() => {
+  const sizes = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+  }
+  return sizes[props.size]
+})
 </script>
 
 <template>
@@ -36,7 +50,8 @@ function close(): void {
         <div class="fixed inset-0 flex items-center justify-center p-4">
           <div 
             :class="cn(
-              'relative w-full max-w-lg bg-white dark:bg-neutral-800 rounded-2xl shadow-xl',
+              'relative w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-xl',
+              sizeClasses,
               'max-h-[85vh] overflow-auto'
             )"
             @click.stop

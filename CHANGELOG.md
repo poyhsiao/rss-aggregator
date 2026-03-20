@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.0 - 2026-03-21
+
+### Added
+
+- Unified formatter module for RSS/JSON/Markdown output formats
+- `format` parameter to `/api/v1/feed` endpoint (supports `rss`, `json`, `markdown`)
+- `/api/v1/sources/{id}/feed` endpoint for source-specific feed preview
+- Syntax highlighting for RSS (XML), JSON, and Markdown in preview dialog
+- Responsive button layout on Feed page (icon-only on mobile)
+- Active state highlighting for bottom navigation
+- CORS middleware for cross-origin frontend access
+
+### Changed
+
+- Default feed format changed from JSON to RSS
+- Feed preview dialog now supports wider layout (2xl)
+- Improved Chinese/English translations for navigation and page titles
+- Code preview area now supports both light and dark modes
+- JSON syntax highlighting with proper key/value distinction
+
+### Fixed
+
+- Button text wrapping on small screens
+- Feed preview dialog height overflow
+- Code content not selectable in preview dialog
+
 ## v0.2.0 - 2026-03-20
 
 ### Added

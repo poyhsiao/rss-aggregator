@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RefreshCw } from 'lucide-vue-next'
+import { FileText, RefreshCw } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
 import type { Source } from '@/types/source'
+import type { FeedParams } from '@/api/feed'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import SourceDialog from '@/components/SourceDialog.vue'
+import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { formatDate } from '@/utils/format'
 
@@ -18,6 +20,9 @@ const loading = ref(true)
 const refreshing = ref(false)
 const showDialog = ref(false)
 const editingSource = ref<Source | null>(null)
+const previewDialogOpen = ref(false)
+const previewParams = ref<FeedParams | undefined>(undefined)
+const previewTitle = ref<string | undefined>(undefined)
 
 async function fetchSources(): Promise<void> {
   loading.value = true
@@ -36,6 +41,12 @@ function openAddDialog(): void {
 function openEditDialog(source: Source): void {
   editingSource.value = source
   showDialog.value = true
+}
+
+function openPreviewDialog(source: Source): void {
+  previewParams.value = { source_id: source.id }
+  previewTitle.value = source.name
+  previewDialogOpen.value = true
 }
 
 async function handleRefresh(id: number): Promise<void> {
@@ -178,6 +189,14 @@ onMounted(fetchSources)
               <Button
                 variant="ghost"
                 size="sm"
+                :title="t('sources.view_data')"
+                @click="openPreviewDialog(source)"
+              >
+                <FileText class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 :title="t('common.refresh')"
                 @click="handleRefresh(source.id)"
               >
@@ -218,6 +237,12 @@ onMounted(fetchSources)
       v-model:open="showDialog"
       :source="editingSource"
       @saved="fetchSources"
+    />
+
+    <RssPreviewDialog
+      v-model:open="previewDialogOpen"
+      :params="previewParams"
+      :title="previewTitle"
     />
   </div>
 </template>

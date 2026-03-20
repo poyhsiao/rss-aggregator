@@ -1,9 +1,10 @@
 """Source management API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
 
-from src.api.deps import get_scheduler, get_source_service, require_api_key
+from src.api.deps import get_feed_service, get_scheduler, get_source_service, require_api_key
+from src.services.feed_service import FeedService
 from src.services.source_service import SourceService
 from src.utils.time import to_iso_string
 
@@ -189,6 +190,63 @@ async def delete_source(
         await source_service.delete_source(source_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/{source_id}/feed")
+async def get_source_feed(
+    source_id: int,
+    format: str = Query(
+        "rss",
+        pattern="^(rss|json|markdown)$",
+        description="Output format: 'rss', 'json', or 'markdown'",
+    ),
+    sort_by: str = Query(
+        "published_at",
+        pattern="^(published_at|source)$",
+        description="Sort by field",
+    ),
+    sort_order: str = Query(
+        "desc",
+        pattern="^(asc|desc)$",
+        description="Sort direction",
+    ),
+    valid_time: int | None = Query(
+        None,
+        ge=1,
+        description="Time range in hours",
+    ),
+    keywords: str | None = Query(
+        None,
+        description="Keywords (semicolon-separated)",
+    ),
+    feed_service: FeedService = Depends(get_feed_service),
+    _: str = Depends(require_api_key),
+) -> Response:
+    """Get feed for a specific source.
+
+    Returns RSS by default, or JSON/Markdown when format is specified.
+
+    Query params:
+    - format: Output format ('rss', 'json', or 'markdown', default: 'rss')
+    - sort_by: Sort field ('published_at' or 'source')
+    - sort_order: Sort direction ('asc' or 'desc')
+    - valid_time: Time range in hours
+    - keywords: Keywords for filtering (semicolon-separated)
+    """
+    source_service = SourceService(feed_service.session)
+    source = await source_service.get_source(source_id)
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+
+    content, content_type = await feed_service.get_formatted_feed(
+        format=format,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        valid_time=valid_time,
+        keywords=keywords,
+        source_id=source_id,
+    )
+    return Response(content=content, media_type=content_type)
 
 
 @router.post("/{source_id}/refresh")

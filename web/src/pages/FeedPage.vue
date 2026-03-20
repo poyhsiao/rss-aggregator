@@ -1,92 +1,120 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { RefreshCw, Clock, Database } from 'lucide-vue-next'
-import { getFeed } from '@/api/feed'
-import { refreshAllSources } from '@/api/sources'
-import type { FeedItem } from '@/types/feed'
-import { formatDate } from '@/utils/format'
-import Input from '@/components/ui/Input.vue'
-import Button from '@/components/ui/Button.vue'
+import { Clock, Database, FileText, RefreshCw } from "lucide-vue-next";
+import { onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { getFeed } from "@/api/feed";
+import { refreshAllSources } from "@/api/sources";
+import RssPreviewDialog from "@/components/RssPreviewDialog.vue";
+import Button from "@/components/ui/Button.vue";
+import Input from "@/components/ui/Input.vue";
+import type { FeedItem } from "@/types/feed";
+import { formatDate } from "@/utils/format";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const feedItems = ref<FeedItem[]>([])
-const loading = ref(true)
-const refreshing = ref(false)
-const sortBy = ref<'published_at' | 'source'>('published_at')
-const keywords = ref('')
+const feedItems = ref<FeedItem[]>([]);
+const loading = ref(true);
+const refreshing = ref(false);
+const sortBy = ref<"published_at" | "source">("published_at");
+const keywords = ref("");
+const rssDialogOpen = ref(false);
 
 async function fetchFeed(): Promise<void> {
-  loading.value = true
-  try {
-    feedItems.value = await getFeed({
-      sort_by: sortBy.value,
-      keywords: keywords.value || undefined,
-    })
-  } finally {
-    loading.value = false
-  }
+	loading.value = true;
+	try {
+		feedItems.value = await getFeed({
+			sort_by: sortBy.value,
+			keywords: keywords.value || undefined,
+		});
+	} finally {
+		loading.value = false;
+	}
 }
 
 async function handleRefreshAll(): Promise<void> {
-  refreshing.value = true
-  try {
-    await refreshAllSources()
-    await fetchFeed()
-  } finally {
-    refreshing.value = false
-  }
+	refreshing.value = true;
+	try {
+		await refreshAllSources();
+		await fetchFeed();
+	} finally {
+		refreshing.value = false;
+	}
 }
 
-onMounted(fetchFeed)
+onMounted(fetchFeed);
 
 watch([sortBy, keywords], () => {
-  fetchFeed()
-})
+	fetchFeed();
+});
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Header Row -->
+    <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">📰 {{ t('feed.title') }}</h1>
-      
-      <div class="flex flex-wrap gap-2">
-        <Button
-          :variant="sortBy === 'published_at' ? 'default' : 'outline'"
-          size="sm"
-          :title="t('feed.sort_time')"
-          @click="sortBy = 'published_at'"
-        >
-          <Clock class="h-4 w-4 mr-2" />
-          {{ t('feed.sort_time') }}
-        </Button>
-        <Button
-          :variant="sortBy === 'source' ? 'default' : 'outline'"
-          size="sm"
-          :title="t('feed.sort_source')"
-          @click="sortBy = 'source'"
-        >
-          <Database class="h-4 w-4 mr-2" />
-          {{ t('feed.sort_source') }}
-        </Button>
+    </div>
+    
+    <!-- Controls -->
+    <div class="flex items-center justify-between gap-2">
+      <!-- Left: Sort + Search -->
+      <div class="flex items-center gap-2">
+        <!-- Sort Buttons -->
+        <div class="inline-flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg shrink-0">
+          <Button
+            :variant="sortBy === 'published_at' ? 'default' : 'ghost'"
+            size="sm"
+            :title="t('feed.sort_time')"
+            class="whitespace-nowrap"
+            @click="sortBy = 'published_at'"
+          >
+            <Clock class="h-4 w-4" />
+            <span class="hidden sm:inline ml-1.5">{{ t('feed.sort_time') }}</span>
+          </Button>
+          <Button
+            :variant="sortBy === 'source' ? 'default' : 'ghost'"
+            size="sm"
+            :title="t('feed.sort_source')"
+            class="whitespace-nowrap"
+            @click="sortBy = 'source'"
+          >
+            <Database class="h-4 w-4" />
+            <span class="hidden sm:inline ml-1.5">{{ t('feed.sort_source') }}</span>
+          </Button>
+        </div>
 
+        <!-- Search -->
+        <Input
+          v-model="keywords"
+          :placeholder="t('feed.search_placeholder')"
+          class="w-28 sm:w-40 shrink min-w-0"
+        />
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex items-center gap-2 shrink-0">
         <Button
           variant="outline"
           size="sm"
           :title="t('feed.refresh')"
           :disabled="refreshing"
+          class="whitespace-nowrap"
           @click="handleRefreshAll"
         >
-          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4 mr-2" />
-          {{ t('feed.refresh') }}
+          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4" />
+          <span class="hidden sm:inline ml-1.5">{{ t('feed.refresh') }}</span>
         </Button>
 
-        <Input
-          v-model="keywords"
-          :placeholder="t('feed.search_placeholder')"
-          class="w-48"
-        />
+        <Button
+          variant="outline"
+          size="sm"
+          :title="t('feed.preview_feed')"
+          class="whitespace-nowrap"
+          @click="rssDialogOpen = true"
+        >
+          <FileText class="h-4 w-4" />
+          <span class="hidden sm:inline ml-1.5">{{ t('feed.preview_feed') }}</span>
+        </Button>
       </div>
     </div>
     
@@ -121,5 +149,13 @@ watch([sortBy, keywords], () => {
         </p>
       </a>
     </div>
+
+    <RssPreviewDialog
+      v-model:open="rssDialogOpen"
+      :params="{
+        sort_by: sortBy,
+        keywords: keywords || undefined,
+      }"
+    />
   </div>
 </template>

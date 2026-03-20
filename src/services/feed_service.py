@@ -8,6 +8,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from src.formatters import get_formatter
 from src.models import FeedItem, Source
 from src.utils.time import to_iso_string
 
@@ -23,23 +24,27 @@ class FeedService:
         """
         self.session = session
 
-    async def get_aggregated_feed(
+    async def get_formatted_feed(
         self,
+        format: str = "rss",
         sort_by: str = "published_at",
         sort_order: str = "desc",
         valid_time: int | None = None,
         keywords: str | None = None,
-    ) -> str:
-        """Get aggregated RSS feed.
+        source_id: int | None = None,
+    ) -> tuple[str, str]:
+        """Get formatted feed in specified format.
 
         Args:
+            format: Output format ("rss", "json", or "markdown").
             sort_by: Sort field ("published_at" or "source").
             sort_order: Sort direction ("asc" or "desc").
             valid_time: Time range in hours (None = all items).
             keywords: Semicolon-separated keywords for title filtering.
+            source_id: Filter by source ID (None = all sources).
 
         Returns:
-            RSS 2.0 XML string.
+            tuple[str, str]: (formatted content, MIME type)
         """
         items = await self._fetch_items(
             sort_by=sort_by,
@@ -47,7 +52,29 @@ class FeedService:
             valid_time=valid_time,
             keywords=keywords,
         )
-        return self._generate_rss_xml(items)
+        formatter = get_formatter(format)
+        return formatter.format(items), formatter.get_content_type()
+
+    async def get_aggregated_feed(
+        self,
+        sort_by: str = "published_at",
+        sort_order: str = "desc",
+        valid_time: int | None = None,
+        keywords: str | None = None,
+    ) -> str:
+        """Get aggregated RSS feed (legacy method for backward compatibility).
+
+        Returns:
+            RSS 2.0 XML string.
+        """
+        content, _ = await self.get_formatted_feed(
+            format="rss",
+            sort_by=sort_by,
+            sort_order=sort_order,
+            valid_time=valid_time,
+            keywords=keywords,
+        )
+        return content
 
     async def _fetch_items(
         self,

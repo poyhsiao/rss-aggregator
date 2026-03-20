@@ -21,22 +21,33 @@
     "failed": "驗證失敗，請稍後再試"
   },
   "nav": {
-    "feed": "Feed",
-    "sources": "Sources",
-    "keys": "Keys",
-    "stats": "Stats",
-    "logs": "Logs"
+    "feed": "動態",
+    "sources": "來源",
+    "keys": "金鑰",
+    "stats": "統計",
+    "logs": "日誌"
   },
   "feed": {
-    "title": "Feed",
+    "title": "動態",
     "sort_time": "時間排序",
     "sort_source": "來源排序",
     "search_placeholder": "關鍵字搜尋...",
     "empty": "目前沒有文章",
-    "refresh": "一鍵更新"
+    "refresh": "一鍵更新",
+    "preview_feed": "預覽摘要",
+    "preview_title": "{format} 預覽",
+    "preview_source_title": "來源預覽",
+    "download": "下載 {format}",
+    "format_rss": "RSS",
+    "format_json": "JSON",
+    "format_markdown": "Markdown",
+    "item": "項目",
+    "items": "項目",
+    "view_source": "原始碼",
+    "view_preview": "預覽"
   },
   "sources": {
-    "title": "Sources",
+    "title": "來源",
     "add": "新增來源",
     "edit": "編輯來源",
     "name": "名稱",
@@ -55,10 +66,11 @@
     "url_invalid": "請輸入有效的 URL",
     "created": "來源已新增",
     "updated": "來源已更新",
-    "deleted": "來源已刪除"
+    "deleted": "來源已刪除",
+    "view_data": "預覽摘要"
   },
   "keys": {
-    "title": "API Keys",
+    "title": "API 金鑰",
     "add": "新增 Key",
     "empty": "沒有 API Key",
     "name_optional": "名稱 (選填)",
@@ -80,7 +92,7 @@
     "deleted": "API Key 已刪除"
   },
   "stats": {
-    "title": "Statistics",
+    "title": "統計",
     "total_requests": "總請求數",
     "successful_fetches": "成功抓取",
     "failed_fetches": "失敗抓取",
@@ -89,7 +101,7 @@
     "requests": "請求數"
   },
   "logs": {
-    "title": "Error Logs",
+    "title": "日誌",
     "empty": "沒有錯誤記錄"
   },
   "theme": {

@@ -53,6 +53,7 @@ docker-compose up
 | `/api/v1/feed` | GET | Get aggregated RSS feed |
 | `/api/v1/sources` | GET, POST | List/create sources |
 | `/api/v1/sources/{id}` | GET, PUT, DELETE | Manage source |
+| `/api/v1/sources/{id}/feed` | GET | Get feed for specific source |
 | `/api/v1/keys` | GET, POST | List/create API keys |
 | `/api/v1/stats` | GET | Get daily statistics |
 | `/api/v1/logs` | GET | Get error logs |
@@ -61,6 +62,7 @@ docker-compose up
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `format` | string | `rss` | Output format (`rss`, `json`, `markdown`) |
 | `sort_by` | string | `published_at` | Sort field (`published_at` or `source`) |
 | `sort_order` | string | `desc` | Sort direction (`asc` or `desc`) |
 | `valid_time` | int | - | Time range in hours |

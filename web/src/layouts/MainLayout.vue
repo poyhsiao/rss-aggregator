@@ -76,8 +76,10 @@ const menuItems = computed(() => [
           v-for="item in menuItems"
           :key="item.path"
           :to="item.path"
-          class="flex flex-col items-center justify-center gap-1 text-neutral-500 dark:text-neutral-400"
-          :class="{ 'text-primary-500': route.path === item.path }"
+          class="flex flex-col items-center justify-center gap-1 flex-1 transition-colors"
+          :class="route.path === item.path 
+            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium' 
+            : 'text-neutral-500 dark:text-neutral-400'"
         >
           <span class="text-xl">{{ item.icon }}</span>
           <span class="text-xs">{{ item.label }}</span>
