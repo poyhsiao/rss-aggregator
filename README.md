@@ -100,8 +100,17 @@ See `.env.example` for all available configuration options.
 | `SCHEDULER_ENABLED` | Enable background fetching | `true` |
 | `SCHEDULER_INTERVAL` | Scheduler check interval in seconds | `60` |
 | `APP_TIMEZONE` | Application timezone for time display | `Asia/Taipei` |
+| `APP_DEBUG` | Enable debug mode | `false` |
+| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated, empty for all) | `*` |
 | `DEFAULT_FETCH_INTERVAL` | Default fetch interval for new sources (seconds) | `0` |
 | `DEFAULT_SOURCES` | Comma-separated RSS URLs | - |
+
+## Security
+
+- **XSS Protection**: All user-generated content is sanitized with DOMPurify
+- **API Key Storage**: Keys stored in sessionStorage (cleared on browser close)
+- **Docker**: Container runs as non-root user
+- **CORS**: Configurable allowed origins for production deployments
 
 ## Frontend
 

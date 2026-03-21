@@ -51,6 +51,7 @@ class FeedService:
             sort_order=sort_order,
             valid_time=valid_time,
             keywords=keywords,
+            source_id=source_id,
         )
         formatter = get_formatter(format)
         return formatter.format(items), formatter.get_content_type()
@@ -82,6 +83,7 @@ class FeedService:
         sort_order: str,
         valid_time: int | None,
         keywords: str | None,
+        source_id: int | None = None,
     ) -> list[FeedItem]:
         """Fetch filtered feed items from database."""
         query = (
@@ -94,12 +96,10 @@ class FeedService:
             )
         )
 
-        # Time filter
         if valid_time is not None:
             cutoff = now() - timedelta(hours=valid_time)
             query = query.where(FeedItem.published_at >= cutoff)
 
-        # Keyword filter (OR logic)
         if keywords:
             keyword_list = [k.strip() for k in keywords.split(";") if k.strip()]
             if keyword_list:
@@ -108,7 +108,9 @@ class FeedService:
                 ]
                 query = query.where(or_(*conditions))
 
-        # Sorting
+        if source_id is not None:
+            query = query.where(FeedItem.source_id == source_id)
+
         if sort_by == "source":
             order_col = Source.name
             query = query.join(Source)

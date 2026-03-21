@@ -50,7 +50,7 @@ class FetchService:
             params = parse_qs(parsed.query)
             real_urls = params.get("url", [])
             return real_urls[0] if real_urls else url
-        except Exception:
+        except (ValueError, KeyError, IndexError):
             return url
 
     def parse_rss(self, content: str) -> list[dict[str, Any]]:
@@ -67,20 +67,45 @@ class FetchService:
 
         for entry in feed.entries:
             raw_link = entry.get("link", "")
+            clean_link: str
+            if isinstance(raw_link, str):
+                clean_link = self._clean_google_url(raw_link)
+            else:
+                clean_link = ""
+
+            raw_title = entry.get("title", "")
+            title: str = raw_title if isinstance(raw_title, str) else ""
+
+            raw_summary = entry.get("summary") or entry.get("description")
+            description: str | None
+            if isinstance(raw_summary, str):
+                description = raw_summary
+            else:
+                description = None
+
             item: dict[str, Any] = {
-                "title": entry.get("title", ""),
-                "link": self._clean_google_url(raw_link),
-                "description": entry.get("summary") or entry.get("description"),
+                "title": title,
+                "link": clean_link,
+                "description": description,
             }
 
-            # Parse publication date
+            published_at: datetime | None = None
             if hasattr(entry, "published_parsed") and entry.published_parsed:
-                item["published_at"] = datetime(*entry.published_parsed[:6])
+                try:
+                    time_tuple = entry.published_parsed[:6]
+                    if all(isinstance(x, int) for x in time_tuple):
+                        published_at = datetime(*time_tuple)  # type: ignore[arg-type]
+                except (TypeError, ValueError, IndexError):
+                    published_at = None
             elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
-                item["published_at"] = datetime(*entry.updated_parsed[:6])
-            else:
-                item["published_at"] = None
+                try:
+                    time_tuple = entry.updated_parsed[:6]
+                    if all(isinstance(x, int) for x in time_tuple):
+                        published_at = datetime(*time_tuple)  # type: ignore[arg-type]
+                except (TypeError, ValueError, IndexError):
+                    published_at = None
 
+            item["published_at"] = published_at
             items.append(item)
 
         return items
@@ -133,7 +158,7 @@ class FetchService:
                     response = await client.get(url)
                     response.raise_for_status()
                     return response.text
-            except Exception as e:
+            except httpx.HTTPError:
                 if attempt < self.retry_count - 1:
                     await asyncio.sleep(self.retry_delay)
                 else:

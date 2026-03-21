@@ -2,11 +2,12 @@
 
 import pytest
 import pytest_asyncio
-from datetime import datetime, timedelta
+from datetime import timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import Source, FeedItem
 from src.services.feed_service import FeedService
+from src.utils.time import now
 
 
 @pytest_asyncio.fixture
@@ -23,28 +24,28 @@ async def sample_data(db_session: AsyncSession):
     db_session.add_all([source1, source2])
     await db_session.flush()
 
-    now = datetime.utcnow()
+    current_time = now()
     items = [
         FeedItem(
             source_id=source1.id,
             title="Python 3.13 Released",
             link="https://tech.com/python-3.13",
             description="New Python version",
-            published_at=now - timedelta(hours=1),
+            published_at=current_time - timedelta(hours=1),
         ),
         FeedItem(
             source_id=source1.id,
             title="AI Breakthrough",
             link="https://tech.com/ai",
             description="AI news",
-            published_at=now - timedelta(hours=2),
+            published_at=current_time - timedelta(hours=2),
         ),
         FeedItem(
             source_id=source2.id,
             title="Election Results",
             link="https://world.com/election",
             description="World news",
-            published_at=now - timedelta(hours=3),
+            published_at=current_time - timedelta(hours=3),
         ),
     ]
     db_session.add_all(items)
@@ -144,7 +145,7 @@ async def test_get_aggregated_feed_deduplicates_by_link(
     db_session.add_all([source1, source2])
     await db_session.flush()
 
-    now = datetime.utcnow()
+    current_time = now()
     duplicate_link = "https://example.com/same-article"
 
     items = [
@@ -153,21 +154,21 @@ async def test_get_aggregated_feed_deduplicates_by_link(
             title="Article from Source 1",
             link=duplicate_link,
             description="Content",
-            published_at=now - timedelta(hours=1),
+            published_at=current_time - timedelta(hours=1),
         ),
         FeedItem(
             source_id=source2.id,
             title="Same Article from Source 2",
             link=duplicate_link,
             description="Same Content",
-            published_at=now - timedelta(hours=2),
+            published_at=current_time - timedelta(hours=2),
         ),
         FeedItem(
             source_id=source1.id,
             title="Unique Article",
             link="https://example.com/unique",
             description="Unique",
-            published_at=now - timedelta(hours=3),
+            published_at=current_time - timedelta(hours=3),
         ),
     ]
     db_session.add_all(items)

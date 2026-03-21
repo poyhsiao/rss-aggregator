@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.5.0 - 2026-03-21
+
+### Added
+
+- Configurable CORS with `ALLOWED_ORIGINS` environment variable
+- XSS protection with DOMPurify in all preview components (RSS, JSON, Markdown)
+- Dedicated preview components: `JsonPreview.vue`, `MarkdownPreview.vue`, `RssXmlPreview.vue`
+- `useFeedCache` composable for centralized feed caching logic
+- Biome configuration for Tailwind CSS linting
+
+### Changed
+
+- API key storage changed from `localStorage` to `sessionStorage` for better security
+- Docker container now runs as non-root user (`appuser`)
+- Debug mode default changed to `false` for production safety
+- 404 responses now return JSON format instead of empty body
+- MarkdownPreview: fixed header with independent scrollable content area
+- Error handling in catch blocks now logs errors for debugging
+
+### Fixed
+
+- SQLAlchemy `soft_delete` event handler compatibility with SQLAlchemy 2.0+
+- `source_id` parameter inconsistency in feed service
+- Test timezone handling using unified `now()` utility
+- Model default value test expectations (`fetch_interval`: 900 → 0)
+- Circular import issues in models using `TYPE_CHECKING`
+- Double scrollbar in Markdown preview dialog
+- Markdown preview showing in RSS/JSON tabs
+
+### Security
+
+- CORS policy now configurable via environment variable
+- XSS protection added to all `v-html` render points
+- API keys no longer persist across browser sessions
+- Docker container runs with minimal privileges
+
 ## v0.4.0 - 2026-03-21
 
 ### Added

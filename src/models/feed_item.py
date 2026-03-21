@@ -1,11 +1,17 @@
 """FeedItem model for cached RSS items."""
 
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from src.models.source import Source
 
 
 class FeedItem(Base, TimestampMixin):
@@ -23,7 +29,7 @@ class FeedItem(Base, TimestampMixin):
         DateTime, default_factory=func.now
     )
 
-    source: Mapped["Source"] = relationship("Source", back_populates="feed_items", init=False)
+    source: Mapped[Source] = relationship("Source", back_populates="feed_items", init=False)
 
     def __repr__(self) -> str:
         return f"<FeedItem(id={self.id}, title={self.title[:30]}...)>"

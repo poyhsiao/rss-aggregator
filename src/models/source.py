@@ -1,11 +1,17 @@
 """RSS Source model."""
 
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from src.models.feed_item import FeedItem
 
 
 class Source(Base, TimestampMixin):
@@ -21,7 +27,7 @@ class Source(Base, TimestampMixin):
     last_fetched_at: Mapped[datetime | None] = mapped_column(default=None)
     last_error: Mapped[str | None] = mapped_column(Text, default=None)
 
-    feed_items: Mapped[list["FeedItem"]] = relationship(
+    feed_items: Mapped[list[FeedItem]] = relationship(
         "FeedItem", back_populates="source", cascade="all, delete-orphan", init=False
     )
 

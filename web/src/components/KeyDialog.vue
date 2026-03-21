@@ -86,8 +86,9 @@ async function handleSubmit(): Promise<void> {
     createdKey.value = newKey
     toast.success(t('keys.created'))
     emit('created', newKey)
-  } catch (error: any) {
-    const detail = error?.response?.data?.detail
+  } catch (error) {
+    const err = error as { response?: { data?: { detail?: string } } }
+    const detail = err.response?.data?.detail
     if (detail === 'Key already exists') {
       toast.error(t('keys.key_exists'))
     } else {

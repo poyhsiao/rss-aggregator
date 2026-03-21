@@ -24,5 +24,5 @@ def test_source_default_values():
         name="Test",
         url="https://example.com/feed.xml",
     )
-    assert source.fetch_interval == 900
+    assert source.fetch_interval == 0
     assert source.is_active is True

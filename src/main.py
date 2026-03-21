@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
 from src.api.deps import get_scheduler, set_scheduler
 from src.api.routes import feed, health, keys, logs, sources, stats
@@ -41,7 +41,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins.split(",") if settings.allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,6 +56,8 @@ app.include_router(logs.router, prefix="/api/v1")
 
 
 @app.exception_handler(404)
-async def not_found_handler(request: Request, exc: Exception) -> Response:
-    """Handle 404 errors with empty response."""
-    return Response(status_code=404)
+async def not_found_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "Not found"},
+    )

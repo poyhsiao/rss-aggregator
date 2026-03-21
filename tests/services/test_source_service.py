@@ -23,17 +23,21 @@ async def test_create_source(source_service: SourceService):
     assert source.id is not None
     assert source.name == "Test Feed"
     assert source.url == "https://example.com/feed.xml"
-    assert source.fetch_interval == 900
+    assert source.fetch_interval == 900  # service default
     assert source.is_active is True
 
 
 @pytest.mark.asyncio
 async def test_create_duplicate_url_raises_error(source_service: SourceService):
     """Test that duplicate URLs raise an error."""
-    await source_service.create_source(name="Feed 1", url="https://example.com/feed.xml")
+    await source_service.create_source(
+        name="Feed 1", url="https://example.com/feed.xml"
+    )
 
     with pytest.raises(ValueError, match="already exists"):
-        await source_service.create_source(name="Feed 2", url="https://example.com/feed.xml")
+        await source_service.create_source(
+            name="Feed 2", url="https://example.com/feed.xml"
+        )
 
 
 @pytest.mark.asyncio

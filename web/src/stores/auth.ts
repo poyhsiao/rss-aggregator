@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   const hasKey = computed(() => !!apiKey.value)
 
   async function init(): Promise<void> {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = sessionStorage.getItem(STORAGE_KEY)
     if (stored) {
       apiKey.value = stored
       await verifyKey(stored)
@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       apiKey.value = key
       isValid.value = true
-      localStorage.setItem(STORAGE_KEY, key)
+      sessionStorage.setItem(STORAGE_KEY, key)
       return true
     } catch (e: unknown) {
       const axiosError = e as { response?: { status?: number } }
@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout(): void {
     apiKey.value = null
     isValid.value = false
-    localStorage.removeItem(STORAGE_KEY)
+    sessionStorage.removeItem(STORAGE_KEY)
   }
 
   return {
