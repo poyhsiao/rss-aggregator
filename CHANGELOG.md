@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.5.1 - 2026-03-21
+
+### Changed
+
+- Updated `.gitignore` with comprehensive ignore patterns
+- Removed build artifacts from git tracking (`__pycache__/*.pyc`, `*.tsbuildinfo`)
+
 ## v0.5.0 - 2026-03-21
 
 ### Added
