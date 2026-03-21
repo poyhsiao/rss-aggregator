@@ -29,7 +29,7 @@ const isEditMode = computed(() => !!props.source)
 const schema = z.object({
   name: z.string().min(1, t('sources.name_required')),
   url: z.string().url(t('sources.url_invalid')),
-  fetch_interval: z.number().min(1).max(86400).default(60),
+  fetch_interval: z.number().min(0).max(604800).default(0),
   is_active: z.boolean().default(true),
 })
 
@@ -38,7 +38,7 @@ type FormData = z.infer<typeof schema>
 const form = ref<FormData>({
   name: '',
   url: '',
-  fetch_interval: 60,
+  fetch_interval: 0,
   is_active: true,
 })
 
@@ -50,14 +50,16 @@ const fetchIntervalStr = computed({
 const errors = ref<Partial<Record<keyof FormData, string>>>({})
 const loading = ref(false)
 
-const intervalOptions = [
-  { value: '30', label: '30 秒' },
-  { value: '60', label: '1 分鐘' },
-  { value: '300', label: '5 分鐘' },
-  { value: '600', label: '10 分鐘' },
-  { value: '1800', label: '30 分鐘' },
-  { value: '3600', label: '1 小時' },
-]
+const intervalOptions = computed(() => [
+  { value: '0', label: t('sources.interval_never') },
+  { value: '3600', label: t('sources.interval_1h') },
+  { value: '10800', label: t('sources.interval_3h') },
+  { value: '21600', label: t('sources.interval_6h') },
+  { value: '43200', label: t('sources.interval_12h') },
+  { value: '86400', label: t('sources.interval_24h') },
+  { value: '259200', label: t('sources.interval_3d') },
+  { value: '604800', label: t('sources.interval_7d') },
+])
 
 watch(() => props.open, (open) => {
   if (open) {
@@ -77,7 +79,7 @@ function reset(): void {
   form.value = {
     name: '',
     url: '',
-    fetch_interval: 60,
+    fetch_interval: 0,
     is_active: true,
   }
   errors.value = {}
@@ -161,7 +163,7 @@ async function handleSubmit(): Promise<void> {
         
         <div>
           <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-            抓取間隔
+            {{ t('sources.fetch_interval') }}
           </label>
           <Select
             v-model="fetchIntervalStr"

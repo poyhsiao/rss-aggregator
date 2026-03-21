@@ -2,12 +2,12 @@
 
 import asyncio
 import logging
-from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.config import settings
+from src.utils.time import now as get_now
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class FetchScheduler:
         async with self.session_factory() as session:
             fetch_service = FetchService(session)
 
-            now = datetime.utcnow()
+            now = get_now()
             result = await session.execute(
                 select(Source).where(
                     Source.is_active == True,  # noqa: E712
@@ -73,8 +73,11 @@ class FetchScheduler:
             sources_to_fetch = [
                 s
                 for s in sources
-                if s.last_fetched_at is None
-                or (now - s.last_fetched_at).total_seconds() >= s.fetch_interval
+                if s.fetch_interval > 0
+                and (
+                    s.last_fetched_at is None
+                    or (now - s.last_fetched_at).total_seconds() >= s.fetch_interval
+                )
             ]
 
             if not sources_to_fetch:

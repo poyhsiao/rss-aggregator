@@ -15,9 +15,12 @@ init_db() {
 import sqlite3
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 DB_PATH = '/app/data/rss.db'
-now = datetime.utcnow().isoformat()
+timezone_str = os.environ.get('APP_TIMEZONE', 'Asia/Taipei')
+tz = ZoneInfo(timezone_str)
+now = datetime.now(tz).replace(tzinfo=None).isoformat()
 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
@@ -41,7 +44,7 @@ if default_sources:
         cursor.execute('SELECT id FROM sources WHERE url = ?', (url,))
         if not cursor.fetchone():
             name = f'Source {i+1}'
-            cursor.execute('INSERT INTO sources (name, url, fetch_interval, is_active, created_at, updated_at) VALUES (?, ?, 900, 1, ?, ?)',
+            cursor.execute('INSERT INTO sources (name, url, fetch_interval, is_active, created_at, updated_at) VALUES (?, ?, 0, 1, ?, ?)',
                 (name, url, now, now))
             print(f'Created source: {name} ({url})')
 

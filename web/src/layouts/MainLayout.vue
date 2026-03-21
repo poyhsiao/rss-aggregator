@@ -30,7 +30,7 @@ const menuItems = computed(() => [
       <div class="flex items-center justify-between h-full px-4 md:px-6">
         <div class="flex items-center gap-3">
           <span class="text-xl">📰</span>
-          <span class="font-semibold text-lg hidden sm:block">RSS Aggregator</span>
+          <span class="font-semibold text-lg hidden sm:block">{{ t('app.name') }}</span>
         </div>
         
         <div class="flex items-center gap-2">

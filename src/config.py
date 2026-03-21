@@ -1,6 +1,7 @@
 """Application configuration using Pydantic Settings."""
 
 from functools import lru_cache
+from zoneinfo import ZoneInfo
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -20,6 +21,7 @@ class Settings(BaseSettings):
     app_debug: bool = True
     app_host: str = "0.0.0.0"
     app_port: int = 8000
+    app_timezone: str = "Asia/Taipei"
 
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/rss.db"
@@ -33,7 +35,7 @@ class Settings(BaseSettings):
     rate_limit_window: int = 60
 
     # RSS Fetching
-    default_fetch_interval: int = 900
+    default_fetch_interval: int = 0
     fetch_timeout: int = 30
     fetch_retry_count: int = 3
     fetch_retry_delay: int = 5
@@ -50,6 +52,11 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """Check if running in production environment."""
         return self.app_env == "production"
+
+    @property
+    def timezone(self) -> ZoneInfo:
+        """Get the configured timezone as ZoneInfo object."""
+        return ZoneInfo(self.app_timezone)
 
 
 @lru_cache

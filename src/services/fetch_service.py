@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.models import FeedItem, FetchLog, Source
 from src.services.stats_service import StatsService
+from src.utils.time import now
 
 
 class FetchService:
@@ -104,6 +105,8 @@ class FetchService:
         for old_item in old_items.scalars().all():
             old_item.soft_delete()
 
+        await self.session.flush()
+
         for item_data in items[: settings.max_feed_items]:
             feed_item = FeedItem(
                 source_id=source.id,
@@ -115,7 +118,7 @@ class FetchService:
             self.session.add(feed_item)
             stored_items.append(feed_item)
 
-        source.last_fetched_at = datetime.utcnow()
+        source.last_fetched_at = now()
         source.last_error = None
 
         await self._log_success(source.id, len(stored_items))

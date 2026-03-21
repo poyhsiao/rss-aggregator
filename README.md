@@ -98,7 +98,9 @@ See `.env.example` for all available configuration options.
 | `REQUIRE_API_KEY` | Enable API key requirement | `true` |
 | `DEFAULT_API_KEY` | Default API key | - |
 | `SCHEDULER_ENABLED` | Enable background fetching | `true` |
-| `SCHEDULER_INTERVAL` | Fetch interval in seconds | `60` |
+| `SCHEDULER_INTERVAL` | Scheduler check interval in seconds | `60` |
+| `APP_TIMEZONE` | Application timezone for time display | `Asia/Taipei` |
+| `DEFAULT_FETCH_INTERVAL` | Default fetch interval for new sources (seconds) | `0` |
 | `DEFAULT_SOURCES` | Comma-separated RSS URLs | - |
 
 ## Frontend

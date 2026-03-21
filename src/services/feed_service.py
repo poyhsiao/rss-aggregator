@@ -1,7 +1,7 @@
 """Service for aggregating and filtering RSS feeds."""
 
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from sqlalchemy import or_, select
@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 
 from src.formatters import get_formatter
 from src.models import FeedItem, Source
-from src.utils.time import to_iso_string
+from src.utils.time import now, to_iso_string, utcnow
 
 
 class FeedService:
@@ -96,7 +96,7 @@ class FeedService:
 
         # Time filter
         if valid_time is not None:
-            cutoff = datetime.utcnow() - timedelta(hours=valid_time)
+            cutoff = now() - timedelta(hours=valid_time)
             query = query.where(FeedItem.published_at >= cutoff)
 
         # Keyword filter (OR logic)
@@ -149,7 +149,7 @@ class FeedService:
         ET.SubElement(channel, "link").text = "https://github.com/rss-aggregator"
         ET.SubElement(channel, "description").text = "Aggregated RSS Feed"
         ET.SubElement(channel, "language").text = "en-us"
-        ET.SubElement(channel, "lastBuildDate").text = datetime.utcnow().strftime(
+        ET.SubElement(channel, "lastBuildDate").text = utcnow().strftime(
             "%a, %d %b %Y %H:%M:%S GMT"
         )
 

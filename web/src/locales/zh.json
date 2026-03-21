@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "RSS Aggregator"
+  },
   "common": {
     "loading": "載入中...",
     "error": "發生錯誤",
@@ -67,7 +70,16 @@
     "created": "來源已新增",
     "updated": "來源已更新",
     "deleted": "來源已刪除",
-    "view_data": "預覽摘要"
+    "view_data": "預覽摘要",
+    "fetch_interval": "抓取間隔",
+    "interval_never": "不自動更新",
+    "interval_1h": "1 小時",
+    "interval_3h": "3 小時",
+    "interval_6h": "6 小時",
+    "interval_12h": "12 小時",
+    "interval_24h": "24 小時",
+    "interval_3d": "3 天",
+    "interval_7d": "7 天"
   },
   "keys": {
     "title": "API 金鑰",
@@ -102,12 +114,20 @@
   },
   "logs": {
     "title": "日誌",
-    "empty": "沒有錯誤記錄"
+    "empty": "沒有錯誤記錄",
+    "item": "項目",
+    "items": "項目"
   },
   "theme": {
     "toggle": "切換主題"
   },
   "language": {
     "switch": "切換語言"
+  },
+  "time": {
+    "just_now": "剛剛",
+    "minutes_ago": "{count} 分鐘前",
+    "hours_ago": "{count} 小時前",
+    "days_ago": "{count} 天前"
   }
 }

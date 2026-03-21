@@ -1,4 +1,7 @@
+import { useI18n } from 'vue-i18n'
+
 export function formatDate(dateString: string): string {
+  const { t, locale } = useI18n()
   const date = new Date(dateString)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
@@ -7,12 +10,13 @@ export function formatDate(dateString: string): string {
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
   
-  if (minutes < 1) return '剛剛'
-  if (minutes < 60) return `${minutes} 分鐘前`
-  if (hours < 24) return `${hours} 小時前`
-  if (days < 7) return `${days} 天前`
+  if (minutes < 1) return t('time.just_now')
+  if (minutes < 60) return t('time.minutes_ago', { count: minutes })
+  if (hours < 24) return t('time.hours_ago', { count: hours })
+  if (days < 7) return t('time.days_ago', { count: days })
   
-  return date.toLocaleDateString('zh-TW', {
+  const localeStr = locale.value === 'zh' ? 'zh-TW' : 'en-US'
+  return date.toLocaleDateString(localeStr, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

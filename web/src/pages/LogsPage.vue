@@ -59,7 +59,7 @@ onMounted(fetchLogs)
           <span class="font-medium" :class="getTextClasses(log.status)">
             {{ log.log_type }}
             <span v-if="log.items_count !== null" class="text-sm opacity-75">
-              ({{ log.items_count }} items)
+              ({{ log.items_count }} {{ log.items_count === 1 ? t('logs.item') : t('logs.items') }})
             </span>
           </span>
           <span class="text-sm text-neutral-500">

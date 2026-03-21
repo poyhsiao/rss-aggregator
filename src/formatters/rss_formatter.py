@@ -1,11 +1,11 @@
 """RSS 2.0 formatter for feed items."""
 
 import xml.etree.ElementTree as ET
-from datetime import datetime
 from typing import List
 
 from src.formatters.base import BaseFormatter
 from src.models import FeedItem
+from src.utils.time import utcnow
 
 
 class RssFormatter(BaseFormatter):
@@ -28,7 +28,7 @@ class RssFormatter(BaseFormatter):
         ET.SubElement(channel, "link").text = "https://github.com/rss-aggregator"
         ET.SubElement(channel, "description").text = "Aggregated RSS Feed"
         ET.SubElement(channel, "language").text = "en-us"
-        ET.SubElement(channel, "lastBuildDate").text = datetime.utcnow().strftime(
+        ET.SubElement(channel, "lastBuildDate").text = utcnow().strftime(
             "%a, %d %b %Y %H:%M:%S GMT"
         )
 

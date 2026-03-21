@@ -16,7 +16,7 @@ class SourceCreate(BaseModel):
 
     name: str
     url: str
-    fetch_interval: int = 900
+    fetch_interval: int = 0
 
 
 class SourceUpdate(BaseModel):

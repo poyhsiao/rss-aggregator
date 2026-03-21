@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "RSS Aggregator"
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -67,7 +70,16 @@
     "created": "Source created",
     "updated": "Source updated",
     "deleted": "Source deleted",
-    "view_data": "Preview Feed"
+    "view_data": "Preview Feed",
+    "fetch_interval": "Fetch Interval",
+    "interval_never": "Never",
+    "interval_1h": "1 hour",
+    "interval_3h": "3 hours",
+    "interval_6h": "6 hours",
+    "interval_12h": "12 hours",
+    "interval_24h": "24 hours",
+    "interval_3d": "3 days",
+    "interval_7d": "7 days"
   },
   "keys": {
     "title": "API Keys",
@@ -102,12 +114,20 @@
   },
   "logs": {
     "title": "Logs",
-    "empty": "No error records"
+    "empty": "No error records",
+    "item": "item",
+    "items": "items"
   },
   "theme": {
     "toggle": "Toggle theme"
   },
   "language": {
     "switch": "Switch language"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": "{count} minute ago | {count} minutes ago",
+    "hours_ago": "{count} hour ago | {count} hours ago",
+    "days_ago": "{count} day ago | {count} days ago"
   }
 }

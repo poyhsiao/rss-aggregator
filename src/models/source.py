@@ -16,7 +16,7 @@ class Source(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
     name: Mapped[str] = mapped_column(String(255))
     url: Mapped[str] = mapped_column(String(2048), unique=True)
-    fetch_interval: Mapped[int] = mapped_column(default=900)
+    fetch_interval: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
     last_fetched_at: Mapped[datetime | None] = mapped_column(default=None)
     last_error: Mapped[str | None] = mapped_column(Text, default=None)

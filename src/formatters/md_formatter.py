@@ -2,6 +2,7 @@
 
 from typing import List
 
+from src.config import settings
 from src.formatters.base import BaseFormatter
 from src.models import FeedItem
 
@@ -38,8 +39,8 @@ class MarkdownFormatter(BaseFormatter):
                 lines.append(f"- **Source URL**: {item.source.url}\n")
 
             if item.published_at:
-                formatted_date = item.published_at.strftime("%Y-%m-%d %H:%M:%S UTC")
-                lines.append(f"- **Published**: {formatted_date}\n")
+                formatted_date = item.published_at.strftime("%Y-%m-%d %H:%M:%S")
+                lines.append(f"- **Published**: {formatted_date} ({settings.app_timezone})\n")
 
             if item.description:
                 lines.append(f"\n{item.description}\n")

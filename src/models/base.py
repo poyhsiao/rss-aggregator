@@ -3,7 +3,9 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, attributes, mapped_column
+
+from src.utils.time import now
 
 
 class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
@@ -26,5 +28,6 @@ class TimestampMixin:
     )
 
     def soft_delete(self) -> None:
-        """Mark this record as deleted."""
-        self.deleted_at = datetime.utcnow()
+        """Mark this record as deleted without triggering attribute history."""
+        # Use set_committed_value to avoid SAWarning during flush operations
+        attributes.set_committed_value(self, "deleted_at", now())

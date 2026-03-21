@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.4.0 - 2026-03-21
+
+### Added
+
+- Configurable timezone support with `APP_TIMEZONE` environment variable (default: Asia/Taipei)
+- Multiple fetch interval options: Never, 1h, 3h, 6h, 12h, 24h, 3 days, 7 days
+- Complete i18n support for time formatting (relative time display)
+- `time` translation keys for Chinese and English locales
+- `app.name` translation key for application name
+
+### Changed
+
+- Default `fetch_interval` changed from 900 (15 min) to 0 (no auto-update)
+- Sources with `fetch_interval=0` are now skipped by the scheduler
+- Time formatting now respects locale settings (English/Chinese)
+- Date display now uses locale-specific format
+
+### Fixed
+
+- Docker container name conflict error
+- SQLAlchemy SAWarning for nullable column detection
+- Python `datetime.utcnow()` deprecation warning
+- Hardcoded Chinese text in time formatting (`formatDate` function)
+- Missing i18n for application name in MainLayout
+- Missing i18n for "items" text in LogsPage
+
 ## v0.3.0 - 2026-03-21
 
 ### Added
