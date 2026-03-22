@@ -63,6 +63,13 @@ web/.vite/
 web/.env.local
 web/.env.*.local
 
+# Frontend - Use pnpm, ignore npm lock file
+web/package-lock.json
+
+# Frontend - Auto-generated files from TypeScript/Vite
+web/vite.config.d.ts
+web/vite.config.js
+
 # OS
 .DS_Store
 Thumbs.db
