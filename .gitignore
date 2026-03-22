@@ -76,6 +76,9 @@ src-tauri/binaries/
 build/pyinstaller/
 *.manifest
 
+# PyInstaller auto-generated platform-specific spec files at root
+/rss-sidecar-*.spec
+
 # Root node_modules (for Tauri build tools)
 node_modules/
 
