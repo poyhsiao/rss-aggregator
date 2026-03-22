@@ -204,7 +204,6 @@ class FetchService:
         Returns:
             Dict mapping source_id to list of fetched items.
         """
-        # Get sources that need fetching
         result = await self.session.execute(
             select(Source).where(
                 Source.is_active == True,  # noqa: E712

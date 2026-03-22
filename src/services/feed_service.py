@@ -180,6 +180,7 @@ class FeedService:
         sort_order: str = "desc",
         valid_time: int | None = None,
         keywords: str | None = None,
+        source_id: int | None = None,
     ) -> list[dict[str, Any]]:
         """Get feed items as list of dictionaries.
 
@@ -188,6 +189,7 @@ class FeedService:
             sort_order: Sort direction ("asc" or "desc").
             valid_time: Time range in hours (None = all items).
             keywords: Semicolon-separated keywords for title filtering.
+            source_id: Filter by source ID (None = all sources).
 
         Returns:
             List of feed item dictionaries.
@@ -197,6 +199,7 @@ class FeedService:
             sort_order=sort_order,
             valid_time=valid_time,
             keywords=keywords,
+            source_id=source_id,
         )
         return [
             {

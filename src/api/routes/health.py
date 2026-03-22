@@ -2,14 +2,19 @@
 
 from fastapi import APIRouter
 
+from src.config import settings
+
 router = APIRouter(tags=["health"])
 
 
 @router.get("/health")
-async def health_check() -> dict[str, str]:
+async def health_check() -> dict:
     """Health check endpoint.
 
     Returns:
-        Simple status message.
+        Status and configuration info.
     """
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "require_api_key": settings.require_api_key,
+    }

@@ -8,9 +8,11 @@ import RssPreviewDialog from "@/components/RssPreviewDialog.vue";
 import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import type { FeedItem } from "@/types/feed";
+import { useToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/format";
 
 const { t } = useI18n();
+const toast = useToast();
 
 const feedItems = ref<FeedItem[]>([]);
 const loading = ref(true);
@@ -36,6 +38,9 @@ async function handleRefreshAll(): Promise<void> {
 	try {
 		await refreshAllSources();
 		await fetchFeed();
+		toast.success(t('common.success'));
+	} catch {
+		toast.error(t('common.error'));
 	} finally {
 		refreshing.value = false;
 	}

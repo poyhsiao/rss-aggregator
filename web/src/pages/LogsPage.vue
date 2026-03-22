@@ -13,7 +13,12 @@ const loading = ref(true)
 async function fetchLogs(): Promise<void> {
   loading.value = true
   try {
-    logs.value = await getLogs({ limit: 100 })
+    console.log('[LogsPage] Fetching logs...')
+    const result = await getLogs({ limit: 100 })
+    console.log('[LogsPage] Received logs:', result)
+    logs.value = result
+  } catch (error) {
+    console.error('[LogsPage] Error fetching logs:', error)
   } finally {
     loading.value = false
   }

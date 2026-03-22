@@ -13,8 +13,33 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - Scheduled background fetching
 - Daily statistics tracking
 - API key authentication and rate limiting
+- **Desktop application support** (Windows, macOS, Linux)
 
-## Quick Start
+## Installation
+
+### Desktop Application (Recommended)
+
+Download the latest release for your platform:
+
+| Platform | Download |
+|----------|----------|
+| Windows | `RSS-Aggregator_x.x.x_x64.msi` |
+| macOS (Intel) | `RSS-Aggregator_x.x.x_x64.dmg` |
+| macOS (Apple Silicon) | `RSS-Aggregator_x.x.x_aarch64.dmg` |
+| Linux | `rss-aggregator_x.x.x_amd64.deb` or `.AppImage` |
+
+**Desktop Features:**
+- No Docker required
+- No TCP port binding
+- Portable data storage (`./data/` directory)
+- First-run setup wizard
+- Import/export database
+
+### Docker
+
+```bash
+docker-compose up
+```
 
 ### Local Development
 
@@ -39,10 +64,36 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
    uv run uvicorn src.main:app --reload
    ```
 
-### Docker
+## Building Desktop Application
+
+### Prerequisites
+
+- Rust 1.70+
+- Node.js 18+
+- Python 3.12+
+- uv (Python package manager)
+
+### Build Commands
 
 ```bash
-docker-compose up
+# Development build (frontend + sidecar)
+./scripts/build-all.sh dev
+
+# Full release build
+./scripts/build-all.sh release
+
+# Build only sidecar
+./scripts/build-all.sh sidecar
+
+# Build only frontend
+./scripts/build-all.sh frontend
+```
+
+### Development Mode
+
+```bash
+# Start Tauri development server
+cd src-tauri && cargo tauri dev
 ```
 
 ## API Endpoints

@@ -91,6 +91,7 @@ class FetchScheduler:
 
             tasks = [fetch_with_semaphore(s) for s in sources_to_fetch]
             await asyncio.gather(*tasks, return_exceptions=True)
+            await session.commit()
 
     async def refresh_source(self, source_id: int) -> None:
         from src.models import Source
@@ -104,6 +105,7 @@ class FetchScheduler:
             source = result.scalar_one_or_none()
             if source:
                 await fetch_service.fetch_source(source)
+                await session.commit()
 
     async def refresh_all(self) -> None:
         from src.services.fetch_service import FetchService

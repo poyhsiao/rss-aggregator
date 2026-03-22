@@ -66,3 +66,19 @@ web/.env.*.local
 # OS
 .DS_Store
 Thumbs.db
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+src-tauri/binaries/
+
+# PyInstaller
+build/pyinstaller/
+*.manifest
+
+# Root node_modules (for Tauri build tools)
+node_modules/
+
+# IDE/Tools
+.serena/
+.spec-workflow/

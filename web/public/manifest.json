@@ -2,7 +2,7 @@
   "name": "RSS Aggregator",
   "short_name": "RSS Agg",
   "description": "RSS Feed Aggregator Web Application",
-  "theme_color": "#22c55e",
+  "theme_color": "#FF6B9D",
   "background_color": "#fafafa",
   "display": "standalone",
   "orientation": "portrait-primary",

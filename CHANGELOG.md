@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.0 - 2026-03-21
+
+### Added
+
+- Desktop application support for Windows, macOS (Intel & Apple Silicon), and Linux
+- Tauri v2 integration with JSON-RPC over stdio communication
+- First-run setup wizard with language and timezone configuration
+- Portable data storage (`./data/` directory)
+- Database import/export functionality
+- PyInstaller sidecar build pipeline
+- GitHub Actions CI/CD for multi-platform builds
+
+### Changed
+
+- Frontend now detects environment (web vs desktop) automatically
+- Settings page shows desktop-specific features when running in Tauri
+- Router redirects to setup wizard on first run
+
+### Technical
+
+- Added `src/stdio/` module for JSON-RPC stdio communication
+- Added `src-tauri/` for Tauri application
+- Added `scripts/` for build automation
+- Sidecar process management with stdin/stdout pipes
+- Protocol interceptor for `app://localhost` requests
+
 ## v0.5.1 - 2026-03-21
 
 ### Changed

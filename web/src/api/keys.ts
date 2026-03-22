@@ -2,8 +2,7 @@ import api from '.'
 import type { ApiKey } from '@/types/key'
 
 export async function getKeys(): Promise<ApiKey[]> {
-  const { data } = await api.get('/keys')
-  return data
+  return api.get<ApiKey[]>('/keys')
 }
 
 export interface CreateKeyData {
@@ -12,10 +11,9 @@ export interface CreateKeyData {
 }
 
 export async function createKey(data?: CreateKeyData): Promise<ApiKey> {
-  const { data: result } = await api.post('/keys', data)
-  return result
+  return api.post<ApiKey>('/keys', data)
 }
 
 export async function deleteKey(id: number): Promise<void> {
-  await api.delete(`/keys/${id}`)
+  return api.delete(`/keys/${id}`)
 }

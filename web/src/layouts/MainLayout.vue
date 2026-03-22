@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Languages } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
+import { isTauri } from '@/utils/environment'
 import AuthDialog from '@/components/AuthDialog.vue'
+import DebugDialog from '@/components/DebugDialog.vue'
 import Button from '@/components/ui/Button.vue'
 
 const route = useRoute()
@@ -15,13 +17,52 @@ const { isDark, toggleTheme } = useTheme()
 const { locale, toggleLocale } = useLocale()
 useAuthStore()
 
-const menuItems = computed(() => [
-  { path: '/', label: t('nav.feed'), icon: '📰' },
-  { path: '/sources', label: t('nav.sources'), icon: '📡' },
-  { path: '/keys', label: t('nav.keys'), icon: '🔑' },
-  { path: '/stats', label: t('nav.stats'), icon: '📊' },
-  { path: '/logs', label: t('nav.logs'), icon: '📝' },
-])
+// Hidden debug feature: click Feed icon 10 times to open debug dialog
+const clickCount = ref(0)
+const clickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const debugDialogOpen = ref(false)
+
+function handleFeedIconClick(): void {
+  // Only activate on Feed page
+  if (route.path !== '/') return
+  
+  // Clear previous timer
+  if (clickTimer.value) {
+    clearTimeout(clickTimer.value)
+  }
+  
+  clickCount.value++
+  
+  // Reset counter after 2 seconds of no clicks
+  clickTimer.value = setTimeout(() => {
+    clickCount.value = 0
+  }, 2000)
+  
+  // Open debug dialog after 10 clicks
+  if (clickCount.value >= 10) {
+    debugDialogOpen.value = true
+    clickCount.value = 0
+    if (clickTimer.value) {
+      clearTimeout(clickTimer.value)
+      clickTimer.value = null
+    }
+  }
+}
+
+const menuItems = computed(() => {
+  const items = [
+    { path: '/', label: t('nav.feed'), icon: '📰' },
+    { path: '/sources', label: t('nav.sources'), icon: '📡' },
+    { path: '/keys', label: t('nav.keys'), icon: '🔑' },
+    { path: '/stats', label: t('nav.stats'), icon: '📊' },
+    { path: '/logs', label: t('nav.logs'), icon: '📝' },
+  ]
+  // Hide Keys menu in Tauri (desktop app) environment
+  if (isTauri()) {
+    return items.filter(item => item.path !== '/keys')
+  }
+  return items
+})
 </script>
 
 <template>
@@ -29,7 +70,7 @@ const menuItems = computed(() => [
     <header class="fixed top-0 left-0 right-0 h-16 border-b border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 z-40">
       <div class="flex items-center justify-between h-full px-4 md:px-6">
         <div class="flex items-center gap-3">
-          <span class="text-xl">📰</span>
+          <span class="text-xl cursor-pointer select-none" @click="handleFeedIconClick">📰</span>
           <span class="font-semibold text-lg hidden sm:block">{{ t('app.name') }}</span>
         </div>
         
@@ -88,5 +129,6 @@ const menuItems = computed(() => [
     </nav>
     
     <AuthDialog />
+    <DebugDialog v-model:open="debugDialogOpen" />
   </div>
 </template>

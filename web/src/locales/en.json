@@ -14,6 +14,45 @@
     "add": "Add",
     "refresh": "Refresh"
   },
+  "setup": {
+    "step": "Step",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "welcome": {
+      "title": "Welcome to RSS Aggregator",
+      "description": "Let's set up your RSS feed aggregator. This will only take a minute."
+    },
+    "config": {
+      "title": "Basic Settings",
+      "description": "Configure your preferred language and timezone.",
+      "language": "Language",
+      "timezone": "Timezone"
+    },
+    "sources": {
+      "title": "RSS Sources",
+      "description": "Add your favorite RSS feeds to get started.",
+      "empty": "No sources added yet. You can add them later in the app.",
+      "add": "Add Source",
+      "name_placeholder": "Source name",
+      "url_placeholder": "RSS feed URL",
+      "skip_hint": "You can skip this step and add sources later."
+    },
+    "import": {
+      "title": "Import Data",
+      "description": "Import existing data from a previous installation.",
+      "select_file": "Click to select a database file",
+      "skip_hint": "You can skip this step if this is a fresh installation."
+    },
+    "progress": {
+      "initializing": "Initializing..."
+    },
+    "complete": {
+      "title": "All Done!",
+      "description": "Your RSS Aggregator is ready to use. Enjoy!",
+      "start": "Start Using App"
+    }
+  },
   "auth": {
     "title": "Welcome to RSS Aggregator",
     "description": "Please enter your API Key to continue",

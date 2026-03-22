@@ -1,0 +1,169 @@
+name: Build Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 0.5.1)'
+        required: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-sidecar:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Build sidecar (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          uv run pyinstaller scripts/rss-sidecar.spec \
+            --name "rss-sidecar" \
+            --distpath "src-tauri/binaries/${{ matrix.target }}" \
+            --workpath "build/pyinstaller" \
+            --clean \
+            --noconfirm
+          chmod +x "src-tauri/binaries/${{ matrix.target }}/rss-sidecar"
+
+      - name: Build sidecar (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          uv run pyinstaller scripts/rss-sidecar.spec \
+            --name "rss-sidecar" \
+            --distpath "src-tauri/binaries/${{ matrix.target }}" \
+            --workpath "build/pyinstaller" \
+            --clean \
+            --noconfirm
+          chmod +x "src-tauri/binaries/${{ matrix.target }}/rss-sidecar"
+
+      - name: Build sidecar (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          uv run pyinstaller scripts/rss-sidecar.spec `
+            --name "rss-sidecar" `
+            --distpath "src-tauri/binaries/${{ matrix.target }}" `
+            --workpath "build/pyinstaller" `
+            --clean `
+            --noconfirm
+
+      - name: Upload sidecar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidecar-${{ matrix.target }}
+          path: src-tauri/binaries/${{ matrix.target }}
+          retention-days: 1
+
+  build-tauri:
+    needs: build-sidecar
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bundles: dmg
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bundles: dmg
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: msi
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+
+      - name: Download sidecar artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sidecar-${{ matrix.target }}
+          path: src-tauri/binaries/${{ matrix.target }}
+
+      - name: Make sidecar executable
+        if: matrix.os != 'windows-latest'
+        run: chmod +x src-tauri/binaries/${{ matrix.target }}/rss-sidecar*
+
+      - name: Install frontend dependencies
+        run: cd web && pnpm install
+
+      - name: Build frontend
+        run: cd web && pnpm build
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'RSS Aggregator ${{ github.ref_name }}'
+          releaseBody: 'See CHANGELOG.md for details.'
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.target }}
+
+  create-release:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

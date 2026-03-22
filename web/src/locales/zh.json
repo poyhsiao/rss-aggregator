@@ -14,6 +14,45 @@
     "add": "新增",
     "refresh": "刷新"
   },
+  "setup": {
+    "step": "步驟",
+    "back": "上一步",
+    "next": "下一步",
+    "finish": "完成",
+    "welcome": {
+      "title": "歡迎使用 RSS Aggregator",
+      "description": "讓我們開始設定您的 RSS 聚合器，只需一分鐘。"
+    },
+    "config": {
+      "title": "基本設定",
+      "description": "設定您喜歡的語言和時區。",
+      "language": "語言",
+      "timezone": "時區"
+    },
+    "sources": {
+      "title": "RSS 來源",
+      "description": "新增您喜歡的 RSS 來源。",
+      "empty": "尚未新增來源，您稍後可以在應用程式中新增。",
+      "add": "新增來源",
+      "name_placeholder": "來源名稱",
+      "url_placeholder": "RSS 網址",
+      "skip_hint": "您可以略過此步驟，稍後再新增來源。"
+    },
+    "import": {
+      "title": "匯入資料",
+      "description": "從先前的安裝匯入現有資料。",
+      "select_file": "點擊選擇資料庫檔案",
+      "skip_hint": "如果是全新安裝，您可以略過此步驟。"
+    },
+    "progress": {
+      "initializing": "初始化中..."
+    },
+    "complete": {
+      "title": "設定完成！",
+      "description": "您的 RSS Aggregator 已準備就緒，開始使用吧！",
+      "start": "開始使用"
+    }
+  },
   "auth": {
     "title": "歡迎使用 RSS Aggregator",
     "description": "請輸入您的 API Key 以繼續",

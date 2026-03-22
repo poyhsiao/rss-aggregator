@@ -1,4 +1,6 @@
 import api from '.'
+import { useAuthStore } from '@/stores/auth'
+import { isTauri } from '@/utils/environment'
 
 export interface FeedItem {
   id: number
@@ -24,26 +26,52 @@ export interface FormattedFeedResponse {
   contentType: string
 }
 
+function buildQueryString(params?: Record<string, unknown>): string {
+  if (!params) return ''
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value))
+    }
+  })
+  const qs = searchParams.toString()
+  return qs ? `?${qs}` : ''
+}
+
 export async function getFeed(params?: FeedParams): Promise<FeedItem[]> {
-  const { data } = await api.get('/feed', { params: { ...params, format: 'json' } })
-  return data
+  return api.get<FeedItem[]>(`/feed${buildQueryString({ ...params, format: 'json' })}`)
 }
 
 export async function getFormattedFeed(
   format: FeedFormat,
   params?: FeedParams
 ): Promise<FormattedFeedResponse> {
-  const { data, headers } = await api.get('/feed', {
-    params: { ...params, format },
-    responseType: 'text',
-  })
+  const authStore = useAuthStore()
+  const headers: Record<string, string> = {
+    'Accept': format === 'json' ? 'application/json' : 'text/plain',
+  }
+
+  if (authStore.apiKey) {
+    headers['X-API-Key'] = authStore.apiKey
+  }
+
+  const baseUrl = isTauri() ? 'app://localhost/api/v1' : (import.meta.env.VITE_API_BASE_URL || '/api/v1')
+  const response = await fetch(
+    `${baseUrl}/feed${buildQueryString({ ...params, format })}`,
+    { headers }
+  )
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  const content = await response.text()
   return {
-    content: data,
-    contentType: headers['content-type'] || 'text/plain',
+    content,
+    contentType: response.headers.get('content-type') || 'text/plain',
   }
 }
 
-// Legacy function - kept for backward compatibility
 export async function getRssFeed(params?: FeedParams): Promise<string> {
   const { content } = await getFormattedFeed('rss', params)
   return content
