@@ -63,6 +63,13 @@ web/.vite/
 web/.env.local
 web/.env.*.local
 
+# Frontend - Use pnpm, ignore npm lock file
+web/package-lock.json
+
+# Frontend - Auto-generated TypeScript/Vite files
+web/vite.config.d.ts
+web/vite.config.js
+
 # OS
 .DS_Store
 Thumbs.db
@@ -75,6 +82,9 @@ src-tauri/binaries/
 # PyInstaller
 build/pyinstaller/
 *.manifest
+
+# PyInstaller - Platform-specific spec files at root (auto-generated)
+/rss-sidecar-*.spec
 
 # Root node_modules (for Tauri build tools)
 node_modules/
