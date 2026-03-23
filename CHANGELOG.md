@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.2 - 2026-03-23
+
+### Fixed
+
+- CI/CD: Remove `--name` option from pyinstaller command (spec file already defines name)
+- CI/CD: Update pnpm-lock.yaml to sync with package.json (remove deprecated dotenv)
+- CI/CD: Add `tauri` script to root package.json
+- CI/CD: Install root npm dependencies for tauri cli
+- CI/CD: Rename sidecar binary with target triple suffix for Tauri compatibility
+- CI/CD: Separate build steps for tag push vs manual trigger to prevent release creation errors
+
 ## v0.6.1 - 2026-03-23
 
 ### Changed
