@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.1 - 2026-03-23
+
+### Changed
+
+- Split Dockerfile into separate Dockerfile.api and Dockerfile.web for better build optimization
+- Improved docker-compose.yml with profile support (api, web, full)
+- Added custom nginx configuration for SPA routing and API proxy
+- Added favicon.ico generation for web app
+
 ## v0.6.0 - 2026-03-21
 
 ### Added

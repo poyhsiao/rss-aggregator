@@ -1,12 +1,28 @@
+# RSS Aggregator Docker Compose Configuration
+#
+# Usage:
+#   Full stack (API + Web):    docker compose up -d
+#   API only:                  docker compose --profile api up -d
+#   Web only:                  docker compose --profile web up -d
+#
+# Environment variables (see .env.example):
+#   DOCKER_CONTAINER_NAME   - Container name prefix (default: rss-aggregator)
+#   DOCKER_API_PORT         - API port (default: 8000)
+#   DOCKER_WEB_PORT         - Web port (default: 8080)
+#   VITE_API_BASE_URL       - API URL for frontend (default: /api)
+
 services:
-  rss-aggregator:
+  # ===========================================
+  # API Service (Backend)
+  # ===========================================
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: rss-aggregator
+      dockerfile: Dockerfile.api
+    container_name: ${DOCKER_CONTAINER_NAME:-rss-aggregator}-api
     restart: unless-stopped
     ports:
-      - "51085:8000"
+      - "${DOCKER_API_PORT:-8000}:8000"
     volumes:
       - ./data:/app/data
     env_file:
@@ -17,3 +33,40 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    profiles:
+      - api
+      - full
+
+  # ===========================================
+  # Web Service (Frontend)
+  # ===========================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    container_name: ${DOCKER_CONTAINER_NAME:-rss-aggregator}-web
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    profiles:
+      - web
+      - full
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  default:
+    name: ${DOCKER_CONTAINER_NAME:-rss-aggregator}-network
