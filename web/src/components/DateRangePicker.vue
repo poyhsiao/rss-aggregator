@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 import Button from "./ui/Button.vue";
 import Input from "./ui/Input.vue";
 
-const props = defineProps<{
+defineProps<{
   startDate: string;
   endDate: string;
 }>();

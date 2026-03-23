@@ -64,6 +64,7 @@
   },
   "nav": {
     "feed": "Feed",
+    "history": "History",
     "sources": "Sources",
     "keys": "Keys",
     "stats": "Stats",
@@ -156,6 +157,32 @@
     "empty": "No error records",
     "item": "item",
     "items": "items"
+  },
+  "history": {
+    "title": "History",
+    "filter": {
+      "start_date": "Start Date",
+      "end_date": "End Date",
+      "source": "Source",
+      "select_all": "Select All",
+      "clear": "Clear",
+      "search": "Search"
+    },
+    "quick": {
+      "last_7_days": "Last 7 Days",
+      "last_30_days": "Last 30 Days",
+      "this_month": "This Month",
+      "last_month": "Last Month"
+    },
+    "result": {
+      "total": "Total {count} items"
+    },
+    "empty": "No results found",
+    "no_sources": "No sources available"
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next"
   },
   "theme": {
     "toggle": "Toggle theme"

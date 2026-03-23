@@ -52,6 +52,7 @@ function handleFeedIconClick(): void {
 const menuItems = computed(() => {
   const items = [
     { path: '/', label: t('nav.feed'), icon: '📰' },
+    { path: '/history', label: t('nav.history'), icon: '🔍' },
     { path: '/sources', label: t('nav.sources'), icon: '📡' },
     { path: '/keys', label: t('nav.keys'), icon: '🔑' },
     { path: '/stats', label: t('nav.stats'), icon: '📊' },

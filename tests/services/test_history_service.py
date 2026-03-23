@@ -19,8 +19,8 @@ async def test_get_history_returns_empty_list_when_no_items(history_service):
     items, pagination = await history_service.get_history()
 
     assert items == []
-    assert pagination["total_items"] == 0
-    assert pagination["total_pages"] == 0
+    assert pagination.total_items == 0
+    assert pagination.total_pages == 0
 
 
 @pytest.mark.asyncio
@@ -53,5 +53,5 @@ async def test_get_history_filters_by_date_range(db_session):
     )
 
     assert len(items) == 1
-    assert items[0]["title"] == "New Item"
-    assert pagination["total_items"] == 1
+    assert items[0].title == "New Item"
+    assert pagination.total_items == 1
