@@ -20,12 +20,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            ext: ''
           - os: macos-latest
             target: x86_64-apple-darwin
+            ext: ''
           - os: macos-latest
             target: aarch64-apple-darwin
+            ext: ''
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            ext: '.exe'
 
     runs-on: ${{ matrix.os }}
 
@@ -41,40 +45,34 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Build sidecar (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build sidecar (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         run: |
+          mkdir -p src-tauri/binaries
           uv run pyinstaller scripts/rss-sidecar.spec \
-            --distpath "src-tauri/binaries/${{ matrix.target }}" \
+            --distpath "build/pyinstaller-dist" \
             --workpath "build/pyinstaller" \
             --clean \
             --noconfirm
-          chmod +x "src-tauri/binaries/${{ matrix.target }}/rss-sidecar"
-
-      - name: Build sidecar (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          uv run pyinstaller scripts/rss-sidecar.spec \
-            --distpath "src-tauri/binaries/${{ matrix.target }}" \
-            --workpath "build/pyinstaller" \
-            --clean \
-            --noconfirm
-          chmod +x "src-tauri/binaries/${{ matrix.target }}/rss-sidecar"
+          mv "build/pyinstaller-dist/rss-sidecar" "src-tauri/binaries/rss-sidecar-${{ matrix.target }}${{ matrix.ext }}"
+          chmod +x "src-tauri/binaries/rss-sidecar-${{ matrix.target }}${{ matrix.ext }}"
 
       - name: Build sidecar (Windows)
         if: matrix.os == 'windows-latest'
         run: |
+          mkdir -p src-tauri/binaries
           uv run pyinstaller scripts/rss-sidecar.spec `
-            --distpath "src-tauri/binaries/${{ matrix.target }}" `
+            --distpath "build/pyinstaller-dist" `
             --workpath "build/pyinstaller" `
             --clean `
             --noconfirm
+          Move-Item "build/pyinstaller-dist/rss-sidecar.exe" "src-tauri/binaries/rss-sidecar-${{ matrix.target }}.exe"
 
       - name: Upload sidecar artifact
         uses: actions/upload-artifact@v4
         with:
           name: sidecar-${{ matrix.target }}
-          path: src-tauri/binaries/${{ matrix.target }}
+          path: src-tauri/binaries/rss-sidecar-${{ matrix.target }}${{ matrix.ext }}
           retention-days: 1
 
   build-tauri:
@@ -85,15 +83,19 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             bundles: deb,appimage
+            ext: ''
           - os: macos-latest
             target: x86_64-apple-darwin
             bundles: dmg
+            ext: ''
           - os: macos-latest
             target: aarch64-apple-darwin
             bundles: dmg
+            ext: ''
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             bundles: msi
+            ext: '.exe'
 
     runs-on: ${{ matrix.os }}
 
@@ -125,11 +127,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: sidecar-${{ matrix.target }}
-          path: src-tauri/binaries/${{ matrix.target }}
+          path: src-tauri/binaries
 
       - name: Make sidecar executable
         if: matrix.os != 'windows-latest'
-        run: chmod +x src-tauri/binaries/${{ matrix.target }}/rss-sidecar*
+        run: chmod +x src-tauri/binaries/rss-sidecar-${{ matrix.target }}${{ matrix.ext }}
 
       - name: Install root dependencies
         run: pnpm install
