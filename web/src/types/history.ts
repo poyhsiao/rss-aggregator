@@ -26,8 +26,8 @@ export interface HistoryParams {
   end_date?: string
   source_ids?: string
   keywords?: string
-  sort_by?: 'fetched_at' | 'published_at'
-  sort_order?: 'asc' | 'desc'
+  sort_by?: "fetched_at" | "published_at"
+  sort_order?: "asc" | "desc"
   page?: number
   page_size?: number
 }

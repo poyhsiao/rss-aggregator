@@ -11,6 +11,7 @@ from src.scheduler.fetch_scheduler import FetchScheduler
 from src.services.auth_service import AuthService
 from src.services.feed_service import FeedService
 from src.services.fetch_service import FetchService
+from src.services.history_service import HistoryService
 from src.services.rate_limiter import RateLimiter
 from src.services.source_service import SourceService
 
@@ -67,6 +68,13 @@ async def get_fetch_service(
 ) -> FetchService:
     """Get FetchService instance."""
     return FetchService(session)
+
+
+async def get_history_service(
+    session: AsyncSession = Depends(get_session),
+) -> HistoryService:
+    """Get HistoryService instance."""
+    return HistoryService(session)
 
 
 async def require_api_key(

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
 from src.api.deps import get_scheduler, set_scheduler
-from src.api.routes import feed, health, keys, logs, sources, stats
+from src.api.routes import feed, health, history, keys, logs, sources, stats
 from src.config import settings
 from src.scheduler.fetch_scheduler import FetchScheduler
 
@@ -53,6 +53,7 @@ app.include_router(sources.router, prefix="/api/v1")
 app.include_router(keys.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
 app.include_router(logs.router, prefix="/api/v1")
+app.include_router(history.router, prefix="/api/v1")
 
 
 @app.exception_handler(404)
