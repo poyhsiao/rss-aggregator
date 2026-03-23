@@ -142,7 +142,8 @@ jobs:
       - name: Build frontend
         run: cd web && pnpm build
 
-      - name: Build Tauri app
+      - name: Build Tauri app (for release)
+        if: startsWith(github.ref, 'refs/tags/')
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -152,6 +153,14 @@ jobs:
           releaseBody: 'See CHANGELOG.md for details.'
           releaseDraft: true
           prerelease: false
+          args: --target ${{ matrix.target }}
+
+      - name: Build Tauri app (no release)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
           args: --target ${{ matrix.target }}
 
   create-release:
