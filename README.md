@@ -37,9 +37,53 @@ Download the latest release for your platform:
 
 ### Docker
 
+#### Quick Start (No API Key Required)
+
 ```bash
-docker-compose up
+# Start full stack (API + Web)
+docker compose --profile full up -d
+
+# Access:
+# - API: http://localhost:8000
+# - Web: http://localhost:8080
 ```
+
+#### Usage Commands
+
+```bash
+# Start services
+docker compose --profile full up -d      # Full stack (API + Web)
+docker compose --profile api up -d       # API only
+docker compose --profile web up -d       # Web only (requires API running)
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+
+# Clean up (including data volume)
+docker compose down -v
+```
+
+#### Configuration
+
+Default settings are in `.env.docker` (API key disabled by default).
+
+To customize, create a `.env` file:
+
+```bash
+cp .env.docker .env
+# Edit .env with your settings
+```
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `REQUIRE_API_KEY` | Enable API key requirement | `false` |
+| `DOCKER_API_PORT` | API port | `8000` |
+| `DOCKER_WEB_PORT` | Web port | `8080` |
+| `DEFAULT_SOURCES` | Comma-separated RSS URLs | - |
+| `APP_TIMEZONE` | Application timezone | `Asia/Taipei` |
 
 ### Local Development
 
