@@ -64,6 +64,7 @@
   },
   "nav": {
     "feed": "動態",
+    "history": "歷史查詢",
     "sources": "來源",
     "keys": "金鑰",
     "stats": "統計",
@@ -156,6 +157,32 @@
     "empty": "沒有錯誤記錄",
     "item": "項目",
     "items": "項目"
+  },
+  "history": {
+    "title": "歷史查詢",
+    "filter": {
+      "start_date": "開始日期",
+      "end_date": "結束日期",
+      "source": "來源",
+      "select_all": "全選",
+      "clear": "清除",
+      "search": "搜尋"
+    },
+    "quick": {
+      "last_7_days": "最近 7 天",
+      "last_30_days": "最近 30 天",
+      "this_month": "本月",
+      "last_month": "上月"
+    },
+    "result": {
+      "total": "共 {count} 項"
+    },
+    "empty": "沒有找到結果",
+    "no_sources": "沒有可用的來源"
+  },
+  "pagination": {
+    "prev": "上一頁",
+    "next": "下一頁"
   },
   "theme": {
     "toggle": "切換主題"

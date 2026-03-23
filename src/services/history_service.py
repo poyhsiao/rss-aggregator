@@ -1,13 +1,13 @@
 """Service for querying historical feed items."""
 
 from datetime import date, datetime, time
-from typing import Any
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from src.models import FeedItem, Source
+from src.schemas.history import HistoryItem, PaginationInfo
 
 
 class HistoryService:
@@ -31,7 +31,7 @@ class HistoryService:
         sort_order: str = "desc",
         page: int = 1,
         page_size: int = 20,
-    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    ) -> tuple[list[HistoryItem], PaginationInfo]:
         """Get historical feed items with filtering and pagination.
 
         Args:
@@ -45,7 +45,7 @@ class HistoryService:
             page_size: Number of items per page.
 
         Returns:
-            Tuple of (items list, pagination info dict).
+            Tuple of (items list, pagination info).
         """
         query = (
             select(FeedItem)
@@ -97,20 +97,20 @@ class HistoryService:
         items = list(result.unique().scalars().all())
 
         return [
-            {
-                "id": item.id,
-                "source_id": item.source_id,
-                "source": item.source.name if item.source else "",
-                "title": item.title,
-                "link": item.link,
-                "description": item.description or "",
-                "published_at": item.published_at.isoformat() if item.published_at else None,
-                "fetched_at": item.fetched_at.isoformat() if item.fetched_at else None,
-            }
+            HistoryItem(
+                id=item.id,
+                source_id=item.source_id,
+                source=item.source.name if item.source else "",
+                title=item.title,
+                link=item.link,
+                description=item.description or "",
+                published_at=item.published_at.isoformat() if item.published_at else None,
+                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+            )
             for item in items
-        ], {
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": total_pages,
-        }
+        ], PaginationInfo(
+            page=page,
+            page_size=page_size,
+            total_items=total_items,
+            total_pages=total_pages,
+        )
