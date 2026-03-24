@@ -159,7 +159,26 @@
     "title": "Logs",
     "empty": "No error records",
     "item": "item",
-    "items": "items"
+    "items": "items",
+    "system_logs": "System Logs",
+    "operation_logs": "Operation Logs",
+    "no_operation_logs": "No operation records",
+    "copy_error": "Copy Error",
+    "actions": {
+      "create_source": "Create Source",
+      "update_source": "Update Source",
+      "delete_source": "Delete Source",
+      "create_key": "Create API Key",
+      "delete_key": "Delete API Key",
+      "refresh_source": "Refresh Source",
+      "refresh_all": "Refresh All Sources"
+    },
+    "details": {
+      "request": "Request Data",
+      "response": "Response Data",
+      "error": "Error Message",
+      "request_data": "Request Details"
+    }
   },
   "history": {
     "title": "History",

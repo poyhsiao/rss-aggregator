@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getLogs } from '@/api/logs'
+import { useLogStore } from '@/stores/log'
+import LogCard from '@/components/LogCard.vue'
 import type { ErrorLog } from '@/types/log'
-import { formatDate } from '@/utils/format'
 
 const { t } = useI18n()
+const logStore = useLogStore()
 
-const logs = ref<ErrorLog[]>([])
+const systemLogs = ref<ErrorLog[]>([])
 const loading = ref(true)
+const activeTab = ref<'system' | 'operation'>('system')
 
-async function fetchLogs(): Promise<void> {
+const tabs = computed(() => [
+  { id: 'system' as const, label: t('logs.system_logs') },
+  { id: 'operation' as const, label: t('logs.operation_logs') },
+])
+
+async function fetchSystemLogs(): Promise<void> {
   loading.value = true
   try {
-    console.log('[LogsPage] Fetching logs...')
     const result = await getLogs({ limit: 100 })
-    console.log('[LogsPage] Received logs:', result)
-    logs.value = result
+    systemLogs.value = result
   } catch (error) {
     console.error('[LogsPage] Error fetching logs:', error)
   } finally {
@@ -24,56 +30,63 @@ async function fetchLogs(): Promise<void> {
   }
 }
 
-function getStatusClasses(status: string): string {
-  if (status === 'error') {
-    return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-  }
-  return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-}
-
-function getTextClasses(status: string): string {
-  if (status === 'error') {
-    return 'text-red-700 dark:text-red-400'
-  }
-  return 'text-green-700 dark:text-green-400'
-}
-
-onMounted(fetchLogs)
+onMounted(fetchSystemLogs)
 </script>
 
 <template>
   <div class="space-y-6">
     <h1 class="text-2xl font-semibold">📝 {{ t('logs.title') }}</h1>
-    
-    <div v-if="loading" class="text-center py-12 text-neutral-500">
-      {{ t('common.loading') }}
-    </div>
-    
-    <div v-else-if="!logs.length" class="text-center py-12 text-neutral-500">
-      ✨ {{ t('logs.empty') }}
-    </div>
-    
-    <div v-else class="space-y-2">
-      <div
-        v-for="log in logs"
-        :key="log.id"
-        class="p-4 rounded-xl border"
-        :class="getStatusClasses(log.status)"
+
+    <div class="flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        type="button"
+        class="px-4 py-2 text-sm font-medium transition-colors relative"
+        :class="[
+          activeTab === tab.id
+            ? 'text-blue-600 dark:text-blue-400'
+            : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'
+        ]"
+        @click="activeTab = tab.id"
       >
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
-          <span class="font-medium" :class="getTextClasses(log.status)">
-            {{ log.log_type }}
-            <span v-if="log.items_count !== null" class="text-sm opacity-75">
-              ({{ log.items_count }} {{ log.items_count === 1 ? t('logs.item') : t('logs.items') }})
-            </span>
-          </span>
-          <span class="text-sm text-neutral-500">
-            {{ formatDate(log.created_at) }}
-          </span>
-        </div>
-        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-          {{ log.message }}
-        </p>
+        {{ tab.label }}
+        <span
+          v-if="activeTab === tab.id"
+          class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"
+        />
+      </button>
+    </div>
+
+    <div v-if="activeTab === 'system'">
+      <div v-if="loading" class="text-center py-12 text-neutral-500">
+        {{ t('common.loading') }}
+      </div>
+
+      <div v-else-if="!systemLogs.length" class="text-center py-12 text-neutral-500">
+        ✨ {{ t('logs.empty') }}
+      </div>
+
+      <div v-else class="space-y-2">
+        <LogCard
+          v-for="log in systemLogs"
+          :key="log.id"
+          :log="log"
+        />
+      </div>
+    </div>
+
+    <div v-else-if="activeTab === 'operation'">
+      <div v-if="!logStore.hasLogs" class="text-center py-12 text-neutral-500">
+        ✨ {{ t('logs.no_operation_logs') }}
+      </div>
+
+      <div v-else class="space-y-2">
+        <LogCard
+          v-for="log in logStore.logs"
+          :key="log.id"
+          :log="log"
+        />
       </div>
     </div>
   </div>

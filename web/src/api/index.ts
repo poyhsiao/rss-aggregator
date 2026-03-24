@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { isTauri } from '@/utils/environment'
+import { getActionFromUrl, logApiOperation, sanitizeRequestData } from './logger'
 
 const getWebBaseUrl = (): string => {
   const win = window as { __VITE_API_BASE_URL__?: string }
@@ -31,12 +32,43 @@ axiosInstance.interceptors.request.use((config) => {
 })
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = response.config.method?.toUpperCase() || 'GET'
+    const url = response.config.url || ''
+    const logConfig = getActionFromUrl(method, url)
+    
+    if (logConfig) {
+      logApiOperation({
+        action: logConfig.action,
+        status: 'success',
+        targetId: logConfig.targetId,
+        request: sanitizeRequestData(response.config.data),
+        response: response.data,
+      })
+    }
+    
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
       authStore.logout()
     }
+
+    const method = error.config?.method?.toUpperCase() || 'GET'
+    const url = error.config?.url || ''
+    const logConfig = getActionFromUrl(method, url)
+    
+    if (logConfig) {
+      logApiOperation({
+        action: logConfig.action,
+        status: 'error',
+        targetId: logConfig.targetId,
+        request: sanitizeRequestData(error.config?.data),
+        error: error.response?.data?.detail || error.message || 'Unknown error',
+      })
+    }
+    
     return Promise.reject(error)
   }
 )
@@ -56,27 +88,68 @@ async function tauriFetch<T>(
   }
 
   const fullUrl = `app://localhost/api/v1${url}`
-  console.log('[tauriFetch] Fetching:', fullUrl)
-
-  const response = await fetch(fullUrl, {
-    ...options,
-    headers,
-  })
-
-  console.log('[tauriFetch] Response status:', response.status)
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      authStore.logout()
+  const method = options.method || 'GET'
+  const logConfig = getActionFromUrl(method, url)
+  
+  let requestBody: unknown = null
+  if (options.body) {
+    try {
+      requestBody = JSON.parse(options.body as string)
+    } catch {
+      requestBody = options.body
     }
-    const error = await response.json().catch(() => ({ message: response.statusText }))
-    console.error('[tauriFetch] Error:', error)
-    throw new Error(error.message || `HTTP ${response.status}`)
   }
 
-  const data = await response.json()
-  console.log('[tauriFetch] Response data:', data)
-  return data
+  try {
+    const response = await fetch(fullUrl, {
+      ...options,
+      headers,
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        authStore.logout()
+      }
+      const error = await response.json().catch(() => ({ message: response.statusText }))
+      
+      if (logConfig) {
+        logApiOperation({
+          action: logConfig.action,
+          status: 'error',
+          targetId: logConfig.targetId,
+          request: sanitizeRequestData(requestBody),
+          error: error.detail || error.message || `HTTP ${response.status}`,
+        })
+      }
+      
+      throw new Error(error.message || `HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (logConfig) {
+      logApiOperation({
+        action: logConfig.action,
+        status: 'success',
+        targetId: logConfig.targetId,
+        request: sanitizeRequestData(requestBody),
+        response: data,
+      })
+    }
+    
+    return data
+  } catch (err) {
+    if (logConfig && err instanceof Error) {
+      logApiOperation({
+        action: logConfig.action,
+        status: 'error',
+        targetId: logConfig.targetId,
+        request: sanitizeRequestData(requestBody),
+        error: err.message,
+      })
+    }
+    throw err
+  }
 }
 
 const api = {

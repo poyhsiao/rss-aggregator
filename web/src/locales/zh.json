@@ -159,7 +159,26 @@
     "title": "日誌",
     "empty": "沒有錯誤記錄",
     "item": "項目",
-    "items": "項目"
+    "items": "項目",
+    "system_logs": "系統日誌",
+    "operation_logs": "操作日誌",
+    "no_operation_logs": "沒有操作記錄",
+    "copy_error": "複製錯誤訊息",
+    "actions": {
+      "create_source": "新增來源",
+      "update_source": "更新來源",
+      "delete_source": "刪除來源",
+      "create_key": "新增 API Key",
+      "delete_key": "刪除 API Key",
+      "refresh_source": "刷新來源",
+      "refresh_all": "刷新全部來源"
+    },
+    "details": {
+      "request": "請求數據",
+      "response": "響應數據",
+      "error": "錯誤訊息",
+      "request_data": "請求詳情"
+    }
   },
   "history": {
     "title": "歷史查詢",
