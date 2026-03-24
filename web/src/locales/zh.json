@@ -183,6 +183,15 @@
   "history": {
     "title": "歷史查詢",
     "batch_title": "批次 #{id}",
+    "fetched": "取得",
+    "edit_name": "編輯名稱",
+    "preview": "預覽",
+    "name_placeholder": "輸入批次名稱",
+    "name_required": "名稱為必填",
+    "name_updated": "批次名稱已更新",
+    "delete_title": "刪除批次",
+    "delete_confirm": "確定要刪除此批次嗎？這將同時刪除此批次中的所有項目。",
+    "deleted": "批次已刪除",
     "filter": {
       "start_date": "開始日期",
       "end_date": "結束日期",

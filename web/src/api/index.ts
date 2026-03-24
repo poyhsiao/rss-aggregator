@@ -188,6 +188,17 @@ const api = {
     }
     return axiosInstance.delete(url, config).then((r) => r.data)
   },
+
+  patch<T>(url: string, data?: unknown, config?: { headers?: Record<string, string> }): Promise<T> {
+    if (isTauri()) {
+      return tauriFetch<T>(url, {
+        method: 'PATCH',
+        body: data ? JSON.stringify(data) : undefined,
+        headers: config?.headers,
+      })
+    }
+    return axiosInstance.patch(url, data, config).then((r) => r.data)
+  },
 }
 
 export default api

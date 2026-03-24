@@ -4,5 +4,5 @@ export interface FeedItem {
   link: string
   description: string
   source: string
-  published_at: string
+  published_at: string | null
 }

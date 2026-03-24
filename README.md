@@ -153,6 +153,8 @@ cd src-tauri && cargo tauri dev
 | `/api/v1/stats` | GET | Get daily statistics |
 | `/api/v1/logs` | GET | Get error logs |
 | `/api/v1/history` | GET | Get fetch history with date range |
+| `/api/v1/history/batches/{id}/name` | PATCH | Rename a fetch batch |
+| `/api/v1/history/batches/{id}` | DELETE | Delete a fetch batch |
 
 ### Feed Endpoint Parameters
 

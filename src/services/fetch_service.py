@@ -116,11 +116,20 @@ class FetchService:
 
         Args:
             source: Source to fetch.
-            batch_id: Optional batch ID to associate items with.
+            batch_id: Optional batch ID to associate items with. If not provided,
+                      a new FetchBatch will be created automatically.
 
         Returns:
             List of stored FeedItem objects.
         """
+        auto_created_batch = False
+        if batch_id is None:
+            batch = FetchBatch(items_count=0, sources=json.dumps([source.name], ensure_ascii=False))
+            self.session.add(batch)
+            await self.session.flush()
+            batch_id = batch.id
+            auto_created_batch = True
+
         content = await self._fetch_with_retry(source.id, source.url)
 
         if content is None:
@@ -159,6 +168,15 @@ class FetchService:
 
         await self._log_success(source.id, len(stored_items))
         await self.stats_service.increment_stats(successful=True)
+
+        if auto_created_batch:
+            result = await self.session.execute(
+                select(FetchBatch).where(FetchBatch.id == batch_id)
+            )
+            batch = result.scalar_one()
+            batch.items_count = len(stored_items)
+            await self.session.commit()
+
         return stored_items
 
     async def _fetch_with_retry(self, source_id: int | None, url: str) -> str | None:

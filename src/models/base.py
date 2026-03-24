@@ -23,10 +23,10 @@ class TimestampMixin:
     """Mixin for created_at, updated_at, and deleted_at timestamps."""
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default_factory=func.now, nullable=False
+        DateTime, default_factory=now, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default_factory=func.now, nullable=False
+        DateTime, default_factory=now, nullable=False, onupdate=now
     )
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True, default=None

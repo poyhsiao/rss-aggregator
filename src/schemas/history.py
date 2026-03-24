@@ -26,9 +26,20 @@ class HistoryResponse(BaseModel):
 
 class HistoryBatch(BaseModel):
     id: int
+    name: str | None = None
     items_count: int
     sources: list[str]
     created_at: str
+    latest_fetched_at: str | None = None
+    latest_published_at: str | None = None
+
+
+class UpdateBatchNameRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=500, description="Batch display name")
+
+
+class DeleteBatchResponse(BaseModel):
+    success: bool = Field(..., description="Whether the deletion was successful")
 
 
 class HistoryBatchesResponse(BaseModel):

@@ -23,13 +23,20 @@ export interface HistoryResponse {
 
 export interface HistoryBatch {
   id: number
+  name: string | null
   items_count: number
   sources: string[]
   created_at: string
+  latest_fetched_at: string | null
+  latest_published_at: string | null
 }
 
 export interface HistoryBatchesResponse {
   batches: HistoryBatch[]
   total_batches: number
   total_items: number
+}
+
+export interface UpdateBatchNameRequest {
+  name: string
 }

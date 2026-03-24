@@ -9,11 +9,13 @@ from src.api.deps import (
     get_auth_service,
     get_feed_service,
     get_fetch_service,
+    get_history_service,
     get_session,
     get_source_service,
 )
 from src.api.routes import feed, health, keys, logs, sources, stats
 from src.config import settings
+from src.schemas.history import UpdateBatchNameRequest
 from src.db.database import async_session_factory
 from src.models.fetch_log import FetchLog
 from src.scheduler.fetch_scheduler import FetchScheduler
@@ -193,6 +195,18 @@ class StdioRouter:
 
             if path == "/api/v1/logs" and http_method == "GET":
                 return await self._handle_get_logs(query, session)
+
+            if path == "/api/v1/history/batches" and http_method == "GET":
+                return await self._handle_get_history_batches(query, session)
+
+            if re.match(r"^/api/v1/history/batches/\d+$", path) and http_method == "GET":
+                return await self._handle_get_history_by_batch(path, query, session)
+
+            if re.match(r"^/api/v1/history/batches/\d+/name$", path) and http_method == "PATCH":
+                return await self._handle_update_batch_name(path, body, session)
+
+            if re.match(r"^/api/v1/history/batches/\d+$", path) and http_method == "DELETE":
+                return await self._handle_delete_batch(path, session)
 
             raise MethodNotFound({"detail": f"Route not found: {http_method} {path}"})
 
@@ -425,7 +439,10 @@ class StdioRouter:
 
     async def _handle_refresh_source(self, path: str, session: Any) -> dict[str, Any]:
         """Handle POST /api/v1/sources/{id}/refresh."""
+        import json as json_module
+        from src.models import FetchBatch
         from src.services.source_service import SourceService
+        from src.utils.time import now
 
         source_id = self._extract_path_param(path, r"/api/v1/sources/(\d+)/refresh$")
         source_service = await get_source_service(session)
@@ -438,7 +455,14 @@ class StdioRouter:
             await self._scheduler.refresh_source(source_id)
         else:
             fetch_service = await get_fetch_service(session)
-            await fetch_service.fetch_source(source)
+            
+            batch = FetchBatch(items_count=0, sources=json_module.dumps([source.name]))
+            session.add(batch)
+            await session.flush()
+            
+            items = await fetch_service.fetch_source(source, batch_id=batch.id)
+            batch.items_count = len(items)
+            
             await session.commit()
 
         return {"status": 200, "headers": {}, "body": {"message": "Refresh triggered"}}
@@ -447,14 +471,8 @@ class StdioRouter:
         if self._scheduler:
             await self._scheduler.refresh_all()
         else:
-            from src.services.source_service import SourceService
-            source_service = await get_source_service(session)
-            sources = await source_service.get_sources()
             fetch_service = await get_fetch_service(session)
-            for source in sources:
-                if source.is_active:
-                    await fetch_service.fetch_source(source)
-            await session.commit()
+            await fetch_service.fetch_all()
 
         return {"status": 200, "headers": {}, "body": {"message": "All sources refresh triggered"}}
 
@@ -676,18 +694,6 @@ class StdioRouter:
         return {"status": 200, "headers": {}, "body": body}
 
     def _extract_path_param(self, path: str, pattern: str) -> int:
-        """Extract path parameter from path using regex.
-
-        Args:
-            path: Request path.
-            pattern: Regex pattern with capture group.
-
-        Returns:
-            Extracted parameter as integer.
-
-        Raises:
-            InvalidParams: If parameter cannot be extracted.
-        """
         match = re.match(pattern, path)
         if not match:
             raise InvalidParams({"detail": f"Invalid path format: {path}"})
@@ -696,3 +702,165 @@ class StdioRouter:
             return int(match.group(1))
         except ValueError as e:
             raise InvalidParams({"detail": f"Invalid parameter value: {e}"}) from e
+
+    async def _handle_get_history_batches(
+        self, query: dict[str, Any], session: Any
+    ) -> dict[str, Any]:
+        limit = query.get("limit", 50)
+        if isinstance(limit, str):
+            try:
+                limit = int(limit)
+            except ValueError:
+                raise InvalidParams({"detail": "limit must be a valid integer"})
+
+        offset = query.get("offset", 0)
+        if isinstance(offset, str):
+            try:
+                offset = int(offset)
+            except ValueError:
+                raise InvalidParams({"detail": "offset must be a valid integer"})
+
+        if not isinstance(limit, int) or limit < 1 or limit > 100:
+            raise InvalidParams({"detail": "limit must be between 1 and 100"})
+
+        if not isinstance(offset, int) or offset < 0:
+            raise InvalidParams({"detail": "offset must be >= 0"})
+
+        history_service = await get_history_service(session)
+        result = await history_service.get_history_batches(limit=limit, offset=offset)
+
+        body = {
+            "batches": [
+                {
+                    "id": b.id,
+                    "items_count": b.items_count,
+                    "sources": b.sources,
+                    "created_at": b.created_at,
+                }
+                for b in result.batches
+            ],
+            "total_batches": result.total_batches,
+            "total_items": result.total_items,
+        }
+
+        return {"status": 200, "headers": {}, "body": body}
+
+    async def _handle_get_history_by_batch(
+        self, path: str, query: dict[str, Any], session: Any
+    ) -> dict[str, Any]:
+        batch_id = self._extract_path_param(path, r"/api/v1/history/batches/(\d+)$")
+
+        page = query.get("page", 1)
+        if isinstance(page, str):
+            try:
+                page = int(page)
+            except ValueError:
+                raise InvalidParams({"detail": "page must be a valid integer"})
+
+        page_size = query.get("page_size", 50)
+        if isinstance(page_size, str):
+            try:
+                page_size = int(page_size)
+            except ValueError:
+                raise InvalidParams({"detail": "page_size must be a valid integer"})
+
+        if not isinstance(page, int) or page < 1:
+            raise InvalidParams({"detail": "page must be >= 1"})
+
+        if not isinstance(page_size, int) or page_size < 1 or page_size > 100:
+            raise InvalidParams({"detail": "page_size must be between 1 and 100"})
+
+        history_service = await get_history_service(session)
+        items, pagination = await history_service.get_history_by_batch(
+            batch_id=batch_id,
+            page=page,
+            page_size=page_size,
+        )
+
+        body = {
+            "items": [
+                {
+                    "id": item.id,
+                    "source_id": item.source_id,
+                    "source": item.source,
+                    "title": item.title,
+                    "link": item.link,
+                    "description": item.description,
+                    "published_at": item.published_at,
+                    "fetched_at": item.fetched_at,
+                }
+                for item in items
+            ],
+            "pagination": {
+                "page": pagination.page,
+                "page_size": pagination.page_size,
+                "total_items": pagination.total_items,
+                "total_pages": pagination.total_pages,
+            },
+        }
+
+        return {"status": 200, "headers": {}, "body": body}
+
+    async def _handle_update_batch_name(
+        self, path: str, body: Any, session: Any
+    ) -> dict[str, Any]:
+        batch_id = self._extract_path_param(
+            path, r"/api/v1/history/batches/(\d+)/name$"
+        )
+
+        if not body or "name" not in body:
+            return {
+                "status": 422,
+                "headers": {},
+                "body": {"detail": "name is required"},
+            }
+
+        try:
+            request = UpdateBatchNameRequest(name=body["name"])
+        except Exception as e:
+            return {
+                "status": 422,
+                "headers": {},
+                "body": {"detail": f"Invalid request body: {e}"},
+            }
+
+        history_service = await get_history_service(session)
+        result = await history_service.update_batch_name(batch_id, request)
+
+        if not result:
+            return {
+                "status": 404,
+                "headers": {},
+                "body": {"detail": f"Batch {batch_id} not found"},
+            }
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "id": result.id,
+                "name": result.name,
+                "items_count": result.items_count,
+                "sources": result.sources,
+                "created_at": result.created_at,
+                "latest_fetched_at": result.latest_fetched_at,
+                "latest_published_at": result.latest_published_at,
+            },
+        }
+
+    async def _handle_delete_batch(
+        self, path: str, session: Any
+    ) -> dict[str, Any]:
+        batch_id = self._extract_path_param(path, r"/api/v1/history/batches/(\d+)$")
+
+        history_service = await get_history_service(session)
+        success = await history_service.delete_batch(batch_id)
+
+        if not success:
+            return {
+                "status": 404,
+                "headers": {},
+                "body": {"detail": f"Batch {batch_id} not found"},
+            }
+
+        return {"status": 200, "headers": {}, "body": {"success": True}}

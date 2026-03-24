@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.0 - 2026-03-24
+
+### Added
+
+- Batch CRUD operations for fetch history management
+- `PATCH /api/v1/history/batches/{id}/name` endpoint for renaming batches
+- `DELETE /api/v1/history/batches/{id}` endpoint for deleting batches
+- `UpdateBatchNameRequest` and `DeleteBatchResponse` schemas
+- `get_batch_display_name` utility for friendly batch names in UI
+- Inline batch name editing in History page
+- Batch deletion with confirmation dialog in History page
+
+### Changed
+
+- `refresh_source` now creates FetchBatch for history tracking
+- Improved History page UI with batch management actions
+
+### Fixed
+
+- Test file naming conflict (renamed `scripts/test_history_query.py` to `scripts/demo_history_query.py`)
+- SQLite locking issues in stdio tests
+
 ## v0.7.0 - 2026-03-24
 
 ### Added

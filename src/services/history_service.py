@@ -1,17 +1,30 @@
 import json
 from datetime import date, datetime, time
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from src.models import FeedItem, FetchBatch, Source
-from src.schemas.history import HistoryBatch, HistoryBatchesResponse, HistoryItem, PaginationInfo
+from src.schemas.history import (
+    HistoryBatch,
+    HistoryBatchesResponse,
+    HistoryItem,
+    PaginationInfo,
+    UpdateBatchNameRequest,
+)
 
 
 class HistoryService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    def _get_batch_display_name(self, batch: FetchBatch) -> str:
+        if batch.notes:
+            return batch.notes
+        if batch.created_at:
+            return batch.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return f"Batch #{batch.id}"
 
     async def get_history_batches(
         self,
@@ -46,12 +59,29 @@ class HistoryService:
                 except (json.JSONDecodeError, TypeError):
                     sources = []
 
+            latest_fetched_at = None
+            latest_published_at = None
+
+            if batch.id:
+                time_query = select(
+                    func.max(FeedItem.fetched_at),
+                    func.max(FeedItem.published_at)
+                ).where(FeedItem.batch_id == batch.id)
+                time_result = await self.session.execute(time_query)
+                row = time_result.first()
+                if row:
+                    latest_fetched_at = row[0].isoformat() if row[0] else None
+                    latest_published_at = row[1].isoformat() if row[1] else None
+
             batch_list.append(
                 HistoryBatch(
                     id=batch.id,
+                    name=self._get_batch_display_name(batch),
                     items_count=batch.items_count,
                     sources=sources,
                     created_at=batch.created_at.isoformat() if batch.created_at else "",
+                    latest_fetched_at=latest_fetched_at,
+                    latest_published_at=latest_published_at,
                 )
             )
 
@@ -70,10 +100,7 @@ class HistoryService:
         query = (
             select(FeedItem)
             .options(joinedload(FeedItem.source))
-            .where(
-                FeedItem.batch_id == batch_id,
-                FeedItem.deleted_at.is_(None),
-            )
+            .where(FeedItem.batch_id == batch_id)
         )
 
         count_query = select(func.count()).select_from(query.subquery())
@@ -185,3 +212,97 @@ class HistoryService:
             total_items=total_items,
             total_pages=total_pages,
         )
+
+    async def update_batch_name(
+        self,
+        batch_id: int,
+        request: UpdateBatchNameRequest,
+    ) -> HistoryBatch | None:
+        query = select(FetchBatch).where(FetchBatch.id == batch_id)
+        result = await self.session.execute(query)
+        batch = result.scalar_one_or_none()
+
+        if not batch:
+            return None
+
+        update_stmt = (
+            update(FetchBatch)
+            .where(FetchBatch.id == batch_id)
+            .values(notes=request.name)
+        )
+        await self.session.execute(update_stmt)
+        await self.session.commit()
+
+        await self.session.refresh(batch)
+
+        sources: list[str] = []
+        if batch.sources:
+            try:
+                sources = json.loads(batch.sources)
+            except (json.JSONDecodeError, TypeError):
+                sources = []
+
+        latest_fetched_at = None
+        latest_published_at = None
+
+        time_query = select(
+            func.max(FeedItem.fetched_at),
+            func.max(FeedItem.published_at)
+        ).where(FeedItem.batch_id == batch.id)
+        time_result = await self.session.execute(time_query)
+        row = time_result.first()
+        if row:
+            latest_fetched_at = row[0].isoformat() if row[0] else None
+            latest_published_at = row[1].isoformat() if row[1] else None
+
+        return HistoryBatch(
+            id=batch.id,
+            name=self._get_batch_display_name(batch),
+            items_count=batch.items_count,
+            sources=sources,
+            created_at=batch.created_at.isoformat() if batch.created_at else "",
+            latest_fetched_at=latest_fetched_at,
+            latest_published_at=latest_published_at,
+        )
+
+    async def delete_batch(self, batch_id: int) -> bool:
+        query = select(FetchBatch).where(FetchBatch.id == batch_id)
+        result = await self.session.execute(query)
+        batch = result.scalar_one_or_none()
+
+        if not batch:
+            return False
+
+        delete_stmt = delete(FetchBatch).where(FetchBatch.id == batch_id)
+        await self.session.execute(delete_stmt)
+        await self.session.commit()
+
+        return True
+
+    async def get_batch_feed_items(
+        self,
+        batch_id: int,
+    ) -> list[HistoryItem]:
+        query = (
+            select(FeedItem)
+            .options(joinedload(FeedItem.source))
+            .where(FeedItem.batch_id == batch_id)
+            .order_by(FeedItem.fetched_at.desc())
+        )
+
+        result = await self.session.execute(query)
+        items = list(result.unique().scalars().all())
+
+        return [
+            HistoryItem(
+                id=item.id,
+                source_id=item.source_id,
+                source=item.source.name if item.source else "",
+                title=item.title,
+                link=item.link,
+                description=item.description or "",
+                published_at=item.published_at.isoformat() if item.published_at else None,
+                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+            )
+            for item in items
+        ]

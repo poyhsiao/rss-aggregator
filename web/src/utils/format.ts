@@ -1,6 +1,8 @@
 import { useI18n } from 'vue-i18n'
 
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-'
+  
   const { t, locale } = useI18n()
   const date = new Date(dateString)
   const now = new Date()

@@ -50,16 +50,50 @@ class StdioServer:
         await self._run_loop()
 
     async def _init_database(self) -> None:
-        """Initialize database tables."""
+        """Initialize database tables and run migrations."""
         print("[DEBUG] Initializing database...", file=sys.stderr, flush=True)
         from src.db.database import engine
         from src.models import Base
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await self._run_migrations(conn)
         print("[DEBUG] Database tables created", file=sys.stderr, flush=True)
 
         await self._init_default_sources()
+
+    async def _run_migrations(self, conn) -> None:
+        """Run manual migrations for existing databases."""
+        from sqlalchemy import text
+
+        result = await conn.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name='fetch_batches'")
+        )
+        if result.fetchone() is None:
+            print("[DEBUG] Creating fetch_batches table...", file=sys.stderr, flush=True)
+            await conn.execute(
+                text("""
+                    CREATE TABLE fetch_batches (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        items_count INTEGER NOT NULL,
+                        sources TEXT NOT NULL,
+                        notes VARCHAR(500),
+                        created_at DATETIME NOT NULL,
+                        updated_at DATETIME NOT NULL,
+                        deleted_at DATETIME
+                    )
+                """)
+            )
+
+        result = await conn.execute(
+            text("PRAGMA table_info(feed_items)")
+        )
+        columns = {row[1] for row in result.fetchall()}
+        if "batch_id" not in columns:
+            print("[DEBUG] Adding batch_id column to feed_items...", file=sys.stderr, flush=True)
+            await conn.execute(
+                text("ALTER TABLE feed_items ADD COLUMN batch_id INTEGER")
+            )
 
     async def _init_default_sources(self) -> None:
         from src.db.database import async_session_factory

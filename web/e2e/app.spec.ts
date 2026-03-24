@@ -166,6 +166,119 @@ test.describe('History Page', () => {
       await page.waitForTimeout(500)
     }
   })
+
+  test('should edit batch name', async ({ page }) => {
+    const cards = page.locator('[class*="bg-white"][class*="rounded-xl"]')
+    const count = await cards.count()
+    
+    if (count > 0) {
+      const firstCard = cards.nth(0)
+      const editButton = firstCard.getByRole('button').filter({ hasText: '' }).first()
+      
+      if (await editButton.isVisible()) {
+        await editButton.click()
+        await page.waitForTimeout(300)
+        
+        const input = firstCard.locator('input[type="text"]')
+        if (await input.isVisible()) {
+          await input.clear()
+          await input.fill('Updated Batch Name')
+          
+          const saveButton = firstCard.getByRole('button').filter({ has: page.locator('svg') }).first()
+          await saveButton.click()
+          await page.waitForTimeout(1000)
+        }
+      }
+    }
+  })
+
+  test('should open preview dialog', async ({ page }) => {
+    const cards = page.locator('[class*="bg-white"][class*="rounded-xl"]')
+    const count = await cards.count()
+    
+    if (count > 0) {
+      const firstCard = cards.nth(0)
+      const buttons = firstCard.getByRole('button')
+      const buttonCount = await buttons.count()
+      
+      for (let i = 0; i < buttonCount; i++) {
+        const btn = buttons.nth(i)
+        const btnHtml = await btn.innerHTML()
+        if (btnHtml.includes('FileText') || btnHtml.includes('file-text')) {
+          await btn.click()
+          await page.waitForTimeout(500)
+          
+          const previewDialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
+          await expect(previewDialog).toBeVisible({ timeout: 5000 })
+          
+          const closeButton = previewDialog.getByRole('button').filter({ has: page.locator('svg') }).last()
+          await closeButton.click()
+          break
+        }
+      }
+    }
+  })
+
+  test('should switch preview formats', async ({ page }) => {
+    const cards = page.locator('[class*="bg-white"][class*="rounded-xl"]')
+    const count = await cards.count()
+    
+    if (count > 0) {
+      const firstCard = cards.nth(0)
+      const buttons = firstCard.getByRole('button')
+      const buttonCount = await buttons.count()
+      
+      for (let i = 0; i < buttonCount; i++) {
+        const btn = buttons.nth(i)
+        const btnHtml = await btn.innerHTML()
+        if (btnHtml.includes('FileText') || btnHtml.includes('file-text')) {
+          await btn.click()
+          await page.waitForTimeout(500)
+          
+          const previewDialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
+          await expect(previewDialog).toBeVisible({ timeout: 5000 })
+          
+          const jsonButton = previewDialog.getByRole('button', { name: /json/i })
+          if (await jsonButton.isVisible()) {
+            await jsonButton.click()
+            await page.waitForTimeout(300)
+          }
+          
+          const closeButton = previewDialog.getByRole('button').filter({ has: page.locator('svg') }).last()
+          await closeButton.click()
+          break
+        }
+      }
+    }
+  })
+
+  test('should delete batch with confirmation', async ({ page }) => {
+    const cards = page.locator('[class*="bg-white"][class*="rounded-xl"]')
+    const initialCount = await cards.count()
+    
+    if (initialCount > 1) {
+      const firstCard = cards.nth(0)
+      const buttons = firstCard.getByRole('button')
+      const buttonCount = await buttons.count()
+      
+      for (let i = 0; i < buttonCount; i++) {
+        const btn = buttons.nth(i)
+        const btnHtml = await btn.innerHTML()
+        if (btnHtml.includes('Trash2') || btnHtml.includes('trash')) {
+          await btn.click()
+          await page.waitForTimeout(500)
+          
+          const confirmDialog = page.locator('[role="dialog"], [class*="fixed"]').filter({ hasText: /delete/i })
+          if (await confirmDialog.isVisible()) {
+            const confirmBtn = confirmDialog.getByRole('button', { name: /delete/i })
+            await confirmBtn.click()
+            await page.waitForTimeout(1000)
+          }
+          break
+        }
+      }
+    }
+  })
 })
 
 test.describe('Keys Page', () => {

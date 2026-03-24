@@ -2,13 +2,12 @@
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import { computed } from 'vue'
-import type { FeedItem } from '@/api/feed'
 
 const props = defineProps<{
-	content: FeedItem[] | null
+ 	content: unknown[] | null
 }>()
 
-function formatJson(data: FeedItem[]): string {
+function formatJson(data: unknown[]): string {
 	return JSON.stringify(data, null, 2)
 }
 

@@ -3,19 +3,18 @@
 import pytest
 from datetime import date, datetime
 
-from src.models import FeedItem, Source
+from src.models import FeedItem, FetchBatch, Source
+from src.schemas.history import UpdateBatchNameRequest
 from src.services.history_service import HistoryService
 
 
 @pytest.fixture
 def history_service(db_session):
-    """Create HistoryService instance."""
     return HistoryService(db_session)
 
 
 @pytest.mark.asyncio
 async def test_get_history_returns_empty_list_when_no_items(history_service):
-    """Test that get_history returns empty list when no items exist."""
     items, pagination = await history_service.get_history()
 
     assert items == []
@@ -25,7 +24,6 @@ async def test_get_history_returns_empty_list_when_no_items(history_service):
 
 @pytest.mark.asyncio
 async def test_get_history_filters_by_date_range(db_session):
-    """Test that get_history filters by date range."""
     source = Source(name="Test Source", url="https://example.com/feed.xml")
     db_session.add(source)
     await db_session.flush()
@@ -55,3 +53,234 @@ async def test_get_history_filters_by_date_range(db_session):
     assert len(items) == 1
     assert items[0].title == "New Item"
     assert pagination.total_items == 1
+
+
+class TestUpdateBatchName:
+    @pytest.mark.asyncio
+    async def test_update_batch_name_success(self, db_session):
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=2, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        items = [
+            FeedItem(
+                source_id=source.id,
+                batch_id=batch.id,
+                title=f"Item {i}",
+                link=f"https://example.com/{i}",
+            )
+            for i in range(2)
+        ]
+        db_session.add_all(items)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.update_batch_name(
+            batch.id,
+            UpdateBatchNameRequest(name="My Custom Batch Name"),
+        )
+
+        assert result is not None
+        assert result.name == "My Custom Batch Name"
+        assert result.id == batch.id
+        assert result.items_count == 2
+
+    @pytest.mark.asyncio
+    async def test_update_batch_name_returns_none_for_nonexistent_batch(self, history_service):
+        result = await history_service.update_batch_name(
+            99999,
+            UpdateBatchNameRequest(name="Test Name"),
+        )
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_update_batch_name_overwrites_existing_notes(self, db_session):
+        batch = FetchBatch(items_count=0, sources='[]', notes="Old Name")
+        db_session.add(batch)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.update_batch_name(
+            batch.id,
+            UpdateBatchNameRequest(name="New Name"),
+        )
+
+        assert result is not None
+        assert result.name == "New Name"
+
+
+class TestDeleteBatch:
+    @pytest.mark.asyncio
+    async def test_delete_batch_success(self, db_session):
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=2, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        items = [
+            FeedItem(
+                source_id=source.id,
+                batch_id=batch.id,
+                title=f"Item {i}",
+                link=f"https://example.com/{i}",
+            )
+            for i in range(2)
+        ]
+        db_session.add_all(items)
+        await db_session.commit()
+
+        batch_id = batch.id
+        service = HistoryService(db_session)
+
+        result = await service.delete_batch(batch_id)
+
+        assert result is True
+
+        batches_result = await service.get_history_batches()
+        assert all(b.id != batch_id for b in batches_result.batches)
+
+    @pytest.mark.asyncio
+    async def test_delete_batch_returns_false_for_nonexistent_batch(self, history_service):
+        result = await history_service.delete_batch(99999)
+
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_delete_batch_removes_batch_from_list(self, db_session):
+        batch1 = FetchBatch(items_count=1, sources='[]')
+        batch2 = FetchBatch(items_count=2, sources='[]')
+        db_session.add_all([batch1, batch2])
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+
+        result_before = await service.get_history_batches()
+        assert len(result_before.batches) == 2
+
+        await service.delete_batch(batch1.id)
+
+        result_after = await service.get_history_batches()
+        assert len(result_after.batches) == 1
+        assert result_after.batches[0].id == batch2.id
+
+
+class TestGetBatchFeedItems:
+    @pytest.mark.asyncio
+    async def test_get_batch_feed_items_returns_items(self, db_session):
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=3, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        items = [
+            FeedItem(
+                source_id=source.id,
+                batch_id=batch.id,
+                title=f"Article {i}",
+                link=f"https://example.com/article-{i}",
+                description=f"Description {i}",
+            )
+            for i in range(3)
+        ]
+        db_session.add_all(items)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.get_batch_feed_items(batch.id)
+
+        assert len(result) == 3
+        for item in result:
+            assert item.source == "Test Source"
+            assert item.title.startswith("Article")
+            assert item.link.startswith("https://example.com/article-")
+
+    @pytest.mark.asyncio
+    async def test_get_batch_feed_items_returns_empty_for_empty_batch(self, db_session):
+        batch = FetchBatch(items_count=0, sources='[]')
+        db_session.add(batch)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.get_batch_feed_items(batch.id)
+
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_batch_feed_items_returns_empty_for_nonexistent_batch(self, history_service):
+        result = await history_service.get_batch_feed_items(99999)
+
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_batch_feed_items_includes_published_at(self, db_session):
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=1, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        item = FeedItem(
+            source_id=source.id,
+            batch_id=batch.id,
+            title="Test Article",
+            link="https://example.com/article",
+            published_at=datetime(2024, 1, 15, 10, 30, 0),
+        )
+        db_session.add(item)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.get_batch_feed_items(batch.id)
+
+        assert len(result) == 1
+        assert result[0].published_at is not None
+        assert "2024-01-15" in result[0].published_at
+
+
+class TestGetBatchDisplayName:
+    @pytest.mark.asyncio
+    async def test_returns_notes_if_present(self, history_service):
+        batch = FetchBatch(items_count=0, sources='[]', notes="My Batch")
+        db_session = history_service.session
+        db_session.add(batch)
+        await db_session.commit()
+
+        result = history_service._get_batch_display_name(batch)
+
+        assert result == "My Batch"
+
+    @pytest.mark.asyncio
+    async def test_returns_formatted_created_at_if_no_notes(self, history_service):
+        batch = FetchBatch(items_count=0, sources='[]')
+        db_session = history_service.session
+        db_session.add(batch)
+        await db_session.commit()
+
+        result = history_service._get_batch_display_name(batch)
+
+        assert result is not None
+        assert batch.id is not None
+
+    @pytest.mark.asyncio
+    async def test_returns_batch_id_fallback(self, history_service, db_session):
+        batch = FetchBatch(items_count=0, sources='[]')
+        db_session.add(batch)
+        await db_session.commit()
+
+        result = history_service._get_batch_display_name(batch)
+
+        assert batch.id is not None
+        assert result is not None

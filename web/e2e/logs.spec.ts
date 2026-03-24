@@ -68,7 +68,7 @@ test.describe('Operation Logs', () => {
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
     await page.waitForTimeout(300)
 
-    const logCard = page.locator('[class*="rounded-xl"]').filter({ hasText: /create source|新增來源/i })
+    const logCard = page.locator('[class*="rounded-xl"][class*="border"]').filter({ hasText: /create source|新增來源/i }).first()
     await expect(logCard).toBeVisible({ timeout: 5000 })
   })
 
@@ -103,7 +103,7 @@ test.describe('Operation Logs', () => {
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
     await page.waitForTimeout(300)
 
-    const logCard = page.locator('[class*="rounded-xl"]').filter({ hasText: /create api key|新增 api key/i })
+    const logCard = page.locator('[class*="rounded-xl"][class*="border"]').filter({ hasText: /create api key|新增 api key/i }).first()
     await expect(logCard).toBeVisible({ timeout: 5000 })
   })
 })

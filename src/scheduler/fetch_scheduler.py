@@ -1,6 +1,7 @@
 """Scheduler for periodic RSS fetching."""
 
 import asyncio
+import json
 import logging
 
 from sqlalchemy import select
@@ -55,7 +56,7 @@ class FetchScheduler:
             await asyncio.sleep(self.check_interval)
 
     async def _check_and_fetch(self) -> None:
-        from src.models import Source
+        from src.models import FetchBatch, Source
         from src.services.fetch_service import FetchService
 
         async with self.session_factory() as session:
@@ -83,18 +84,35 @@ class FetchScheduler:
             if not sources_to_fetch:
                 return
 
-            semaphore = asyncio.Semaphore(self.max_concurrent)
+            batch = FetchBatch(items_count=0, sources="")
+            session.add(batch)
+            await session.flush()
 
-            async def fetch_with_semaphore(source: Source) -> None:
+            semaphore = asyncio.Semaphore(self.max_concurrent)
+            source_names: list[str] = []
+            total_items = 0
+
+            async def fetch_with_semaphore(source: Source) -> int:
                 async with semaphore:
-                    await fetch_service.fetch_source(source)
+                    items = await fetch_service.fetch_source(source, batch_id=batch.id)
+                    return len(items)
 
             tasks = [fetch_with_semaphore(s) for s in sources_to_fetch]
-            await asyncio.gather(*tasks, return_exceptions=True)
+            item_counts = await asyncio.gather(*tasks, return_exceptions=True)
+
+            for source, count in zip(sources_to_fetch, item_counts):
+                if isinstance(count, int) and count > 0:
+                    source_names.append(source.name)
+                    total_items += count
+
+            batch.items_count = total_items
+            batch.sources = json.dumps(source_names, ensure_ascii=False)
+
             await session.commit()
 
     async def refresh_source(self, source_id: int) -> None:
-        from src.models import Source
+        import json as json_module
+        from src.models import FetchBatch, Source
         from src.services.fetch_service import FetchService
 
         async with self.session_factory() as session:
@@ -104,7 +122,13 @@ class FetchScheduler:
             )
             source = result.scalar_one_or_none()
             if source:
-                await fetch_service.fetch_source(source)
+                batch = FetchBatch(items_count=0, sources=json_module.dumps([source.name]))
+                session.add(batch)
+                await session.flush()
+                
+                items = await fetch_service.fetch_source(source, batch_id=batch.id)
+                batch.items_count = len(items)
+                
                 await session.commit()
 
     async def refresh_all(self) -> None:
