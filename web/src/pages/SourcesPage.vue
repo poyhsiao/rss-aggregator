@@ -10,10 +10,13 @@ import Badge from '@/components/ui/Badge.vue'
 import SourceDialog from '@/components/SourceDialog.vue'
 import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { formatDate } from '@/utils/format'
 
 const { t } = useI18n()
 const toast = useToast()
+const confirm = useConfirm()
 
 const sources = ref<Source[]>([])
 const loading = ref(true)
@@ -24,14 +27,23 @@ const previewDialogOpen = ref(false)
 const previewParams = ref<FeedParams | undefined>(undefined)
 const previewTitle = ref<string | undefined>(undefined)
 
-async function fetchSources(): Promise<void> {
-  loading.value = true
-  try {
-    sources.value = await getSources()
-  } finally {
-    loading.value = false
+function handleSaved(source: Source): void {
+    const existingIndex = sources.value.findIndex(s => s.id === source.id)
+    if (existingIndex >= 0) {
+      sources.value[existingIndex] = source
+    } else {
+      sources.value.unshift(source)
+    }
   }
-}
+
+  async function fetchSources(): Promise<void> {
+    loading.value = true
+    try {
+      sources.value = await getSources()
+    } finally {
+      loading.value = false
+    }
+  }
 
 function openAddDialog(): void {
   editingSource.value = null
@@ -73,7 +85,14 @@ async function handleRefreshAll(): Promise<void> {
 }
 
 async function handleDelete(id: number): Promise<void> {
-  if (!confirm(t('common.confirm') + '?')) return
+  const confirmed = await confirm.show({
+    title: t('sources.delete_title'),
+    message: t('sources.delete_confirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
   
   try {
     await deleteSource(id)
@@ -236,13 +255,24 @@ onMounted(fetchSources)
     <SourceDialog
       v-model:open="showDialog"
       :source="editingSource"
-      @saved="fetchSources"
+      @saved="handleSaved"
     />
 
     <RssPreviewDialog
       v-model:open="previewDialogOpen"
       :params="previewParams"
       :title="previewTitle"
+    />
+
+    <ConfirmDialog
+      v-model:open="confirm.state.value.open"
+      :title="confirm.state.value.title"
+      :message="confirm.state.value.message"
+      :confirm-text="confirm.state.value.confirmText"
+      :cancel-text="confirm.state.value.cancelText"
+      :variant="confirm.state.value.variant"
+      @confirm="confirm.confirm"
+      @cancel="confirm.cancel"
     />
   </div>
 </template>

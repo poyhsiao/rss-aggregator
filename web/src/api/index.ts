@@ -2,11 +2,16 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { isTauri } from '@/utils/environment'
 
+const getWebBaseUrl = (): string => {
+  const win = window as { __VITE_API_BASE_URL__?: string }
+  return win.__VITE_API_BASE_URL__ || '/api/v1'
+}
+
 function getBaseURL(): string {
   if (isTauri()) {
     return 'app://localhost/api/v1'
   }
-  return import.meta.env.VITE_API_BASE_URL || '/api/v1'
+  return getWebBaseUrl()
 }
 
 const axiosInstance = axios.create({

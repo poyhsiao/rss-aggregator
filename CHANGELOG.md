@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.0 - 2026-03-24
+
+### Added
+
+- History query feature with date range filtering
+- `/api/v1/history` endpoint for fetching history records
+- HistoryService for history data management
+- HistoryPage component with date range picker and pagination
+- DateRangePicker component for date selection
+- Pagination component for list navigation
+- SourceTags component for displaying source tags
+- ConfirmDialog component for user confirmations
+- `useConfirm` composable for dialog management
+- `fetch_batches` table for tracking fetch batch operations
+- `batch_id` field in `fetch_logs` and `feed_items` tables
+- E2E testing setup with Playwright
+
+### Changed
+
+- Refactored fetch service with batch tracking
+- Improved error handling in history queries
+
 ## v0.6.2 - 2026-03-23
 
 ### Fixed

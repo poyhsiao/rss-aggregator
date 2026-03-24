@@ -70,6 +70,10 @@ web/package-lock.json
 web/vite.config.d.ts
 web/vite.config.js
 
+# Frontend - Playwright test results
+web/test-results/
+web/playwright-report/
+
 # OS
 .DS_Store
 Thumbs.db

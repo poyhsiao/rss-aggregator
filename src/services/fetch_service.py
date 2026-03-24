@@ -1,6 +1,7 @@
 """Service for fetching and parsing RSS feeds."""
 
 import asyncio
+import json
 from datetime import datetime
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -11,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.models import FeedItem, FetchLog, Source
+from src.models import FeedItem, FetchBatch, FetchLog, Source
 from src.services.stats_service import StatsService
 from src.utils.time import now
 
@@ -110,8 +111,16 @@ class FetchService:
 
         return items
 
-    async def fetch_source(self, source: Source) -> list[FeedItem]:
-        """Fetch and store RSS feed for a source."""
+    async def fetch_source(self, source: Source, batch_id: int | None = None) -> list[FeedItem]:
+        """Fetch and store RSS feed for a source.
+
+        Args:
+            source: Source to fetch.
+            batch_id: Optional batch ID to associate items with.
+
+        Returns:
+            List of stored FeedItem objects.
+        """
         content = await self._fetch_with_retry(source.id, source.url)
 
         if content is None:
@@ -135,10 +144,12 @@ class FetchService:
         for item_data in items[: settings.max_feed_items]:
             feed_item = FeedItem(
                 source_id=source.id,
+                batch_id=batch_id,
                 title=item_data["title"],
                 link=item_data["link"],
                 description=item_data["description"],
                 published_at=item_data["published_at"],
+                fetched_at=now(),
             )
             self.session.add(feed_item)
             stored_items.append(feed_item)
@@ -198,11 +209,13 @@ class FetchService:
         self.session.add(log)
         await self.session.flush()
 
-    async def fetch_all(self) -> dict[int, list[FeedItem]]:
+    async def fetch_all(self) -> tuple[int, dict[int, list[FeedItem]]]:
         """Fetch all active sources that need updating.
 
+        Creates a FetchBatch record and associates all fetched items with it.
+
         Returns:
-            Dict mapping source_id to list of fetched items.
+            Tuple of (batch_id, dict mapping source_id to list of fetched items).
         """
         result = await self.session.execute(
             select(Source).where(
@@ -212,10 +225,23 @@ class FetchService:
         )
         sources = list(result.scalars().all())
 
-        results = {}
+        batch = FetchBatch(items_count=0, sources="")
+        self.session.add(batch)
+        await self.session.flush()
+
+        results: dict[int, list[FeedItem]] = {}
+        source_names: list[str] = []
+        total_items = 0
+
         for source in sources:
-            items = await self.fetch_source(source)
+            items = await self.fetch_source(source, batch_id=batch.id)
             results[source.id] = items
+            if items:
+                source_names.append(source.name)
+                total_items += len(items)
+
+        batch.items_count = total_items
+        batch.sources = json.dumps(source_names, ensure_ascii=False)
 
         await self.session.commit()
-        return results
+        return batch.id, results

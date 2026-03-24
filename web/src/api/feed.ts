@@ -55,7 +55,11 @@ export async function getFormattedFeed(
     headers['X-API-Key'] = authStore.apiKey
   }
 
-  const baseUrl = isTauri() ? 'app://localhost/api/v1' : (import.meta.env.VITE_API_BASE_URL || '/api/v1')
+  const getWebBaseUrl = (): string => {
+    const win = window as { __VITE_API_BASE_URL__?: string }
+    return win.__VITE_API_BASE_URL__ || '/api/v1'
+  }
+  const baseUrl = isTauri() ? 'app://localhost/api/v1' : getWebBaseUrl()
   const response = await fetch(
     `${baseUrl}/feed${buildQueryString({ ...params, format })}`,
     { headers }

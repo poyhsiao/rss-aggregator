@@ -12,6 +12,7 @@ from src.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from src.models.source import Source
+    from src.models.fetch_batch import FetchBatch
 
 
 class FeedItem(Base, TimestampMixin):
@@ -23,13 +24,13 @@ class FeedItem(Base, TimestampMixin):
     source_id: Mapped[int] = mapped_column(Integer, ForeignKey("sources.id"))
     title: Mapped[str] = mapped_column(String(500))
     link: Mapped[str] = mapped_column(String(2048))
+    batch_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("fetch_batches.id"), default=None)
     description: Mapped[str | None] = mapped_column(Text, default=None)
     published_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
-    fetched_at: Mapped[datetime] = mapped_column(
-        DateTime, default_factory=func.now
-    )
+    fetched_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
 
     source: Mapped[Source] = relationship("Source", back_populates="feed_items", init=False)
+    batch: Mapped[FetchBatch | None] = relationship("FetchBatch", back_populates="feed_items", init=False)
 
     def __repr__(self) -> str:
         return f"<FeedItem(id={self.id}, title={self.title[:30]}...)>"

@@ -1,25 +1,111 @@
-"""Service for querying historical feed items."""
-
+import json
 from datetime import date, datetime, time
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.models import FeedItem, Source
-from src.schemas.history import HistoryItem, PaginationInfo
+from src.models import FeedItem, FetchBatch, Source
+from src.schemas.history import HistoryBatch, HistoryBatchesResponse, HistoryItem, PaginationInfo
 
 
 class HistoryService:
-    """Service for querying historical feed items."""
-
     def __init__(self, session: AsyncSession) -> None:
-        """Initialize the service with a database session.
-
-        Args:
-            session: AsyncSession for database operations.
-        """
         self.session = session
+
+    async def get_history_batches(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> HistoryBatchesResponse:
+        count_query = select(func.count()).select_from(FetchBatch)
+        total_result = await self.session.execute(count_query)
+        total_batches = total_result.scalar() or 0
+
+        items_query = select(func.count()).select_from(FeedItem).where(
+            FeedItem.batch_id.isnot(None)
+        )
+        items_result = await self.session.execute(items_query)
+        total_items = items_result.scalar() or 0
+
+        query = (
+            select(FetchBatch)
+            .order_by(FetchBatch.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(query)
+        batches = list(result.scalars().all())
+
+        batch_list = []
+        for batch in batches:
+            sources: list[str] = []
+            if batch.sources:
+                try:
+                    sources = json.loads(batch.sources)
+                except (json.JSONDecodeError, TypeError):
+                    sources = []
+
+            batch_list.append(
+                HistoryBatch(
+                    id=batch.id,
+                    items_count=batch.items_count,
+                    sources=sources,
+                    created_at=batch.created_at.isoformat() if batch.created_at else "",
+                )
+            )
+
+        return HistoryBatchesResponse(
+            batches=batch_list,
+            total_batches=total_batches,
+            total_items=total_items,
+        )
+
+    async def get_history_by_batch(
+        self,
+        batch_id: int,
+        page: int = 1,
+        page_size: int = 50,
+    ) -> tuple[list[HistoryItem], PaginationInfo]:
+        query = (
+            select(FeedItem)
+            .options(joinedload(FeedItem.source))
+            .where(
+                FeedItem.batch_id == batch_id,
+                FeedItem.deleted_at.is_(None),
+            )
+        )
+
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await self.session.execute(count_query)
+        total_items = total_result.scalar() or 0
+
+        total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 0
+        offset = (page - 1) * page_size
+
+        query = query.order_by(FeedItem.fetched_at.desc()).offset(offset).limit(page_size)
+
+        result = await self.session.execute(query)
+        items = list(result.unique().scalars().all())
+
+        return [
+            HistoryItem(
+                id=item.id,
+                source_id=item.source_id,
+                source=item.source.name if item.source else "",
+                title=item.title,
+                link=item.link,
+                description=item.description or "",
+                published_at=item.published_at.isoformat() if item.published_at else None,
+                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+            )
+            for item in items
+        ], PaginationInfo(
+            page=page,
+            page_size=page_size,
+            total_items=total_items,
+            total_pages=total_pages,
+        )
 
     async def get_history(
         self,
@@ -32,21 +118,6 @@ class HistoryService:
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[HistoryItem], PaginationInfo]:
-        """Get historical feed items with filtering and pagination.
-
-        Args:
-            start_date: Filter by start date (inclusive).
-            end_date: Filter by end date (inclusive).
-            source_ids: Filter by source IDs.
-            keywords: Keywords for title filtering (semicolon-separated).
-            sort_by: Sort field ('fetched_at' or 'published_at').
-            sort_order: Sort direction ('asc' or 'desc').
-            page: Page number (1-indexed).
-            page_size: Number of items per page.
-
-        Returns:
-            Tuple of (items list, pagination info).
-        """
         query = (
             select(FeedItem)
             .options(joinedload(FeedItem.source))

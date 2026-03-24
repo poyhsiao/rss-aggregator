@@ -110,6 +110,8 @@
     "created": "Source created",
     "updated": "Source updated",
     "deleted": "Source deleted",
+    "delete_title": "Delete Source",
+    "delete_confirm": "Are you sure you want to delete this source?",
     "view_data": "Preview Feed",
     "fetch_interval": "Fetch Interval",
     "interval_never": "Never",
@@ -140,6 +142,7 @@
     "copied": "Copied",
     "copy_failed": "Copy failed",
     "created": "API Key created",
+    "delete_title": "Delete API Key",
     "delete_confirm": "Are you sure you want to delete this key?",
     "deleted": "API Key deleted"
   },
@@ -160,6 +163,7 @@
   },
   "history": {
     "title": "History",
+    "batch_title": "Batch #{id}",
     "filter": {
       "start_date": "Start Date",
       "end_date": "End Date",
@@ -175,10 +179,15 @@
       "last_month": "Last Month"
     },
     "result": {
-      "total": "Total {count} items"
+      "total": "Total {count} items",
+      "total_dates": "{count} dates, {items} items total",
+      "total_batches": "{count} batches, {items} items total"
     },
     "empty": "No results found",
-    "no_sources": "No sources available"
+    "empty_items": "No items for this batch",
+    "no_sources": "No sources available",
+    "item": "item",
+    "items": "items"
   },
   "pagination": {
     "prev": "Previous",

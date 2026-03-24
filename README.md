@@ -152,6 +152,7 @@ cd src-tauri && cargo tauri dev
 | `/api/v1/keys` | GET, POST | List/create API keys |
 | `/api/v1/stats` | GET | Get daily statistics |
 | `/api/v1/logs` | GET | Get error logs |
+| `/api/v1/history` | GET | Get fetch history with date range |
 
 ### Feed Endpoint Parameters
 
@@ -234,7 +235,7 @@ pnpm generate-icons
 ### Features
 
 - **API Key Authentication**: Secure access with localStorage persistence
-- **5 Pages**: Feed, Sources, Keys, Stats, Logs
+- **6 Pages**: Feed, Sources, Keys, Stats, Logs, History
 - **Dark/Light Theme**: System preference detection with manual toggle
 - **i18n**: Chinese/English support
 - **PWA**: Installable on desktop and mobile

@@ -110,6 +110,8 @@
     "created": "來源已新增",
     "updated": "來源已更新",
     "deleted": "來源已刪除",
+    "delete_title": "刪除來源",
+    "delete_confirm": "確定要刪除此來源嗎？",
     "view_data": "預覽摘要",
     "fetch_interval": "抓取間隔",
     "interval_never": "不自動更新",
@@ -140,6 +142,7 @@
     "copied": "已複製",
     "copy_failed": "複製失敗",
     "created": "API Key 已建立",
+    "delete_title": "刪除 API Key",
     "delete_confirm": "確定要刪除此 Key 嗎？",
     "deleted": "API Key 已刪除"
   },
@@ -160,6 +163,7 @@
   },
   "history": {
     "title": "歷史查詢",
+    "batch_title": "批次 #{id}",
     "filter": {
       "start_date": "開始日期",
       "end_date": "結束日期",
@@ -175,10 +179,15 @@
       "last_month": "上月"
     },
     "result": {
-      "total": "共 {count} 項"
+      "total": "共 {count} 項",
+      "total_dates": "{count} 個日期，共 {items} 項",
+      "total_batches": "{count} 個批次，共 {items} 項"
     },
     "empty": "沒有找到結果",
-    "no_sources": "沒有可用的來源"
+    "empty_items": "此批次沒有項目",
+    "no_sources": "沒有可用的來源",
+    "item": "項",
+    "items": "項"
   },
   "pagination": {
     "prev": "上一頁",

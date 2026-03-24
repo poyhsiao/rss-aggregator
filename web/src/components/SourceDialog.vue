@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
-  (e: 'saved'): void
+  (e: 'saved', source: Source): void
 }>()
 
 const isEditMode = computed(() => !!props.source)
@@ -109,14 +109,15 @@ async function handleSubmit(): Promise<void> {
   
   loading.value = true
   try {
+    let savedSource: Source
     if (isEditMode.value && props.source) {
-      await updateSource(props.source.id, form.value)
+      savedSource = await updateSource(props.source.id, form.value)
       toast.success(t('sources.updated'))
     } else {
-      await createSource(form.value)
+      savedSource = await createSource(form.value)
       toast.success(t('sources.created'))
     }
-    emit('saved')
+    emit('saved', savedSource)
     close()
   } catch {
     toast.error(t('common.error'))

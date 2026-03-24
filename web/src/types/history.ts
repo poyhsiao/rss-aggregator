@@ -21,13 +21,15 @@ export interface HistoryResponse {
   pagination: PaginationInfo
 }
 
-export interface HistoryParams {
-  start_date?: string
-  end_date?: string
-  source_ids?: string
-  keywords?: string
-  sort_by?: "fetched_at" | "published_at"
-  sort_order?: "asc" | "desc"
-  page?: number
-  page_size?: number
+export interface HistoryBatch {
+  id: number
+  items_count: number
+  sources: string[]
+  created_at: string
+}
+
+export interface HistoryBatchesResponse {
+  batches: HistoryBatch[]
+  total_batches: number
+  total_items: number
 }

@@ -1,191 +1,163 @@
-<!-- web/src/pages/HistoryPage.vue -->
 <script setup lang="ts">
-import { Calendar, Search } from "lucide-vue-next";
-import { computed, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import { getHistory } from "@/api/history";
-import { getSources } from "@/api/sources";
-import DateRangePicker from "@/components/DateRangePicker.vue";
-import Pagination from "@/components/Pagination.vue";
-import SourceTags from "@/components/SourceTags.vue";
-import Button from "@/components/ui/Button.vue";
-import type { HistoryItem, HistoryParams } from "@/types/history";
-import type { Source } from "@/types/source";
-import { useToast } from "@/composables/useToast";
-import { formatDate } from "@/utils/format";
+import { ChevronDown, ChevronUp, ExternalLink, RefreshCw } from "lucide-vue-next"
+import { onMounted, ref } from "vue"
+import { useI18n } from "vue-i18n"
+import { getHistoryBatches, getHistoryByBatch } from "@/api/history"
+import Button from "@/components/ui/Button.vue"
+import type { HistoryBatch, HistoryItem } from "@/types/history"
+import { useToast } from "@/composables/useToast"
+import { formatDate } from "@/utils/format"
 
-const { t } = useI18n();
-const toast = useToast();
+const { t } = useI18n()
+const toast = useToast()
 
-// Filter state
-const startDate = ref("");
-const endDate = ref("");
-const selectedSourceIds = ref<number[]>([]);
-const keywords = ref("");
+const batches = ref<HistoryBatch[]>([])
+const loading = ref(false)
+const expandedBatch = ref<number | null>(null)
+const expandedItems = ref<HistoryItem[]>([])
+const loadingItems = ref(false)
+const totalItems = ref(0)
+const totalBatches = ref(0)
 
-// Results state
-const items = ref<HistoryItem[]>([]);
-const sources = ref<Source[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const totalPages = ref(0);
-const totalItems = ref(0);
-const pageSize = 20;
-
-// Fetch sources on mount
 onMounted(async () => {
+  await fetchBatches()
+})
+
+async function fetchBatches(): Promise<void> {
+  loading.value = true
   try {
-    sources.value = await getSources();
+    const response = await getHistoryBatches(50, 0)
+    batches.value = response.batches
+    totalBatches.value = response.total_batches
+    totalItems.value = response.total_items
   } catch {
-    toast.error(t("common.error"));
-  }
-});
-
-// Build query params
-const queryParams = computed<HistoryParams>(() => {
-  const params: HistoryParams = {
-    page: currentPage.value,
-    page_size: pageSize,
-  };
-
-  if (startDate.value) params.start_date = startDate.value;
-  if (endDate.value) params.end_date = endDate.value;
-  if (selectedSourceIds.value.length > 0) {
-    params.source_ids = selectedSourceIds.value.join(",");
-  }
-  if (keywords.value) params.keywords = keywords.value;
-
-  return params;
-});
-
-// Fetch history
-async function fetchHistory(): Promise<void> {
-  loading.value = true;
-  try {
-    const response = await getHistory(queryParams.value);
-    items.value = response.items;
-    totalItems.value = response.pagination.total_items;
-    totalPages.value = response.pagination.total_pages;
-  } catch {
-    toast.error(t("common.error"));
+    toast.error(t("common.error"))
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
-// Handle search button click
-function handleSearch(): void {
-  currentPage.value = 1;
-  fetchHistory();
-}
+async function toggleBatch(batchId: number): Promise<void> {
+  if (expandedBatch.value === batchId) {
+    expandedBatch.value = null
+    expandedItems.value = []
+    return
+  }
 
-// Handle page change
-function handlePageChange(page: number): void {
-  currentPage.value = page;
-  fetchHistory();
+  expandedBatch.value = batchId
+  expandedItems.value = []
+  loadingItems.value = true
+
+  try {
+    const response = await getHistoryByBatch(batchId, 1, 100)
+    expandedItems.value = response.items
+  } catch {
+    toast.error(t("common.error"))
+  } finally {
+    loadingItems.value = false
+  }
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">📜 {{ t("history.title") }}</h1>
+      <Button @click="fetchBatches">
+        <RefreshCw class="h-4 w-4" />
+        <span class="ml-1.5">{{ t("common.refresh") }}</span>
+      </Button>
     </div>
 
-    <!-- Filter Section -->
-    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 space-y-4">
-      <!-- Date Range -->
-      <div>
-        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-          <Calendar class="h-4 w-4 inline mr-1" />
-          {{ t("history.filter.start_date") }} / {{ t("history.filter.end_date") }}
-        </label>
-        <DateRangePicker
-          v-model:start-date="startDate"
-          v-model:end-date="endDate"
-        />
-      </div>
-
-      <!-- Source Tags -->
-      <div>
-        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-          {{ t("history.filter.source") }}
-        </label>
-        <SourceTags
-          v-model="selectedSourceIds"
-          :sources="sources"
-        />
-      </div>
-
-      <!-- Keywords -->
-      <div>
-        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-          {{ t("feed.search_placeholder") }}
-        </label>
-        <div class="flex gap-2">
-          <input
-            v-model="keywords"
-            type="text"
-            :placeholder="t('feed.search_placeholder')"
-            class="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <Button @click="handleSearch">
-            <Search class="h-4 w-4" />
-            <span class="ml-1.5">{{ t("history.filter.search") }}</span>
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results Section -->
     <div v-if="loading" class="text-center py-12 text-neutral-500">
       {{ t("common.loading") }}
     </div>
 
-    <div v-else-if="items.length === 0" class="text-center py-12 text-neutral-500">
+    <div v-else-if="batches.length === 0" class="text-center py-12 text-neutral-500">
       😴 {{ t("history.empty") }}
     </div>
 
     <template v-else>
-      <!-- Total count -->
       <div class="text-sm text-neutral-500">
-        {{ t("history.result.total", { count: totalItems }) }}
+        {{ t("history.result.total_batches", { count: totalBatches, items: totalItems }) }}
       </div>
 
-      <!-- Items list -->
-      <div class="grid gap-4">
-        <a
-          v-for="item in items"
-          :key="item.id"
-          :href="item.link"
-          target="_blank"
-          class="block p-6 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+      <div class="space-y-3">
+        <button
+          v-for="batch in batches"
+          :key="batch.id"
+          class="w-full text-left bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors overflow-hidden"
+          @click="toggleBatch(batch.id)"
         >
-<div class="flex items-center gap-2 text-sm text-neutral-500 mb-2">
-             <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
-             <span>•</span>
-            <span v-if="item.published_at || item.fetched_at">{{ formatDate((item.published_at ?? item.fetched_at) as string) }}</span>
-           </div>
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <span class="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+                  {{ t("history.batch_title", { id: batch.id }) }}
+                </span>
+                <span class="px-2 py-0.5 text-xs rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300">
+                  {{ batch.items_count }} {{ batch.items_count === 1 ? t("history.item") : t("history.items") }}
+                </span>
+              </div>
+              <div class="mt-1 text-sm text-neutral-500">
+                {{ formatDate(batch.created_at) }}
+                <span v-if="batch.sources.length > 0" class="ml-2">
+                  • {{ batch.sources.slice(0, 3).join(", ") }}
+                  <span v-if="batch.sources.length > 3">+{{ batch.sources.length - 3 }}</span>
+                </span>
+              </div>
+            </div>
+            <div class="ml-4">
+              <ChevronDown
+                v-if="expandedBatch !== batch.id"
+                class="h-5 w-5 text-neutral-400"
+              />
+              <ChevronUp
+                v-else
+                class="h-5 w-5 text-primary-500"
+              />
+            </div>
+          </div>
 
-          <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
-            {{ item.title }}
-          </h3>
-
-          <p class="text-neutral-600 dark:text-neutral-400 line-clamp-2">
-            {{ item.description }}
-          </p>
-        </a>
+          <div
+            v-if="expandedBatch === batch.id"
+            class="border-t border-neutral-200 dark:border-neutral-700"
+          >
+            <div v-if="loadingItems" class="p-4 text-center text-neutral-500">
+              {{ t("common.loading") }}
+            </div>
+            <div v-else-if="expandedItems.length === 0" class="p-4 text-center text-neutral-500">
+              {{ t("history.empty_items") }}
+            </div>
+            <div v-else class="divide-y divide-neutral-200 dark:divide-neutral-700">
+              <a
+                v-for="item in expandedItems"
+                :key="item.id"
+                :href="item.link"
+                target="_blank"
+                class="block p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1">
+                      <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
+                      <span v-if="item.published_at">•</span>
+                      <span v-if="item.published_at">{{ formatDate(item.published_at) }}</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                      {{ item.title }}
+                    </h4>
+                    <p v-if="item.description" class="mt-1 text-xs text-neutral-500 line-clamp-2">
+                      {{ item.description }}
+                    </p>
+                  </div>
+                  <ExternalLink class="h-4 w-4 text-neutral-400 flex-shrink-0 mt-1" />
+                </div>
+              </a>
+            </div>
+          </div>
+        </button>
       </div>
-
-      <!-- Pagination -->
-      <Pagination
-        :page="currentPage"
-        :page-size="pageSize"
-        :total-items="totalItems"
-        :total-pages="totalPages"
-        @update:page="handlePageChange"
-      />
     </template>
   </div>
 </template>

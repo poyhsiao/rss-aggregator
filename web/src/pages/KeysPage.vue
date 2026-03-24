@@ -7,10 +7,13 @@ import type { ApiKey } from '@/types/key'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import KeyDialog from '@/components/KeyDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 
 const { t } = useI18n()
 const toast = useToast()
+const confirm = useConfirm()
 
 const keys = ref<ApiKey[]>([])
 const loading = ref(true)
@@ -44,7 +47,14 @@ async function copyToClipboard(text: string, id: number): Promise<void> {
 }
 
 async function handleDelete(id: number): Promise<void> {
-  if (!confirm(t('keys.delete_confirm'))) return
+  const confirmed = await confirm.show({
+    title: t('keys.delete_title'),
+    message: t('keys.delete_confirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
   
   try {
     await deleteKey(id)
@@ -119,6 +129,17 @@ onMounted(fetchKeys)
     <KeyDialog
       v-model:open="showDialog"
       @created="handleKeyCreated"
+    />
+
+    <ConfirmDialog
+      v-model:open="confirm.state.value.open"
+      :title="confirm.state.value.title"
+      :message="confirm.state.value.message"
+      :confirm-text="confirm.state.value.confirmText"
+      :cancel-text="confirm.state.value.cancelText"
+      :variant="confirm.state.value.variant"
+      @confirm="confirm.confirm"
+      @cancel="confirm.cancel"
     />
   </div>
 </template>

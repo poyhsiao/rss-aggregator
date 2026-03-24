@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+web/node_modules
+
+# Python
+__pycache__
+*.py[cod]
+.venv
+venv
+*.egg-info
+
+# Build outputs
+web/dist
+dist
+build
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (should be passed via build args or runtime)
+.env
+.env.*
+!.env.example
+!.env.docker
+
+# Docker
+docker-compose.override.yml
+
+# Test and coverage
+coverage
+.nyc_output
+
+# Misc
+*.log
+*.tmp
+.cache

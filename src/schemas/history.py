@@ -1,11 +1,7 @@
-"""Pydantic schemas for history API."""
-
 from pydantic import BaseModel, Field
 
 
 class HistoryItem(BaseModel):
-    """Schema for a history feed item."""
-
     id: int
     source_id: int
     source: str
@@ -17,8 +13,6 @@ class HistoryItem(BaseModel):
 
 
 class PaginationInfo(BaseModel):
-    """Schema for pagination info."""
-
     page: int = Field(..., ge=1)
     page_size: int = Field(..., ge=1, le=100)
     total_items: int = Field(..., ge=0)
@@ -26,7 +20,18 @@ class PaginationInfo(BaseModel):
 
 
 class HistoryResponse(BaseModel):
-    """Schema for history API response."""
-
     items: list[HistoryItem]
     pagination: PaginationInfo
+
+
+class HistoryBatch(BaseModel):
+    id: int
+    items_count: int
+    sources: list[str]
+    created_at: str
+
+
+class HistoryBatchesResponse(BaseModel):
+    batches: list[HistoryBatch]
+    total_batches: int
+    total_items: int
