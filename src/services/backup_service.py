@@ -216,3 +216,127 @@ class BackupService:
                 return zf.read("backup.json")
         except Exception as e:
             raise ValueError(f"Failed to decrypt backup: {e}") from e
+
+    def _is_version_compatible(
+        self, backup_version: str, current_version: str
+    ) -> bool:
+        """Check version compatibility.
+
+        Rules:
+        - Same major version: Compatible
+        - Different major version: Incompatible
+
+        Args:
+            backup_version: Version from backup file.
+            current_version: Current application version.
+
+        Returns:
+            True if versions are compatible.
+        """
+        backup_major = backup_version.split(".")[0]
+        current_major = current_version.split(".")[0]
+        return backup_major == current_major
+
+    def _merge_sources(
+        self,
+        existing: list[dict[str, Any]],
+        backup: list[dict[str, Any]],
+    ) -> tuple[list[dict[str, Any]], dict[int, int]]:
+        """Merge sources, keyed by URL.
+
+        Args:
+            existing: Existing sources from database.
+            backup: Sources from backup.
+
+        Returns:
+            Tuple of (merged sources, old_id to new_id mapping).
+        """
+        existing_by_url = {s["url"]: s for s in existing}
+        merged = list(existing)
+        id_map: dict[int, int] = {}
+
+        for source in backup:
+            if source["url"] in existing_by_url:
+                # Update existing
+                existing_source = existing_by_url[source["url"]]
+                id_map[source["id"]] = existing_source["id"]
+                # Update fields
+                for key, value in source.items():
+                    if key != "id":
+                        existing_source[key] = value
+            else:
+                # Add new source
+                new_id = len(merged) + 1
+                new_source = {**source, "id": new_id}
+                id_map[source["id"]] = new_id
+                merged.append(new_source)
+
+        return merged, id_map
+
+    def _merge_feed_items(
+        self,
+        existing: list[dict[str, Any]],
+        backup: list[dict[str, Any]],
+        source_id_map: dict[int, int],
+    ) -> list[dict[str, Any]]:
+        """Merge feed items, keyed by link.
+
+        Args:
+            existing: Existing feed items from database.
+            backup: Feed items from backup.
+            source_id_map: Mapping of old source IDs to new IDs.
+
+        Returns:
+            Merged feed items.
+        """
+        existing_by_link = {f["link"]: f for f in existing}
+        merged = list(existing)
+
+        for item in backup:
+            # Remap source_id if present
+            if "source_id" in item and item["source_id"] in source_id_map:
+                item = {**item, "source_id": source_id_map[item["source_id"]]}
+
+            if item["link"] in existing_by_link:
+                # Update existing
+                existing_item = existing_by_link[item["link"]]
+                for key, value in item.items():
+                    if key != "id":
+                        existing_item[key] = value
+            else:
+                # Add new item
+                new_id = len(merged) + 1
+                merged.append({**item, "id": new_id})
+
+        return merged
+
+    def _merge_api_keys(
+        self,
+        existing: list[dict[str, Any]],
+        backup: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Merge API keys, keyed by key string.
+
+        Args:
+            existing: Existing API keys from database.
+            backup: API keys from backup.
+
+        Returns:
+            Merged API keys.
+        """
+        existing_by_key = {k["key"]: k for k in existing}
+        merged = list(existing)
+
+        for key in backup:
+            if key["key"] in existing_by_key:
+                # Update existing
+                existing_key = existing_by_key[key["key"]]
+                for k, v in key.items():
+                    if k != "id":
+                        existing_key[k] = v
+            else:
+                # Add new key
+                new_id = len(merged) + 1
+                merged.append({**key, "id": new_id})
+
+        return merged
