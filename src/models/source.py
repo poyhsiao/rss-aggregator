@@ -21,11 +21,15 @@ class Source(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
     name: Mapped[str] = mapped_column(String(255))
-    url: Mapped[str] = mapped_column(String(2048), unique=True)
+    url: Mapped[str] = mapped_column(String(2048), index=True)
     fetch_interval: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
     last_fetched_at: Mapped[datetime | None] = mapped_column(default=None)
     last_error: Mapped[str | None] = mapped_column(Text, default=None)
+
+    __table_args__ = (
+        # Uniqueness enforced via partial indexes: uq_sources_url_active, uq_sources_name_active
+    )
 
     feed_items: Mapped[list[FeedItem]] = relationship(
         "FeedItem", back_populates="source", cascade="all, delete-orphan", init=False
