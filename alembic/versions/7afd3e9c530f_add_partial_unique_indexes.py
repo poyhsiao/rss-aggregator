@@ -17,17 +17,25 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    with op.batch_alter_table('sources', schema=None) as batch_op:
-        batch_op.drop_index('sqlite_autoindex_sources_1')
+    bind = op.get_bind()
+    
+    existing_indexes = bind.execute(
+        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='sources'"
+    ).fetchall()
+    existing_names = [idx[0] for idx in existing_indexes]
+    
+    if 'sqlite_autoindex_sources_1' in existing_names:
+        with op.batch_alter_table('sources', schema=None) as batch_op:
+            batch_op.drop_constraint('url', type_='unique')
     
     op.execute("""
-        CREATE UNIQUE INDEX uq_sources_url_active 
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_sources_url_active 
         ON sources(url) 
         WHERE deleted_at IS NULL
     """)
     
     op.execute("""
-        CREATE UNIQUE INDEX uq_sources_name_active 
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_sources_name_active 
         ON sources(name) 
         WHERE deleted_at IS NULL
     """)
@@ -36,6 +44,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("DROP INDEX IF EXISTS uq_sources_name_active")
     op.execute("DROP INDEX IF EXISTS uq_sources_url_active")
-    
-    with op.batch_alter_table('sources', schema=None) as batch_op:
-        batch_op.create_index('sqlite_autoindex_sources_1', ['url'], unique=True)
