@@ -3,7 +3,15 @@ import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { FileText, RefreshCw, Trash2, RotateCcw, XCircle } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
-import { getTrashItems, restoreSource, permanentDeleteSource, clearTrash, type TrashItem, type RestoreConflict } from '@/api/trash'
+import { 
+  getTrashItems, 
+  restoreSource, 
+  permanentDeleteSource, 
+  clearTrash, 
+  type TrashItem, 
+  type RestoreConflict,
+  RestoreConflictError 
+} from '@/api/trash'
 import type { Source } from '@/types/source'
 import type { FeedParams } from '@/api/feed'
 import Button from '@/components/ui/Button.vue'
@@ -145,18 +153,31 @@ async function handleDelete(id: number): Promise<void> {
 async function handleRestore(id: number): Promise<void> {
   restoringId.value = id
   try {
-    const result = await restoreSource(id)
-    
-    if (result.conflict) {
-      currentConflict.value = result
+    await restoreSource(id)
+    await fetchTrash()
+    await fetchSources()
+    toast.success(t('trash.restored'))
+  } catch (error) {
+    if (error instanceof RestoreConflictError) {
+      currentConflict.value = {
+        conflict: true,
+        trash_source: {
+          id: error.detail.trash_item.id,
+          name: error.detail.trash_item.name,
+          url: error.detail.trash_item.url,
+        } as TrashItem,
+        existing_source: {
+          id: error.detail.existing_item.id,
+          name: error.detail.existing_item.name,
+          url: error.detail.existing_item.url,
+        } as Source,
+        conflict_type: error.detail.conflict_type,
+      }
       conflictDialogOpen.value = true
     } else {
-      await fetchTrash()
-      await fetchSources()
-      toast.success(t('trash.restored'))
+      const message = error instanceof Error ? error.message : t('common.error')
+      toast.error(message)
     }
-  } catch {
-    toast.error(t('common.error'))
   } finally {
     restoringId.value = null
   }
@@ -170,8 +191,9 @@ async function handleRestoreOverwrite(): Promise<void> {
     await fetchTrash()
     await fetchSources()
     toast.success(t('trash.restored'))
-  } catch {
-    toast.error(t('common.error'))
+  } catch (error) {
+    const message = error instanceof Error ? error.message : t('common.error')
+    toast.error(message)
   }
   currentConflict.value = null
 }
@@ -183,8 +205,9 @@ async function handleRestoreKeepExisting(): Promise<void> {
     await restoreSource(currentConflict.value.trash_source.id, false)
     await fetchTrash()
     toast.success(t('trash.restored'))
-  } catch {
-    toast.error(t('common.error'))
+  } catch (error) {
+    const message = error instanceof Error ? error.message : t('common.error')
+    toast.error(message)
   }
   currentConflict.value = null
 }

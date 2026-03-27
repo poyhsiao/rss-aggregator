@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.10.0 - 2026-03-27
+
+### Added
+
+- Trash management feature with soft-delete and restore functionality
+- `GET /api/v1/trash` endpoint for listing trashed sources
+- `POST /api/v1/trash/{id}/restore` endpoint for restoring sources with conflict handling
+- `DELETE /api/v1/trash/{id}` endpoint for permanent deletion
+- `DELETE /api/v1/trash` endpoint for clearing all trash items
+- Partial unique indexes for sources (name, url) to allow same name/url after soft-delete
+- Database migration for partial unique indexes using `WHERE deleted_at IS NULL`
+- Trash tab in Sources page with restore and permanent delete actions
+- Restore conflict dialog with options to overwrite or keep existing source
+- E2E tests for trash restore functionality
+
+### Changed
+
+- Source deletion now soft-deletes instead of hard-delete (moves to trash)
+- Improved error handling for restore conflicts with specific error messages
+- Frontend API now properly handles 409 conflict responses with `RestoreConflictError`
+
+### Fixed
+
+- LSP errors in `trash.py` where `trash` variable could be None
+- Frontend API paths for `clearTrash` and `permanentDeleteSource` to match backend routes
+- Browser cache inconsistency issues with Service Worker and nginx configuration
+- Scheduler not available error when `SCHEDULER_ENABLED=false` by always creating scheduler instance
+- SQLite migration issues with unique constraint removal
+
 ## v0.9.3 - 2026-03-27
 
 ### Fixed

@@ -84,9 +84,13 @@ async def restore_source(
                 return RestoreResponse(id=source.id, name=source.name, restored=True)
             elif request.conflict_resolution == "keep_existing":
                 trash = await source_service.get_trash_source(source_id)
+                if trash is None:
+                    raise HTTPException(status_code=404, detail="Trash item not found")
                 return RestoreResponse(id=trash.id, name=trash.name, restored=False)
             else:
                 trash = await source_service.get_trash_source(source_id)
+                if trash is None:
+                    raise HTTPException(status_code=404, detail="Trash item not found")
                 raise HTTPException(
                     status_code=409,
                     detail={

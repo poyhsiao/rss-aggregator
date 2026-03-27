@@ -10,6 +10,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - Filter by time range and keywords
 - Sort by publication time or source name
 - Source management via API or environment variables
+- **Trash management** - Soft-delete sources with restore functionality and conflict resolution
 - Scheduled background fetching
 - Daily statistics tracking
 - API key authentication and rate limiting
@@ -150,6 +151,9 @@ cd src-tauri && cargo tauri dev
 | `/api/v1/sources` | GET, POST | List/create sources |
 | `/api/v1/sources/{id}` | GET, PUT, DELETE | Manage source |
 | `/api/v1/sources/{id}/feed` | GET | Get feed for specific source |
+| `/api/v1/trash` | GET, DELETE | List/clear trash items |
+| `/api/v1/trash/{id}` | DELETE | Permanently delete a trash item |
+| `/api/v1/trash/{id}/restore` | POST | Restore a trash item |
 | `/api/v1/keys` | GET, POST | List/create API keys |
 | `/api/v1/stats` | GET | Get daily statistics |
 | `/api/v1/logs` | GET | Get error logs |
