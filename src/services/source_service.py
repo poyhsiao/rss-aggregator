@@ -209,18 +209,6 @@ class SourceService:
         }
 
     async def restore_source(self, source_id: int, overwrite: bool = False) -> Source:
-        """Restore a soft-deleted source.
-
-        Args:
-            source_id: ID of the source to restore.
-            overwrite: If True, soft-delete conflicting existing sources.
-
-        Returns:
-            The restored Source instance.
-
-        Raises:
-            ValueError: If source not found or conflict exists without overwrite.
-        """
         trash_source = await self.get_trash_source(source_id)
         if trash_source is None:
             raise ValueError(f"Trash source with id {source_id} not found")
@@ -229,6 +217,7 @@ class SourceService:
             conflict = await self.check_restore_conflict(source_id)
             if conflict:
                 conflict["existing_item"].soft_delete()
+                await self.session.commit()
         else:
             conflict = await self.check_restore_conflict(source_id)
             if conflict:
