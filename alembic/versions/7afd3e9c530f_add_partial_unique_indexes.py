@@ -8,6 +8,7 @@ Create Date: 2026-03-27 12:36:09.616000
 from typing import Sequence, Union
 
 from alembic import op
+from sqlalchemy import text
 
 
 revision: str = '7afd3e9c530f'
@@ -20,7 +21,7 @@ def upgrade() -> None:
     bind = op.get_bind()
     
     existing_indexes = bind.execute(
-        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='sources'"
+        text("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='sources'")
     ).fetchall()
     existing_names = [idx[0] for idx in existing_indexes]
     
