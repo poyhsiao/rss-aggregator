@@ -1,11 +1,8 @@
-const CACHE_NAME = 'rss-aggregator-v1'
+const CACHE_NAME = 'rss-aggregator-v0.5.1'
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.ico',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
 ]
 
 self.addEventListener('install', (event) => {
@@ -32,6 +29,29 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
+
+  const url = new URL(event.request.url)
+
+  if (url.pathname.startsWith('/api/')) {
+    return
+  }
+
+  if (url.pathname.endsWith('.html') || url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache)
+          })
+          return response
+        })
+        .catch(() => {
+          return caches.match(event.request)
+        })
+    )
+    return
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
