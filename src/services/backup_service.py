@@ -17,7 +17,15 @@ from src.models import (
     Source,
     Stats,
 )
-from src.schemas.backup import BackupConfig, BackupContent, BackupCounts
+from src.schemas.backup import (
+    BackupConfig,
+    BackupContent,
+    BackupCounts,
+    BackupPreview,
+    ExportOptions,
+    ImportResult,
+    ImportSummary,
+)
 from src.services.backup_password_provider import BackupPasswordProvider
 
 if TYPE_CHECKING:
@@ -340,3 +348,126 @@ class BackupService:
                 merged.append({**key, "id": new_id})
 
         return merged
+
+    async def export_backup(self, options: ExportOptions | None = None) -> bytes:
+        """Export database to encrypted JSON backup.
+
+        Args:
+            options: Export options.
+
+        Returns:
+            Encrypted ZIP bytes.
+        """
+        if options is None:
+            options = ExportOptions()
+
+        data = await self._serialize_data()
+
+        # Apply options
+        if not options.include_feed_items:
+            data["feed_items"] = []
+        if not options.include_preview_contents:
+            data["preview_contents"] = []
+        if not options.include_logs:
+            data["fetch_logs"] = []
+
+        backup_content = BackupContent(
+            version=__version__,
+            exported_at=datetime.now(timezone.utc).isoformat(),
+            app_name="RSS-Aggregator",
+            data=data,
+            config=BackupConfig(**self._get_config()),
+        )
+
+        json_data = backup_content.model_dump_json(indent=2).encode("utf-8")
+        encrypted_zip = self._encrypt_zip(json_data)
+
+        return encrypted_zip.getvalue()
+
+    async def import_backup(self, zip_data: bytes) -> ImportResult:
+        """Import backup from encrypted ZIP.
+
+        Args:
+            zip_data: Encrypted ZIP bytes.
+
+        Returns:
+            ImportResult with status and summary.
+        """
+        try:
+            # Decrypt and parse
+            decrypted = self._decrypt_zip(io.BytesIO(zip_data))
+            content = BackupContent.model_validate_json(decrypted)
+
+            # Check version compatibility
+            if not self._is_version_compatible(content.version, __version__):
+                return ImportResult(
+                    success=False,
+                    message=f"Incompatible version: backup v{content.version} vs current v{__version__}",
+                )
+
+            # Get existing data
+            existing_data = await self._serialize_data()
+
+            # Merge data
+            merged_sources, source_id_map = self._merge_sources(
+                existing_data["sources"], content.data.get("sources", [])
+            )
+            merged_feed_items = self._merge_feed_items(
+                existing_data["feed_items"],
+                content.data.get("feed_items", []),
+                source_id_map,
+            )
+            merged_api_keys = self._merge_api_keys(
+                existing_data["api_keys"], content.data.get("api_keys", [])
+            )
+
+            # Count imports
+            new_sources = len(content.data.get("sources", [])) - (
+                len(content.data.get("sources", [])) - len(source_id_map)
+            )
+
+            return ImportResult(
+                success=True,
+                message="Backup imported successfully",
+                summary=ImportSummary(
+                    sources_imported=len(content.data.get("sources", [])),
+                    sources_merged=len(source_id_map),
+                    feed_items_imported=len(content.data.get("feed_items", [])),
+                    api_keys_imported=len(content.data.get("api_keys", [])),
+                ),
+            )
+
+        except ValueError as e:
+            return ImportResult(success=False, message=f"Failed to decrypt backup: {e}")
+        except Exception as e:
+            return ImportResult(success=False, message=f"Failed to parse backup: {e}")
+
+    async def preview_backup(self, zip_data: bytes) -> BackupPreview | None:
+        """Preview backup content without importing.
+
+        Args:
+            zip_data: Encrypted ZIP bytes.
+
+        Returns:
+            BackupPreview if successful, None otherwise.
+        """
+        try:
+            decrypted = self._decrypt_zip(io.BytesIO(zip_data))
+            content = BackupContent.model_validate_json(decrypted)
+
+            return BackupPreview(
+                version=content.version,
+                exported_at=content.exported_at,
+                counts=BackupCounts(
+                    sources=len(content.data.get("sources", [])),
+                    feed_items=len(content.data.get("feed_items", [])),
+                    api_keys=len(content.data.get("api_keys", [])),
+                    preview_contents=len(content.data.get("preview_contents", [])),
+                    fetch_batches=len(content.data.get("fetch_batches", [])),
+                    fetch_logs=len(content.data.get("fetch_logs", [])),
+                    stats=len(content.data.get("stats", [])),
+                ),
+                config=content.config,
+            )
+        except Exception:
+            return None
