@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileText, RefreshCw } from 'lucide-vue-next'
+import { FileText, RefreshCw, Trash2, RotateCcw, XCircle } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
+import { getTrashItems, restoreSource, permanentDeleteSource, clearTrash, type TrashItem, type RestoreConflict } from '@/api/trash'
 import type { Source } from '@/types/source'
 import type { FeedParams } from '@/api/feed'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import SourceDialog from '@/components/SourceDialog.vue'
 import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
+import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
@@ -18,7 +20,9 @@ const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 
+const activeTab = ref<'active' | 'trash'>('active')
 const sources = ref<Source[]>([])
+const trashItems = ref<TrashItem[]>([])
 const loading = ref(true)
 const refreshing = ref(false)
 const showDialog = ref(false)
@@ -26,24 +30,59 @@ const editingSource = ref<Source | null>(null)
 const previewDialogOpen = ref(false)
 const previewParams = ref<FeedParams | undefined>(undefined)
 const previewTitle = ref<string | undefined>(undefined)
+const conflictDialogOpen = ref(false)
+const currentConflict = ref<RestoreConflict | null>(null)
+const restoringId = ref<number | null>(null)
+
+const showEmptyState = computed(() => {
+  if (activeTab.value === 'active') {
+    return !sources.value.length
+  }
+  return !trashItems.value.length
+})
+
+const emptyMessage = computed(() => {
+  if (activeTab.value === 'active') {
+    return t('sources.empty')
+  }
+  return t('trash.empty')
+})
 
 function handleSaved(source: Source): void {
-    const existingIndex = sources.value.findIndex(s => s.id === source.id)
-    if (existingIndex >= 0) {
-      sources.value[existingIndex] = source
-    } else {
-      sources.value.unshift(source)
-    }
+  const existingIndex = sources.value.findIndex(s => s.id === source.id)
+  if (existingIndex >= 0) {
+    sources.value[existingIndex] = source
+  } else {
+    sources.value.unshift(source)
   }
+}
 
-  async function fetchSources(): Promise<void> {
-    loading.value = true
-    try {
-      sources.value = await getSources()
-    } finally {
-      loading.value = false
-    }
+async function fetchSources(): Promise<void> {
+  loading.value = true
+  try {
+    sources.value = await getSources()
+  } finally {
+    loading.value = false
   }
+}
+
+async function fetchTrash(): Promise<void> {
+  loading.value = true
+  try {
+    trashItems.value = await getTrashItems()
+  } finally {
+    loading.value = false
+  }
+}
+
+async function handleTabChange(tab: 'active' | 'trash'): Promise<void> {
+  activeTab.value = tab
+  if (tab === 'active') {
+    await fetchSources()
+  } else {
+    await fetchTrash()
+  }
+}
 
 function openAddDialog(): void {
   editingSource.value = null
@@ -103,6 +142,91 @@ async function handleDelete(id: number): Promise<void> {
   }
 }
 
+async function handleRestore(id: number): Promise<void> {
+  restoringId.value = id
+  try {
+    const result = await restoreSource(id)
+    
+    if (result.conflict) {
+      currentConflict.value = result
+      conflictDialogOpen.value = true
+    } else {
+      await fetchTrash()
+      await fetchSources()
+      toast.success(t('trash.restored'))
+    }
+  } catch {
+    toast.error(t('common.error'))
+  } finally {
+    restoringId.value = null
+  }
+}
+
+async function handleRestoreOverwrite(): Promise<void> {
+  if (!currentConflict.value) return
+  
+  try {
+    await restoreSource(currentConflict.value.trash_source.id, true)
+    await fetchTrash()
+    await fetchSources()
+    toast.success(t('trash.restored'))
+  } catch {
+    toast.error(t('common.error'))
+  }
+  currentConflict.value = null
+}
+
+async function handleRestoreKeepExisting(): Promise<void> {
+  if (!currentConflict.value) return
+  
+  try {
+    await restoreSource(currentConflict.value.trash_source.id, false)
+    await fetchTrash()
+    toast.success(t('trash.restored'))
+  } catch {
+    toast.error(t('common.error'))
+  }
+  currentConflict.value = null
+}
+
+async function handlePermanentDelete(id: number): Promise<void> {
+  const confirmed = await confirm.show({
+    title: t('trash.permanent_delete_title'),
+    message: t('trash.permanent_delete_confirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
+  
+  try {
+    await permanentDeleteSource(id)
+    await fetchTrash()
+    toast.success(t('trash.permanently_deleted'))
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+async function handleClearTrash(): Promise<void> {
+  const confirmed = await confirm.show({
+    title: t('trash.clear_title'),
+    message: t('trash.clear_confirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
+  
+  try {
+    const result = await clearTrash()
+    await fetchTrash()
+    toast.success(t('trash.cleared', { count: result.deleted_count }))
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
 function getDisplayUrl(url: string): { display: string; full: string } {
   const isMobile = window.innerWidth < 640
   const maxLength = isMobile ? 28 : 50
@@ -145,33 +269,69 @@ onMounted(fetchSources)
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <h1 class="text-2xl font-semibold">📡 {{ t('sources.title') }}</h1>
       <div class="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          :disabled="refreshing"
-          :title="t('sources.refresh_all')"
-          @click="handleRefreshAll"
-        >
-          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4 mr-2" />
-          {{ t('sources.refresh_all') }}
-        </Button>
-        <Button
-          @click="openAddDialog"
-          :title="t('sources.add')"
-        >
-          ➕ {{ t('sources.add') }}
-        </Button>
+        <template v-if="activeTab === 'active'">
+          <Button
+            variant="outline"
+            :disabled="refreshing"
+            :title="t('sources.refresh_all')"
+            @click="handleRefreshAll"
+          >
+            <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4 mr-2" />
+            {{ t('sources.refresh_all') }}
+          </Button>
+          <Button
+            @click="openAddDialog"
+            :title="t('sources.add')"
+          >
+            ➕ {{ t('sources.add') }}
+          </Button>
+        </template>
+        <template v-else>
+          <Button
+            variant="outline"
+            :disabled="!trashItems.length"
+            :title="t('trash.clear')"
+            @click="handleClearTrash"
+          >
+            <Trash2 class="h-4 w-4 mr-2" />
+            {{ t('trash.clear') }}
+          </Button>
+        </template>
       </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-neutral-200 dark:border-neutral-700">
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+        :class="activeTab === 'active' 
+          ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
+        @click="handleTabChange('active')"
+      >
+        🟢 {{ t('trash.tab_active') }} ({{ sources.length }})
+      </button>
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+        :class="activeTab === 'trash' 
+          ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
+        @click="handleTabChange('trash')"
+      >
+        🗑️ {{ t('trash.tab_trash') }} ({{ trashItems.length }})
+      </button>
     </div>
     
     <div v-if="loading" class="text-center py-12 text-neutral-500">
       {{ t('common.loading') }}
     </div>
     
-    <div v-else-if="!sources.length" class="text-center py-12 text-neutral-500">
-      📭 {{ t('sources.empty') }}
+    <div v-else-if="showEmptyState" class="text-center py-12 text-neutral-500">
+      📭 {{ emptyMessage }}
     </div>
     
-    <div v-else class="space-y-3">
+    <!-- Active Sources List -->
+    <div v-else-if="activeTab === 'active'" class="space-y-3">
       <div
         v-for="source in sources"
         :key="source.id"
@@ -252,6 +412,60 @@ onMounted(fetchSources)
       </div>
     </div>
 
+    <!-- Trash Items List -->
+    <div v-else class="space-y-3">
+      <div
+        v-for="item in trashItems"
+        :key="item.id"
+        class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 opacity-75"
+      >
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div class="flex items-start gap-3 min-w-0 flex-1">
+            <span class="mt-0.5 shrink-0">🗑️</span>
+            <div class="min-w-0 flex-1">
+              <div class="font-medium truncate">{{ item.name }}</div>
+              <div 
+                class="text-sm text-neutral-500 dark:text-neutral-400 truncate cursor-help"
+                :title="item.url"
+              >
+                {{ getDisplayUrl(item.url).display }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                :title="t('trash.restore')"
+                :disabled="restoringId === item.id"
+                @click="handleRestore(item.id)"
+              >
+                <RotateCcw class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                :title="t('trash.permanent_delete')"
+                @click="handlePermanentDelete(item.id)"
+              >
+                <XCircle class="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-x-4 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+            <span class="truncate">
+              🗑️ {{ t('trash.deleted_at') }}: {{ formatDate(item.deleted_at) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <SourceDialog
       v-model:open="showDialog"
       :source="editingSource"
@@ -262,6 +476,13 @@ onMounted(fetchSources)
       v-model:open="previewDialogOpen"
       :params="previewParams"
       :title="previewTitle"
+    />
+
+    <RestoreConflictDialog
+      v-model:open="conflictDialogOpen"
+      :conflict="currentConflict"
+      @overwrite="handleRestoreOverwrite"
+      @keep-existing="handleRestoreKeepExisting"
     />
 
     <ConfirmDialog

@@ -240,5 +240,27 @@
     "open_in_new": "Open in new tab",
     "close": "Close",
     "preview_article": "Preview article"
+  },
+  "trash": {
+    "tab_active": "Active",
+    "tab_trash": "Trash",
+    "empty": "Trash is empty",
+    "restore": "Restore",
+    "restored": "Source restored",
+    "permanent_delete": "Permanent Delete",
+    "permanent_delete_title": "Permanently Delete Source",
+    "permanent_delete_confirm": "Are you sure you want to permanently delete this source? This action cannot be undone.",
+    "permanently_deleted": "Source permanently deleted",
+    "clear": "Clear Trash",
+    "clear_title": "Clear Trash",
+    "clear_confirm": "Are you sure you want to permanently delete all items in trash? This action cannot be undone.",
+    "cleared": "Trash cleared ({count} items deleted)",
+    "deleted_at": "Deleted",
+    "conflict_title": "Restore Conflict",
+    "conflict_description": "An active source with the same URL already exists. How would you like to proceed?",
+    "existing_source": "Existing Source",
+    "trash_source": "Trash Item",
+    "overwrite": "Overwrite Existing",
+    "keep_existing": "Keep Existing"
   }
 }

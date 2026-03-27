@@ -240,5 +240,27 @@
     "open_in_new": "在新分頁開啟",
     "close": "關閉",
     "preview_article": "預覽文章"
+  },
+  "trash": {
+    "tab_active": "啟用中",
+    "tab_trash": "垃圾桶",
+    "empty": "垃圾桶是空的",
+    "restore": "復原",
+    "restored": "來源已復原",
+    "permanent_delete": "永久刪除",
+    "permanent_delete_title": "永久刪除來源",
+    "permanent_delete_confirm": "確定要永久刪除此來源嗎？此操作無法復原。",
+    "permanently_deleted": "來源已永久刪除",
+    "clear": "清空垃圾桶",
+    "clear_title": "清空垃圾桶",
+    "clear_confirm": "確定要永久刪除垃圾桶中的所有項目嗎？此操作無法復原。",
+    "cleared": "垃圾桶已清空（已刪除 {count} 個項目）",
+    "deleted_at": "刪除時間",
+    "conflict_title": "復原衝突",
+    "conflict_description": "已有相同 URL 的來源存在。您要如何處理？",
+    "existing_source": "現有來源",
+    "trash_source": "垃圾桶項目",
+    "overwrite": "覆蓋現有",
+    "keep_existing": "保留現有"
   }
 }
