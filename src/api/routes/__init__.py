@@ -1,5 +1,5 @@
 """API routes package."""
 
-from src.api.routes import feed, health, history, keys, logs, previews, sources, stats, trash
+from src.api.routes import backup, feed, health, history, keys, logs, previews, sources, stats, trash
 
-__all__ = ["feed", "health", "history", "keys", "logs", "previews", "sources", "stats", "trash"]
+__all__ = ["backup", "feed", "health", "history", "keys", "logs", "previews", "sources", "stats", "trash"]
