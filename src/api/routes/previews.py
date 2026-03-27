@@ -11,6 +11,16 @@ from src.services.preview_service import PreviewService
 router = APIRouter(prefix="/previews", tags=["previews"])
 
 
+@router.delete(
+    "",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_all_previews(
+    preview_service: PreviewService = Depends(get_preview_service),
+) -> None:
+    await preview_service.delete_all()
+
+
 @router.post(
     "/fetch",
     response_model=PreviewContentResponse,

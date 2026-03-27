@@ -1,7 +1,7 @@
 """Trash management API routes."""
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.api.deps import get_source_service, require_api_key
 from src.services.source_service import SourceService
@@ -13,6 +13,8 @@ router = APIRouter(prefix="/trash", tags=["trash"])
 class TrashItemResponse(BaseModel):
     """Schema for trash item response."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     url: str
@@ -21,9 +23,6 @@ class TrashItemResponse(BaseModel):
     deleted_at: str
     created_at: str
     updated_at: str
-
-    class Config:
-        from_attributes = True
 
 
 class RestoreRequest(BaseModel):

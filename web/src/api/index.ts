@@ -126,6 +126,19 @@ async function tauriFetch<T>(
       throw new Error(errorMessage)
     }
 
+    if (response.status === 204) {
+      if (logConfig) {
+        logApiOperation({
+          action: logConfig.action,
+          status: 'success',
+          targetId: logConfig.targetId,
+          request: sanitizeRequestData(requestBody),
+          response: null,
+        })
+      }
+      return null as T
+    }
+
     const data = await response.json()
     
     if (logConfig) {
@@ -199,6 +212,80 @@ const api = {
       })
     }
     return axiosInstance.patch(url, data, config).then((r) => r.data)
+  },
+
+  /**
+   * POST request that returns a Blob (binary response).
+   * Used for file downloads like backup export.
+   */
+  async postBlob(url: string, data?: unknown, config?: { headers?: Record<string, string> }): Promise<Blob> {
+    if (isTauri()) {
+      const authStore = useAuthStore()
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(config?.headers || {}),
+      }
+      if (authStore.apiKey) {
+        headers['X-API-Key'] = authStore.apiKey
+      }
+      const fullUrl = `app://localhost/api/v1${url}`
+      const response = await fetch(fullUrl, {
+        method: 'POST',
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+      })
+      if (!response.ok) {
+        if (response.status === 401) {
+          authStore.logout()
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      return response.blob()
+    }
+    const response = await axiosInstance.post(url, data, {
+      ...config,
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
+  /**
+   * POST binary data (ArrayBuffer/Blob) and return JSON response.
+   * Used for file uploads like backup import and preview.
+   */
+  async postBinary<T>(url: string, data: ArrayBuffer | Blob, config?: { headers?: Record<string, string> }): Promise<T> {
+    if (isTauri()) {
+      const authStore = useAuthStore()
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/zip',
+        ...(config?.headers || {}),
+      }
+      if (authStore.apiKey) {
+        headers['X-API-Key'] = authStore.apiKey
+      }
+      const fullUrl = `app://localhost/api/v1${url}`
+      const response = await fetch(fullUrl, {
+        method: 'POST',
+        headers,
+        body: data,
+      })
+      if (!response.ok) {
+        if (response.status === 401) {
+          authStore.logout()
+        }
+        const errorData = await response.json().catch(() => ({ message: response.statusText }))
+        throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`)
+      }
+      return response.json()
+    }
+    const response = await axiosInstance.post(url, data, {
+      ...config,
+      headers: {
+        'Content-Type': 'application/zip',
+        ...(config?.headers || {}),
+      },
+    })
+    return response.data
   },
 }
 

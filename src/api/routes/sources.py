@@ -1,7 +1,7 @@
 """Source management API routes."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.api.deps import get_feed_service, get_scheduler, get_source_service, require_api_key
 from src.services.feed_service import FeedService
@@ -30,6 +30,8 @@ class SourceUpdate(BaseModel):
 class SourceResponse(BaseModel):
     """Schema for source response."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     url: str
@@ -39,9 +41,6 @@ class SourceResponse(BaseModel):
     last_error: str | None
     created_at: str
     updated_at: str
-
-    class Config:
-        from_attributes = True
 
 
 class BatchCreate(BaseModel):

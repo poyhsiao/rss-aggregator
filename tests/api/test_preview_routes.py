@@ -141,15 +141,15 @@ class TestFetchAndCachePreview:
         assert response.status_code == 422
 
     @pytest.mark.asyncio
-    async def test_updates_existing_cache(
+    async def test_returns_cached_content_without_fetching(
         self, async_client: AsyncClient, test_session: AsyncSession
     ) -> None:
-        url = "https://example.com/existing"
+        url = "https://example.com/cached"
         existing = PreviewContent(
             url=url,
             url_hash=compute_url_hash(url),
-            markdown_content="# Old Content",
-            title="Old Title",
+            markdown_content="# Cached Content",
+            title="Cached Title",
         )
         test_session.add(existing)
         await test_session.commit()
@@ -158,8 +158,8 @@ class TestFetchAndCachePreview:
         mock_response.json = lambda: {
             "success": True,
             "url": url,
-            "title": "Updated Content",
-            "content": "# Updated Content\n\nNew content.",
+            "title": "Should Not Be Used",
+            "content": "# Should Not Be Used",
             "timestamp": "2024-01-01T00:00:00Z",
             "method": "Cloudflare Workers AI",
             "duration_ms": 100,
@@ -168,9 +168,8 @@ class TestFetchAndCachePreview:
         mock_response.raise_for_status = lambda: None
 
         with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+            mock_post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value.post = mock_post
 
             response = await async_client.post(
                 "/api/v1/previews/fetch",
@@ -179,8 +178,9 @@ class TestFetchAndCachePreview:
 
             assert response.status_code == 201
             data = response.json()
-            assert data["markdown_content"] == "# Updated Content\n\nNew content."
-            assert data["title"] == "Updated Content"
+            assert data["markdown_content"] == "# Cached Content"
+            assert data["title"] == "Cached Title"
+            mock_post.assert_not_called()
 
 
 class TestCreatePreview:

@@ -1,6 +1,6 @@
 """Backup and restore API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
 from src.api.deps import get_backup_service, require_api_key
@@ -39,7 +39,7 @@ async def export_backup(
 
 @router.post("/import", response_model=ImportResult)
 async def import_backup(
-    zip_data: bytes,
+    request: Request,
     backup_service: BackupService = Depends(get_backup_service),
     _: str = Depends(require_api_key),
 ) -> ImportResult:
@@ -51,13 +51,14 @@ async def import_backup(
     Returns:
         ImportResult with status and summary.
     """
+    zip_data = await request.body()
     result = await backup_service.import_backup(zip_data)
     return result
 
 
 @router.post("/preview", response_model=BackupPreview | None)
 async def preview_backup(
-    zip_data: bytes,
+    request: Request,
     backup_service: BackupService = Depends(get_backup_service),
     _: str = Depends(require_api_key),
 ) -> BackupPreview | None:
@@ -69,6 +70,7 @@ async def preview_backup(
     Returns:
         BackupPreview with version and counts, or None if invalid.
     """
+    zip_data = await request.body()
     preview = await backup_service.preview_backup(zip_data)
     if preview is None:
         raise HTTPException(

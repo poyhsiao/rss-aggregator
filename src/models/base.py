@@ -19,8 +19,12 @@ class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
     pass
 
 
-class TimestampMixin:
-    """Mixin for created_at, updated_at, and deleted_at timestamps."""
+class TimestampMixin(MappedAsDataclass, kw_only=True):
+    """Mixin for created_at, updated_at, and deleted_at timestamps.
+
+    Note: Must inherit from MappedAsDataclass to avoid SQLAlchemy 2.1 deprecation warning
+    when used with dataclass models.
+    """
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default_factory=now, nullable=False

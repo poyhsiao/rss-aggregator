@@ -24,21 +24,18 @@ const router = createRouter({
       name: 'sources',
       component: () => import('@/pages/SourcesPage.vue'),
     },
+    // Redirect old routes to settings with query param
     {
       path: '/keys',
-      name: 'keys',
-      component: () => import('@/pages/KeysPage.vue'),
-      meta: { requiresWeb: true },
+      redirect: () => ({ path: '/settings', query: { tab: 'keys' } }),
     },
     {
       path: '/stats',
-      name: 'stats',
-      component: () => import('@/pages/StatsPage.vue'),
+      redirect: () => ({ path: '/settings', query: { tab: 'stats' } }),
     },
     {
       path: '/logs',
-      name: 'logs',
-      component: () => import('@/pages/LogsPage.vue'),
+      redirect: () => ({ path: '/settings', query: { tab: 'stats' } }),
     },
     {
       path: '/history',

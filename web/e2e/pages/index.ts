@@ -239,7 +239,7 @@ export class KeysPage extends BasePage {
   }
 
   async goto() {
-    await super.goto('/keys')
+    await super.goto('/settings?tab=keys')
     await this.waitForPageLoad()
   }
 
@@ -301,7 +301,7 @@ export class StatsPage extends BasePage {
   }
 
   async goto() {
-    await super.goto('/stats')
+    await super.goto('/settings?tab=stats')
     await this.waitForPageLoad()
   }
 
@@ -325,7 +325,7 @@ export class LogsPage extends BasePage {
   }
 
   async goto() {
-    await super.goto('/logs')
+    await super.goto('/settings?tab=stats')
     await this.waitForPageLoad()
   }
 

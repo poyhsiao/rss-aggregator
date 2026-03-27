@@ -12,7 +12,9 @@
     "edit": "Edit",
     "save": "Save",
     "add": "Add",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "system": "System"
   },
   "setup": {
     "step": "Step",
@@ -222,7 +224,11 @@
     "next": "Next"
   },
   "theme": {
-    "toggle": "Toggle theme"
+    "toggle": "Toggle theme",
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   },
   "language": {
     "switch": "Switch language"
@@ -262,5 +268,72 @@
     "trash_source": "Trash Item",
     "overwrite": "Overwrite Existing",
     "keep_existing": "Keep Existing"
+  },
+  "backup": {
+    "title": "Backup & Restore",
+    "description": "Export or import your data for backup or migration.",
+    "export": {
+      "title": "Export Backup",
+      "description": "Download an encrypted backup of your database.",
+      "button": "Export Backup",
+      "options": "Export Options",
+      "include_feed_items": "Include Feed Items",
+      "include_preview_contents": "Include Preview Contents",
+      "include_logs": "Include Fetch Logs",
+      "success": "Backup exported successfully",
+      "failed": "Failed to export backup"
+    },
+    "import": {
+      "title": "Import Backup",
+      "description": "Restore data from an encrypted backup file.",
+      "button": "Import Backup",
+      "select_file": "Click to select a backup file",
+      "preview_title": "Backup Preview",
+      "preview_failed": "Failed to read backup file. Invalid format or wrong password.",
+      "confirm_title": "Confirm Import",
+      "confirm_description": "This will merge the backup data with your current database. Existing records with the same key will be overwritten.",
+      "success": "Backup imported successfully",
+      "failed": "Failed to import backup",
+      "restart_title": "Restart Backend",
+      "restart_description": "Backup imported successfully. Please restart the backend to apply the changes.",
+      "summary": {
+        "sources_imported": "Sources imported",
+        "sources_merged": "Sources merged",
+        "feed_items_imported": "Feed items imported",
+        "api_keys_imported": "API keys imported"
+      }
+    },
+    "version": "Version",
+    "exported_at": "Exported At",
+    "counts": {
+      "sources": "Sources",
+      "feed_items": "Feed Items",
+      "api_keys": "API Keys",
+      "preview_contents": "Preview Contents",
+      "fetch_batches": "Fetch Batches",
+      "fetch_logs": "Fetch Logs",
+      "stats": "Statistics"
+    },
+    "config": {
+      "timezone": "Timezone",
+      "language": "Language"
+    },
+    "loading": "Processing...",
+    "no_file": "No file selected"
+  },
+  "settings": {
+    "desktop": {
+      "title": "Desktop Settings",
+      "open_folder": "Open Data Folder",
+      "restart": "Restart Backend",
+      "restart_success": "Backend restarted successfully"
+    },
+    "clear_previews": {
+      "title": "Clear Preview Contents",
+      "button": "Clear All Previews",
+      "confirm_title": "Clear All Preview Contents",
+      "confirm_message": "Are you sure you want to clear all cached preview contents? This action cannot be undone.",
+      "success": "All preview contents cleared"
+    }
   }
 }

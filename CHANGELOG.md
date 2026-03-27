@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.11.1 - 2026-03-28
+
+### Fixed
+
+- SQLAlchemy 2.1 deprecation warning by making `TimestampMixin` inherit from `MappedAsDataclass`
+- Pydantic v2 deprecation warning by updating `class Config` to `model_config = ConfigDict(from_attributes=True)` in keys, sources, and trash routes
+- pytest-asyncio configuration by adding `asyncio_mode = "auto"` in `pyproject.toml`
+- Preview service tests to correctly validate request parameters including headers
+- "Clear all previews" button error in Tauri app by handling `204 No Content` response in `tauriFetch`
+
+### Changed
+
+- Test assertions updated to match actual caching behavior (cached content is returned without re-fetching)
+
+## v0.11.0 - 2026-03-27
+
+### Added
+
+- Backup and restore functionality with encrypted ZIP format (AES encryption via pyzipper)
+- `GET /api/v1/backup/export` endpoint for exporting database backup
+- `POST /api/v1/backup/import` endpoint for importing backup with merge support
+- `POST /api/v1/backup/preview` endpoint for previewing backup contents
+- `BackupService` for backup/export operations with encryption
+- `BackupPasswordProvider` for password management from environment variable
+- Backup schemas: `ExportOptions`, `ImportResult`, `BackupPreview`, `BackupCounts`, `ImportSummary`
+- `BackupManager.vue` component in Settings page
+- Tauri backup commands with native file dialogs: `export_backup`, `import_backup`, `preview_backup`
+- i18n translations for backup feature (English and Chinese)
+- E2E tests for backup functionality
+- 52 unit tests for backup service
+
+### Changed
+
+- Backup filename format: `rss-backup-v{version}-{date}.zip`
+- Password from environment variable `BACKUP_PASSWORD` (default: `kimhsiao`)
+- Merge mode on restore: backup takes priority, existing data preserved but same records overwritten
+
 ## v0.10.0 - 2026-03-27
 
 ### Added

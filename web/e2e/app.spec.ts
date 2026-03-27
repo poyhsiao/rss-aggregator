@@ -283,7 +283,7 @@ test.describe('History Page', () => {
 
 test.describe('Keys Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/keys')
+    await page.goto('/settings?tab=keys')
     await page.waitForLoadState('networkidle')
   })
 
@@ -356,7 +356,7 @@ test.describe('Keys Page', () => {
 
 test.describe('Stats Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/stats')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
   })
 
@@ -373,7 +373,7 @@ test.describe('Stats Page', () => {
 
 test.describe('Logs Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
   })
 
@@ -395,10 +395,7 @@ test.describe('Navigation', () => {
     await page.getByRole('link', { name: /history/i }).click()
     await expect(page).toHaveURL(/history/)
 
-    await page.getByRole('link', { name: /key/i }).click()
-    await expect(page).toHaveURL(/keys/)
-
-    await page.getByRole('link', { name: /stat/i }).click()
-    await expect(page).toHaveURL(/stats/)
+    await page.getByRole('link', { name: /settings|設定/i }).click()
+    await expect(page).toHaveURL(/settings/)
   })
 })

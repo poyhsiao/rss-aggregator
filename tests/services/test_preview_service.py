@@ -168,10 +168,10 @@ class TestFetchMarkdownFromService:
                 "https://example.com/test"
             )
 
-            mock_post.assert_called_once_with(
-                "https://markdown.new/",
-                json={"url": "https://example.com/test", "retain_images": True},
-            )
+            call_args = mock_post.call_args
+            assert call_args.args[0] == "https://markdown.new/"
+            assert call_args.kwargs["json"] == {"url": "https://example.com/test", "retain_images": True}
+            assert "headers" in call_args.kwargs
 
     @pytest.mark.asyncio
     async def test_raises_on_unsuccessful_response(
@@ -195,7 +195,7 @@ class TestFetchMarkdownFromService:
                 return_value=mock_response
             )
 
-            with pytest.raises(ValueError, match="success=false"):
+            with pytest.raises(ValueError, match="markdown.new API error"):
                 await preview_service.fetch_markdown_from_service(
                     "https://example.com/fail"
                 )
@@ -234,18 +234,18 @@ class TestFetchAndCache:
             assert result.id is not None
 
     @pytest.mark.asyncio
-    async def test_updates_existing_cache(
+    async def test_returns_cached_content_without_fetching(
         self, preview_service: PreviewService
     ) -> None:
         url = "https://example.com/article"
-        await preview_service.upsert(url, "# Original", "Original")
+        cached = await preview_service.upsert(url, "# Cached", "Cached")
 
         mock_response = AsyncMock()
         mock_response.json = lambda: {
             "success": True,
             "url": url,
-            "title": "Updated Article",
-            "content": "# Updated Article\n\nNew content.",
+            "title": "Should Not Be Used",
+            "content": "# Should Not Be Used",
             "timestamp": "2024-01-01T00:00:00Z",
             "method": "Cloudflare Workers AI",
             "duration_ms": 100,
@@ -254,14 +254,14 @@ class TestFetchAndCache:
         mock_response.raise_for_status = lambda: None
 
         with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+            mock_post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value.post = mock_post
 
             result = await preview_service.fetch_and_cache(url)
 
-            assert result.markdown_content == "# Updated Article\n\nNew content."
-            assert result.title == "Updated Article"
+            assert result.markdown_content == "# Cached"
+            assert result.title == "Cached"
+            mock_post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_extracts_title_from_content_if_missing(

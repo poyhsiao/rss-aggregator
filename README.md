@@ -11,6 +11,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - Sort by publication time or source name
 - Source management via API or environment variables
 - **Trash management** - Soft-delete sources with restore functionality and conflict resolution
+- **Backup and restore** - Export/import encrypted ZIP backups with merge support
 - Scheduled background fetching
 - Daily statistics tracking
 - API key authentication and rate limiting
@@ -35,6 +36,7 @@ Download the latest release for your platform:
 - No TCP port binding
 - Portable data storage (`./data/` directory)
 - First-run setup wizard
+- Backup and restore with native file dialogs
 - Import/export database
 
 ### Docker

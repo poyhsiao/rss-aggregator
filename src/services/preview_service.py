@@ -102,7 +102,12 @@ class PreviewService:
             raise ValueError(f"Preview service network error: {e}") from e
 
     async def fetch_and_cache(self, url: str) -> PreviewContent:
-        """Fetch markdown from service and cache it."""
+        cached = await self.get_by_url(url)
+        if cached:
+            logger.info(f"Cache hit for URL: {url}")
+            return cached
+        
+        logger.info(f"Cache miss, fetching from service: {url}")
         result = await self.fetch_markdown_from_service(url)
         title = result.title or self._extract_title(result.content)
         return await self.upsert(url, result.content, title)
@@ -123,6 +128,27 @@ class PreviewService:
             return h1_match.group(1).strip()
 
         return None
+
+    async def delete_all(self) -> int:
+        from sqlalchemy import func, select
+
+        count_result = await self._session.execute(
+            select(func.count()).select_from(PreviewContent).where(
+                PreviewContent.deleted_at.is_(None)
+            )
+        )
+        count = count_result.scalar() or 0
+
+        if count == 0:
+            return 0
+
+        from sqlalchemy import delete
+
+        stmt = delete(PreviewContent).where(PreviewContent.deleted_at.is_(None))
+        await self._session.execute(stmt)
+        await self._session.commit()
+        logger.info(f"Deleted {count} preview contents")
+        return count
 
     async def upsert(
         self,

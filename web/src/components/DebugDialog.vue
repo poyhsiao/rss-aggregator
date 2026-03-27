@@ -7,6 +7,8 @@ import { isTauri } from "@/utils/environment";
 import { getSources } from "@/api/sources";
 import { getLogs } from "@/api/logs";
 import { getStats } from "@/api/stats";
+import { openDataFolder } from "@/utils/tauri-bridge";
+import { useToast } from "@/composables/useToast";
 
 const props = defineProps<{
   open: boolean;
@@ -19,6 +21,7 @@ const emit = defineEmits<{
 const loading = ref(false);
 const copied = ref(false);
 const devtoolsOpen = ref(false);
+const toast = useToast();
 const debugInfo = ref<{
   environment: string;
   version: string;
@@ -97,6 +100,17 @@ async function toggleDevtools(): Promise<void> {
   }
 }
 
+async function handleOpenDataFolder(): Promise<void> {
+  if (!isTauri()) return;
+  
+  try {
+    await openDataFolder();
+  } catch (error) {
+    console.error("Failed to open data folder:", error);
+    toast.error(String(error));
+  }
+}
+
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
     fetchDebugInfo();
@@ -117,20 +131,31 @@ watch(() => props.open, (isOpen) => {
         </Button>
       </div>
 
-      <div class="flex gap-2 mb-4">
-        <Button variant="outline" size="sm" @click="fetchDebugInfo" :disabled="loading">
-          <RefreshCw :class="{ 'animate-spin': loading }" class="h-4 w-4 mr-1.5" />
-          Refresh
-        </Button>
-        <Button variant="outline" size="sm" @click="copyToClipboard">
-          <Check v-if="copied" class="h-4 w-4 mr-1.5 text-green-500" />
-          <Copy v-else class="h-4 w-4 mr-1.5" />
-          {{ copied ? "Copied!" : "Copy JSON" }}
-        </Button>
-        <Button v-if="debugInfo.environment === 'Tauri (Desktop)'" variant="outline" size="sm" @click="toggleDevtools">
-          <Terminal class="h-4 w-4 mr-1.5" />
-          {{ devtoolsOpen ? "Close DevTools" : "Open DevTools" }}
-        </Button>
+      <div class="space-y-2 mb-4">
+        <!-- First row: General actions -->
+        <div class="flex gap-2">
+          <Button variant="outline" size="sm" @click="fetchDebugInfo" :disabled="loading">
+            <RefreshCw :class="{ 'animate-spin': loading }" class="h-4 w-4 mr-1.5" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm" @click="copyToClipboard">
+            <Check v-if="copied" class="h-4 w-4 mr-1.5 text-green-500" />
+            <Copy v-else class="h-4 w-4 mr-1.5" />
+            {{ copied ? "Copied!" : "Copy JSON" }}
+          </Button>
+        </div>
+        
+        <!-- Second row: Desktop-specific actions -->
+        <div v-if="debugInfo.environment === 'Tauri (Desktop)'" class="flex gap-2">
+          <Button variant="outline" size="sm" @click="toggleDevtools">
+            <Terminal class="h-4 w-4 mr-1.5" />
+            {{ devtoolsOpen ? "Close DevTools" : "Open DevTools" }}
+          </Button>
+          <Button variant="outline" size="sm" @click="handleOpenDataFolder">
+            <FolderOpen class="h-4 w-4 mr-1.5" />
+            Open Data Folder
+          </Button>
+        </div>
       </div>
 
       <div class="space-y-3 text-sm">

@@ -4,7 +4,7 @@ import re
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,13 +43,12 @@ class APIKeyCreate(BaseModel):
 class APIKeyResponse(BaseModel):
     """Schema for API key response."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     key: str
     name: str | None
     is_active: bool
-
-    class Config:
-        from_attributes = True
 
 
 @router.get("", response_model=list[APIKeyResponse])

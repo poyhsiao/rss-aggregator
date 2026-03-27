@@ -8,7 +8,13 @@ mod setup;
 mod sidecar;
 mod utils;
 
-pub use commands::{open_data_folder, export_data, import_data, restart_backend, get_app_version, get_data_path, is_first_run, get_setup_config, save_setup_config, complete_setup, SetupConfig, toggle_devtools, fetch_preview};
+pub use commands::{
+    open_data_folder, export_data, import_data, restart_backend, get_app_version, get_data_path,
+    is_first_run, get_setup_config, save_setup_config, complete_setup, SetupConfig,
+    toggle_devtools, fetch_preview, export_backup, import_backup, import_backup_with_path, preview_backup,
+    ExportOptions, BackupPreview, BackupCounts, BackupConfig, ImportResult, ImportSummary,
+    ExportBackupResult,
+};
 pub use interceptor::*;
 pub use setup::{Config, setup_first_run_check};
 pub use sidecar::*;
@@ -22,6 +28,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .register_asynchronous_uri_scheme_protocol("app", interceptor::handle_request)
         .invoke_handler(tauri::generate_handler![
             commands::open_data_folder,
@@ -36,6 +43,10 @@ pub fn run() {
             commands::complete_setup,
             commands::toggle_devtools,
             commands::fetch_preview,
+            commands::export_backup,
+            commands::import_backup,
+            commands::import_backup_with_path,
+            commands::preview_backup,
         ])
         .setup(|app| {
             log::info!("Setup phase starting...");

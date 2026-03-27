@@ -1,5 +1,6 @@
 """Router for JSON-RPC requests to existing API handlers."""
 
+import base64
 import re
 from typing import Any
 
@@ -7,6 +8,7 @@ from fastapi import HTTPException
 
 from src.api.deps import (
     get_auth_service,
+    get_backup_service,
     get_feed_service,
     get_fetch_service,
     get_history_service,
@@ -220,6 +222,18 @@ class StdioRouter:
 
             if path == "/api/v1/previews" and http_method == "POST":
                 return await self._handle_create_preview(body, session)
+
+            if path == "/api/v1/previews" and http_method == "DELETE":
+                return await self._handle_delete_all_previews(session)
+
+            if path == "/api/v1/backup/export" and http_method == "POST":
+                return await self._handle_export_backup(body, session)
+
+            if path == "/api/v1/backup/import" and http_method == "POST":
+                return await self._handle_import_backup(body, session)
+
+            if path == "/api/v1/backup/preview" and http_method == "POST":
+                return await self._handle_preview_backup(body, session)
 
             raise MethodNotFound({"detail": f"Route not found: {http_method} {path}"})
 
@@ -993,5 +1007,100 @@ class StdioRouter:
                 "title": result.title,
                 "created_at": to_iso_string(result.created_at) or "",
                 "updated_at": to_iso_string(result.updated_at) or "",
+            },
+        }
+
+    async def _handle_delete_all_previews(
+        self, session: Any
+    ) -> dict[str, Any]:
+        preview_service = await get_preview_service(session)
+        await preview_service.delete_all()
+        return {
+            "status": 204,
+            "headers": {},
+            "body": None,
+        }
+
+    async def _handle_export_backup(
+        self, body: Any, session: Any
+    ) -> dict[str, Any]:
+        from src.schemas.backup import ExportOptions
+
+        options = None
+        if body:
+            options = ExportOptions(
+                include_feed_items=body.get("include_feed_items", True),
+                include_preview_contents=body.get("include_preview_contents", True),
+                include_logs=body.get("include_logs", False),
+            )
+
+        backup_service = await get_backup_service(session)
+        zip_data = await backup_service.export_backup(options)
+        filename = backup_service._generate_backup_filename("0.10.0")
+
+        zip_base64 = base64.b64encode(zip_data).decode("utf-8")
+
+        return {
+            "status": 200,
+            "headers": {
+                "content-type": "application/zip",
+                "content-disposition": f'attachment; filename="{filename}"',
+                "x-backup-filename": filename,
+            },
+            "body": {"data": zip_base64, "filename": filename},
+        }
+
+    async def _handle_import_backup(
+        self, body: Any, session: Any
+    ) -> dict[str, Any]:
+        if not body or "data" not in body:
+            raise InvalidParams({"detail": "Backup data (base64) is required"})
+
+        try:
+            zip_data = base64.b64decode(body["data"])
+        except Exception as e:
+            raise InvalidParams({"detail": f"Invalid base64 data: {e}"}) from e
+
+        backup_service = await get_backup_service(session)
+        result = await backup_service.import_backup(zip_data)
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "success": result.success,
+                "message": result.message,
+                "summary": result.summary.model_dump() if result.summary else None,
+            },
+        }
+
+    async def _handle_preview_backup(
+        self, body: Any, session: Any
+    ) -> dict[str, Any]:
+        if not body or "data" not in body:
+            raise InvalidParams({"detail": "Backup data (base64) is required"})
+
+        try:
+            zip_data = base64.b64decode(body["data"])
+        except Exception as e:
+            raise InvalidParams({"detail": f"Invalid base64 data: {e}"}) from e
+
+        backup_service = await get_backup_service(session)
+        preview = await backup_service.preview_backup(zip_data)
+
+        if preview is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to parse backup file. Invalid format or wrong password.",
+            )
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "version": preview.version,
+                "exported_at": preview.exported_at,
+                "counts": preview.counts.model_dump(),
+                "config": preview.config.model_dump(),
             },
         }

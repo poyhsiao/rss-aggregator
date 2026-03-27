@@ -27,12 +27,13 @@ from src.schemas.backup import (
     ImportSummary,
 )
 from src.services.backup_password_provider import BackupPasswordProvider
+from src.utils.time import now
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-__version__ = "0.10.0"
+__version__ = "0.11.1"
 
 
 class BackupService:
@@ -394,53 +395,135 @@ class BackupService:
             ImportResult with status and summary.
         """
         try:
-            # Decrypt and parse
             decrypted = self._decrypt_zip(io.BytesIO(zip_data))
             content = BackupContent.model_validate_json(decrypted)
 
-            # Check version compatibility
             if not self._is_version_compatible(content.version, __version__):
                 return ImportResult(
                     success=False,
                     message=f"Incompatible version: backup v{content.version} vs current v{__version__}",
                 )
 
-            # Get existing data
-            existing_data = await self._serialize_data()
+            existing_sources = await self._get_all_sources()
+            existing_sources_by_url = {s.url: s for s in existing_sources}
+            existing_feed_items = await self._get_all_feed_items()
+            existing_feed_items_by_link = {f.link: f for f in existing_feed_items}
+            existing_api_keys = await self._get_all_api_keys()
+            existing_api_keys_by_key = {k.key: k for k in existing_api_keys}
 
-            # Merge data
-            merged_sources, source_id_map = self._merge_sources(
-                existing_data["sources"], content.data.get("sources", [])
-            )
-            merged_feed_items = self._merge_feed_items(
-                existing_data["feed_items"],
-                content.data.get("feed_items", []),
-                source_id_map,
-            )
-            merged_api_keys = self._merge_api_keys(
-                existing_data["api_keys"], content.data.get("api_keys", [])
-            )
+            sources_imported = 0
+            sources_merged = 0
+            feed_items_imported = 0
+            api_keys_imported = 0
+            source_id_map: dict[int, int] = {}
 
-            # Count imports
-            new_sources = len(content.data.get("sources", [])) - (
-                len(content.data.get("sources", [])) - len(source_id_map)
-            )
+            backup_sources = content.data.get("sources", [])
+            for source_data in backup_sources:
+                url = source_data.get("url")
+                if url in existing_sources_by_url:
+                    existing_source = existing_sources_by_url[url]
+                    source_id_map[source_data["id"]] = existing_source.id
+                    existing_source.name = source_data.get("name", existing_source.name)
+                    existing_source.fetch_interval = source_data.get(
+                        "fetch_interval", existing_source.fetch_interval
+                    )
+                    existing_source.is_active = source_data.get(
+                        "is_active", existing_source.is_active
+                    )
+                    existing_source.deleted_at = None
+                    sources_merged += 1
+                else:
+                    new_source = Source(
+                        name=source_data.get("name", ""),
+                        url=url,
+                        fetch_interval=source_data.get("fetch_interval", 0),
+                        is_active=source_data.get("is_active", True),
+                    )
+                    self._db.add(new_source)
+                    await self._db.flush()
+                    source_id_map[source_data["id"]] = new_source.id
+                    sources_imported += 1
+
+            backup_feed_items = content.data.get("feed_items", [])
+            for item_data in backup_feed_items:
+                link = item_data.get("link")
+                old_source_id = item_data.get("source_id")
+                new_source_id = source_id_map.get(old_source_id) if old_source_id else None
+
+                if link in existing_feed_items_by_link:
+                    existing_item = existing_feed_items_by_link[link]
+                    if new_source_id:
+                        existing_item.source_id = new_source_id
+                    existing_item.title = item_data.get("title", existing_item.title)
+                    existing_item.description = item_data.get(
+                        "description", existing_item.description
+                    )
+                    existing_item.deleted_at = None
+                    if item_data.get("published_at"):
+                        existing_item.published_at = datetime.fromisoformat(
+                            item_data["published_at"]
+                        )
+                else:
+                    if new_source_id:
+                        fetched_at = None
+                        if item_data.get("fetched_at"):
+                            try:
+                                fetched_at = datetime.fromisoformat(item_data["fetched_at"])
+                            except (ValueError, TypeError):
+                                fetched_at = None
+                        if fetched_at is None:
+                            fetched_at = now()
+
+                        new_item = FeedItem(
+                            source_id=new_source_id,
+                            title=item_data.get("title", ""),
+                            link=link,
+                            description=item_data.get("description"),
+                            published_at=(
+                                datetime.fromisoformat(item_data["published_at"])
+                                if item_data.get("published_at")
+                                else None
+                            ),
+                            fetched_at=fetched_at,
+                        )
+                        self._db.add(new_item)
+                        feed_items_imported += 1
+
+            backup_api_keys = content.data.get("api_keys", [])
+            for key_data in backup_api_keys:
+                key = key_data.get("key")
+                if key in existing_api_keys_by_key:
+                    existing_key = existing_api_keys_by_key[key]
+                    existing_key.name = key_data.get("name", existing_key.name)
+                    existing_key.is_active = key_data.get("is_active", existing_key.is_active)
+                    existing_key.deleted_at = None
+                else:
+                    new_key = APIKey(
+                        key=key,
+                        name=key_data.get("name"),
+                        is_active=key_data.get("is_active", True),
+                    )
+                    self._db.add(new_key)
+                    api_keys_imported += 1
+
+            await self._db.commit()
 
             return ImportResult(
                 success=True,
                 message="Backup imported successfully",
                 summary=ImportSummary(
-                    sources_imported=len(content.data.get("sources", [])),
-                    sources_merged=len(source_id_map),
-                    feed_items_imported=len(content.data.get("feed_items", [])),
-                    api_keys_imported=len(content.data.get("api_keys", [])),
+                    sources_imported=sources_imported,
+                    sources_merged=sources_merged,
+                    feed_items_imported=feed_items_imported,
+                    api_keys_imported=api_keys_imported,
                 ),
             )
 
         except ValueError as e:
             return ImportResult(success=False, message=f"Failed to decrypt backup: {e}")
         except Exception as e:
-            return ImportResult(success=False, message=f"Failed to parse backup: {e}")
+            await self._db.rollback()
+            return ImportResult(success=False, message=f"Failed to import backup: {e}")
 
     async def preview_backup(self, zip_data: bytes) -> BackupPreview | None:
         """Preview backup content without importing.

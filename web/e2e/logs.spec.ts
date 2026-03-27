@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Logs Page', () => {
+test.describe('Logs in Settings Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
   })
 
-  test('should display logs page with tabs', async ({ page }) => {
+  test('should display logs section with tabs', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /log/i })).toBeVisible()
     
     await expect(page.getByRole('button', { name: /system log|系統日誌/i })).toBeVisible()
@@ -37,7 +37,7 @@ test.describe('Logs Page', () => {
 
 test.describe('Operation Logs', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
   })
 
@@ -62,7 +62,7 @@ test.describe('Operation Logs', () => {
     
     await expect(heading).not.toBeVisible({ timeout: 10000 })
 
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
 
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
@@ -76,7 +76,7 @@ test.describe('Operation Logs', () => {
     const timestamp = Date.now()
     const keyName = `Test Log Key ${timestamp}`
 
-    await page.goto('/keys')
+    await page.goto('/settings?tab=keys')
     await page.waitForLoadState('networkidle')
 
     await page.getByRole('button', { name: /add|新增/i }).click()
@@ -97,7 +97,7 @@ test.describe('Operation Logs', () => {
     await confirmButtons.filter({ hasText: /confirm/i }).click()
     await dialog.waitFor({ state: 'hidden', timeout: 5000 })
 
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
 
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
@@ -110,7 +110,7 @@ test.describe('Operation Logs', () => {
 
 test.describe('Log Card Interaction', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/logs')
+    await page.goto('/settings?tab=stats')
     await page.waitForLoadState('networkidle')
   })
 

@@ -6,7 +6,6 @@ import { Languages } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
-import { isTauri } from '@/utils/environment'
 import AuthDialog from '@/components/AuthDialog.vue'
 import DebugDialog from '@/components/DebugDialog.vue'
 import Button from '@/components/ui/Button.vue'
@@ -54,14 +53,8 @@ const menuItems = computed(() => {
     { path: '/', label: t('nav.feed'), icon: '📰' },
     { path: '/history', label: t('nav.history'), icon: '🔍' },
     { path: '/sources', label: t('nav.sources'), icon: '📡' },
-    { path: '/keys', label: t('nav.keys'), icon: '🔑' },
-    { path: '/stats', label: t('nav.stats'), icon: '📊' },
-    { path: '/logs', label: t('nav.logs'), icon: '📝' },
+    { path: '/settings', label: t('common.settings'), icon: '⚙️' },
   ]
-  // Hide Keys menu in Tauri (desktop app) environment
-  if (isTauri()) {
-    return items.filter(item => item.path !== '/keys')
-  }
   return items
 })
 </script>

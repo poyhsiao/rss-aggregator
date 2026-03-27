@@ -11,4 +11,15 @@
     @apply bg-neutral-50 text-neutral-900;
     @apply dark:bg-neutral-900 dark:text-neutral-100;
   }
+
+  /* Fix select dropdown in dark mode */
+  select {
+    @apply bg-white text-neutral-900;
+    @apply dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  select option {
+    @apply bg-white text-neutral-900;
+    @apply dark:bg-neutral-800 dark:text-neutral-100;
+  }
 }

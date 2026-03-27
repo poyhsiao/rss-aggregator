@@ -1,7 +1,5 @@
 import { ref, readonly } from 'vue'
-import { computeUrlHash } from '@/utils/urlNormalizer'
-import { getCachedPreview, fetchAndCachePreview } from '@/api/preview'
-import { isTauri } from '@/utils/environment'
+import { fetchAndCachePreview } from '@/api/preview'
 
 export type PreviewSource = 'cache' | 'api'
 
@@ -29,26 +27,13 @@ export function useArticlePreview() {
     title.value = null
 
     try {
-      // In Tauri environment, skip cache lookup to avoid sidecar network issues
-      // The Tauri command will fetch directly from markdown.new API
-      if (!isTauri()) {
-        const urlHash = await computeUrlHash(url)
-        const cached = await getCachedPreview(urlHash)
-        if (cached) {
-          content.value = cached.markdown_content
-          title.value = cached.title
-          source.value = 'cache'
-          return
-        }
-      }
-
-      source.value = 'api'
       const result = await fetchAndCachePreview(url)
       const validatedContent = validateContent(result.markdown_content)
 
       content.value = validatedContent
       title.value = result.title
     } catch (err) {
+      console.error('[PREVIEW] Error in fetchPreview:', err)
       if (err instanceof Error) {
         if (err.message.includes('429')) {
           error.value = 'Preview service temporarily unavailable, please try again later'
@@ -57,7 +42,7 @@ export function useArticlePreview() {
         } else if (err.message.includes('Network')) {
           error.value = 'Network error, please check your connection'
         } else {
-          error.value = 'Unable to preview this page'
+          error.value = err.message || 'Unable to preview this page'
         }
       } else {
         error.value = 'An unexpected error occurred'
