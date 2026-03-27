@@ -16,6 +16,7 @@ dependencies = [
     "greenlet>=3.3.2",
     "httpx",
     "pydantic-settings",
+    "pyzipper>=0.3.6",
     "python-multipart",
     "sqlalchemy",
     "uvicorn[standard]",
