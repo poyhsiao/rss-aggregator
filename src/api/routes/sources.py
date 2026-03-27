@@ -256,9 +256,6 @@ async def refresh_source(
     _: str = Depends(require_api_key),
 ) -> dict:
     """Trigger refresh for a specific source."""
-    if scheduler is None:
-        raise HTTPException(status_code=503, detail="Scheduler not available")
-
     await scheduler.refresh_source(source_id)
     return {"message": "Refresh triggered"}
 
@@ -269,8 +266,5 @@ async def refresh_all_sources(
     _: str = Depends(require_api_key),
 ) -> dict:
     """Trigger refresh for all sources."""
-    if scheduler is None:
-        raise HTTPException(status_code=503, detail="Scheduler not available")
-
     await scheduler.refresh_all()
     return {"message": "All sources refresh triggered"}

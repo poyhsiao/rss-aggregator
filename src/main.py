@@ -14,20 +14,20 @@ from src.scheduler.fetch_scheduler import FetchScheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    if settings.scheduler_enabled:
-        from src.db.database import async_session_factory
+    from src.db.database import async_session_factory
 
-        scheduler = FetchScheduler(
-            session_factory=async_session_factory,
-            check_interval=settings.scheduler_interval,
-        )
-        set_scheduler(scheduler)
+    scheduler = FetchScheduler(
+        session_factory=async_session_factory,
+        check_interval=settings.scheduler_interval,
+    )
+    set_scheduler(scheduler)
+
+    if settings.scheduler_enabled:
         await scheduler.start()
 
     yield
 
-    scheduler = get_scheduler()
-    if scheduler:
+    if settings.scheduler_enabled:
         await scheduler.stop()
 
 

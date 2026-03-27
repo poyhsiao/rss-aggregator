@@ -32,8 +32,10 @@ def get_rate_limiter() -> RateLimiter:
     return _rate_limiter
 
 
-def get_scheduler() -> FetchScheduler | None:
+def get_scheduler() -> FetchScheduler:
     """Get scheduler instance."""
+    if _scheduler is None:
+        raise RuntimeError("Scheduler not initialized")
     return _scheduler
 
 
