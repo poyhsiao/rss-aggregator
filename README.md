@@ -13,6 +13,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - Scheduled background fetching
 - Daily statistics tracking
 - API key authentication and rate limiting
+- **Article Quick Preview** - Preview article content with markdown rendering and caching
 - **Desktop application support** (Windows, macOS, Linux)
 
 ## Installation
@@ -155,6 +156,8 @@ cd src-tauri && cargo tauri dev
 | `/api/v1/history` | GET | Get fetch history with date range |
 | `/api/v1/history/batches/{id}/name` | PATCH | Rename a fetch batch |
 | `/api/v1/history/batches/{id}` | DELETE | Delete a fetch batch |
+| `/api/v1/previews` | GET, POST | Get/create cached article previews |
+| `/api/v1/previews/{url_hash}` | GET | Get cached preview by URL hash |
 
 ### Feed Endpoint Parameters
 
@@ -237,6 +240,7 @@ pnpm generate-icons
 ### Features
 
 - **API Key Authentication**: Secure access with localStorage persistence
+- **Article Quick Preview**: Preview article content in markdown with caching (uses markdown.new API)
 - **6 Pages**: Feed, Sources, Keys, Stats, Logs, History
 - **Dark/Light Theme**: System preference detection with manual toggle
 - **i18n**: Chinese/English support

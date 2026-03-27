@@ -232,5 +232,13 @@
     "minutes_ago": "{count} minute ago | {count} minutes ago",
     "hours_ago": "{count} hour ago | {count} hours ago",
     "days_ago": "{count} day ago | {count} days ago"
+  },
+  "preview": {
+    "title": "Article Preview",
+    "loading": "Loading content...",
+    "error": "Failed to load content",
+    "open_in_new": "Open in new tab",
+    "close": "Close",
+    "preview_article": "Preview article"
   }
 }

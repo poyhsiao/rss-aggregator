@@ -232,5 +232,13 @@
     "minutes_ago": "{count} 分鐘前",
     "hours_ago": "{count} 小時前",
     "days_ago": "{count} 天前"
+  },
+  "preview": {
+    "title": "文章預覽",
+    "loading": "載入內容中...",
+    "error": "無法載入內容",
+    "open_in_new": "在新分頁開啟",
+    "close": "關閉",
+    "preview_article": "預覽文章"
   }
 }

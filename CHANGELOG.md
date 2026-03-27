@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.9.3 - 2026-03-27
+
+### Fixed
+
+- Article preview in Tauri desktop app now works correctly by using Tauri command to fetch directly from markdown.new API
+- Skip cache lookup in Tauri environment to avoid sidecar network limitations
+- Handle 500 errors in cache lookup as "not found" instead of throwing errors
+
+## v0.9.2 - 2026-03-27
+
+### Fixed
+
+- Article preview in Tauri desktop app now works correctly
+- Changed from async to blocking approach for preview fetching in protocol handler
+- Added comprehensive debug logging to trace preview request flow
+- Preview requests now handled synchronously using `tauri::async_runtime::block_on`
+- Added `src-tauri/src/preview/mod.rs` module for article preview handling
+
+## v0.9.1 - 2026-03-26
+
+### Fixed
+
+- Article preview error handling in Tauri desktop app
+- Error messages from Python backend are now properly propagated to frontend
+- Rust JSON-RPC client now includes `data.detail` in error messages for better debugging
+
+## v0.9.0 - 2026-03-26
+
+### Added
+
+- Article Quick Preview feature for Feed and History pages
+- `GET /api/v1/previews/{url_hash}` endpoint for cached preview retrieval
+- `GET /api/v1/previews?url=...` endpoint for preview by URL
+- `POST /api/v1/previews` endpoint for creating/updating preview content
+- `PreviewContent` SQLAlchemy model with SHA-256 URL hashing
+- `PreviewService` for preview content management
+- `ArticlePreviewDialog.vue` component with markdown rendering
+- `useArticlePreview` composable for preview state management
+- URL normalizer utility with SHA-256 hashing
+- Eye icon button on Feed page items for quick preview
+- Eye and ExternalLink icons on History page items
+- i18n keys for preview feature (English and Chinese)
+- E2E tests for article preview functionality
+
+### Changed
+
+- Preview content is cached in database per-URL for faster subsequent loads
+- Uses markdown.new API for content fetching with `retain_images: true`
+
 ## v0.8.0 - 2026-03-24
 
 ### Added

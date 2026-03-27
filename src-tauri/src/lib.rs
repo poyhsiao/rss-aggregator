@@ -3,11 +3,12 @@ use tauri::Manager;
 
 mod commands;
 mod interceptor;
+mod preview;
 mod setup;
 mod sidecar;
 mod utils;
 
-pub use commands::{open_data_folder, export_data, import_data, restart_backend, get_app_version, get_data_path, is_first_run, get_setup_config, save_setup_config, complete_setup, SetupConfig, toggle_devtools};
+pub use commands::{open_data_folder, export_data, import_data, restart_backend, get_app_version, get_data_path, is_first_run, get_setup_config, save_setup_config, complete_setup, SetupConfig, toggle_devtools, fetch_preview};
 pub use interceptor::*;
 pub use setup::{Config, setup_first_run_check};
 pub use sidecar::*;
@@ -34,6 +35,7 @@ pub fn run() {
             commands::save_setup_config,
             commands::complete_setup,
             commands::toggle_devtools,
+            commands::fetch_preview,
         ])
         .setup(|app| {
             log::info!("Setup phase starting...");

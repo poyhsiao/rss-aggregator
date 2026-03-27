@@ -5,6 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use tauri::{command, AppHandle, Manager};
 
+use crate::preview::{self, PreviewContent};
 use crate::setup::{self, Config};
 use crate::sidecar::SidecarManager;
 
@@ -151,4 +152,18 @@ pub fn toggle_devtools(app: AppHandle) -> Result<bool, String> {
     } else {
         Err("Could not get main window".to_string())
     }
+}
+
+/// Fetch article preview content from markdown.new API
+/// This bypasses the sidecar and fetches directly from external API
+#[command]
+pub async fn fetch_preview(url: String) -> Result<PreviewContent, String> {
+    log::info!("[COMMAND] fetch_preview called with URL: {}", url);
+    
+    preview::fetch_preview(&url)
+        .await
+        .map_err(|e| {
+            log::error!("[COMMAND] fetch_preview failed: {}", e);
+            e.to_string()
+        })
 }

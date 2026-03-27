@@ -7,6 +7,7 @@ use http::{Request, Response, StatusCode};
 use tauri::{AppHandle, Manager, Runtime, UriSchemeContext, UriSchemeResponder};
 use urlencoding::decode;
 
+use crate::preview;
 use crate::sidecar::{JsonRpcClient, SidecarManager};
 
 pub fn setup_protocol_interceptor<R: Runtime>(
@@ -21,6 +22,13 @@ pub fn handle_request<R: Runtime>(
     responder: UriSchemeResponder,
 ) {
     let app_handle = context.app_handle();
+
+    // Debug: Log incoming request
+    log::info!(
+        "[INTERCEPTOR] Incoming request: {} {}",
+        request.method(),
+        request.uri()
+    );
 
     if request.method() == "OPTIONS" {
         let response = Response::builder()
@@ -60,12 +68,26 @@ pub fn handle_request<R: Runtime>(
     }
 
     let parsed = match parse_request(&request) {
-        Ok(p) => p,
+        Ok(p) => {
+            log::info!(
+                "[INTERCEPTOR] Parsed request: method={}, path={}",
+                p.method,
+                p.path
+            );
+            p
+        }
         Err(e) => {
             respond_with_error(responder, StatusCode::BAD_REQUEST, &e);
             return;
         }
     };
+
+    // Check if this is a preview request - handle in Rust to avoid sidecar network issues
+    if parsed.path == "/api/v1/previews/fetch" && parsed.method == "POST" {
+        log::info!("[INTERCEPTOR] Preview request detected, handling in Rust");
+        handle_preview_request(parsed.body, responder);
+        return;
+    }
 
     let client = JsonRpcClient::new(manager);
 
@@ -108,6 +130,71 @@ pub fn handle_request<R: Runtime>(
         Err(e) => {
             let error_msg = format!("Backend error: {}", e);
             respond_with_error(responder, StatusCode::INTERNAL_SERVER_ERROR, &error_msg);
+        }
+    }
+}
+
+/// Handle preview requests directly in Rust to avoid sidecar network issues
+fn handle_preview_request(body: Vec<u8>, responder: UriSchemeResponder) {
+    log::info!(
+        "[PREVIEW] Handling preview request, body length: {}",
+        body.len()
+    );
+
+    let body_json: Option<serde_json::Value> = if body.is_empty() {
+        None
+    } else {
+        serde_json::from_slice(&body).ok()
+    };
+
+    let url = body_json
+        .as_ref()
+        .and_then(|v| v.get("url"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    if url.is_none() {
+        log::error!("[PREVIEW] URL is missing from request body");
+        respond_with_error(responder, StatusCode::BAD_REQUEST, "URL is required");
+        return;
+    }
+
+    let url = url.unwrap();
+    log::info!("[PREVIEW] Fetching preview for URL: {}", url);
+
+    // Use blocking approach to ensure response is sent before function returns
+    let result = tauri::async_runtime::block_on(preview::fetch_preview(&url));
+
+    match result {
+        Ok(content) => {
+            log::info!("[PREVIEW] Successfully fetched preview for: {}", url);
+            let body = serde_json::json!({
+                "id": null,
+                "url": content.url,
+                "url_hash": content.url_hash,
+                "markdown_content": content.markdown_content,
+                "title": content.title,
+                "created_at": chrono::Utc::now().to_rfc3339(),
+                "updated_at": chrono::Utc::now().to_rfc3339(),
+            });
+
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .body(serde_json::to_vec(&body).unwrap_or_default())
+                .unwrap();
+
+            responder.respond(response);
+            log::info!("[PREVIEW] Response sent for: {}", url);
+        }
+        Err(e) => {
+            log::error!("[PREVIEW] Failed to fetch preview for {}: {}", url, e);
+            respond_with_error(
+                responder,
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &format!("Failed to fetch preview: {}", e),
+            );
         }
     }
 }

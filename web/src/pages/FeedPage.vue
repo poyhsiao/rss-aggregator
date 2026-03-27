@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Clock, Database, FileText, RefreshCw } from "lucide-vue-next";
+import { Clock, Database, Eye, FileText, RefreshCw } from "lucide-vue-next";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getFeed } from "@/api/feed";
 import { refreshAllSources } from "@/api/sources";
 import RssPreviewDialog from "@/components/RssPreviewDialog.vue";
+import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue";
 import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import type { FeedItem } from "@/types/feed";
@@ -20,6 +21,8 @@ const refreshing = ref(false);
 const sortBy = ref<"published_at" | "source">("published_at");
 const keywords = ref("");
 const rssDialogOpen = ref(false);
+const articlePreviewOpen = ref(false);
+const selectedArticle = ref<{ url: string; title: string } | null>(null);
 
 async function fetchFeed(): Promise<void> {
 	loading.value = true;
@@ -44,6 +47,14 @@ async function handleRefreshAll(): Promise<void> {
 	} finally {
 		refreshing.value = false;
 	}
+}
+
+function openArticlePreview(item: FeedItem): void {
+	selectedArticle.value = {
+		url: item.link,
+		title: item.title,
+	};
+	articlePreviewOpen.value = true;
 }
 
 onMounted(fetchFeed);
@@ -132,27 +143,42 @@ watch([sortBy, keywords], () => {
     </div>
     
     <div v-else class="grid gap-4">
-      <a
+      <div
         v-for="item in feedItems"
         :key="item.id"
-        :href="item.link"
-        target="_blank"
         class="block p-6 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
       >
-        <div class="flex items-center gap-2 text-sm text-neutral-500 mb-2">
-          <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
-          <span>•</span>
-          <span>{{ formatDate(item.published_at) }}</span>
+        <div class="flex items-start justify-between gap-3">
+          <a
+            :href="item.link"
+            target="_blank"
+            class="flex-1 min-w-0"
+          >
+            <div class="flex items-center gap-2 text-sm text-neutral-500 mb-2">
+              <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
+              <span>•</span>
+              <span>{{ formatDate(item.published_at) }}</span>
+            </div>
+            
+            <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+              {{ item.title }}
+            </h3>
+            
+            <p class="text-neutral-600 dark:text-neutral-400 line-clamp-2">
+              {{ item.description }}
+            </p>
+          </a>
+          
+          <button
+            type="button"
+            class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors shrink-0"
+            :title="t('preview.preview_article')"
+            @click="openArticlePreview(item)"
+          >
+            <Eye class="h-5 w-5" />
+          </button>
         </div>
-        
-        <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
-          {{ item.title }}
-        </h3>
-        
-        <p class="text-neutral-600 dark:text-neutral-400 line-clamp-2">
-          {{ item.description }}
-        </p>
-      </a>
+      </div>
     </div>
 
     <RssPreviewDialog
@@ -161,6 +187,12 @@ watch([sortBy, keywords], () => {
         sort_by: sortBy,
         keywords: keywords || undefined,
       }"
+    />
+
+    <ArticlePreviewDialog
+      v-model:open="articlePreviewOpen"
+      :url="selectedArticle?.url || ''"
+      :title="selectedArticle?.title"
     />
   </div>
 </template>

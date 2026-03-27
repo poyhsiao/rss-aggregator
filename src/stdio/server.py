@@ -95,6 +95,29 @@ class StdioServer:
                 text("ALTER TABLE feed_items ADD COLUMN batch_id INTEGER")
             )
 
+        result = await conn.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name='preview_contents'")
+        )
+        if result.fetchone() is None:
+            print("[DEBUG] Creating preview_contents table...", file=sys.stderr, flush=True)
+            await conn.execute(
+                text("""
+                    CREATE TABLE preview_contents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        url VARCHAR(2048) NOT NULL,
+                        url_hash VARCHAR(64) NOT NULL UNIQUE,
+                        markdown_content TEXT NOT NULL,
+                        title VARCHAR(500),
+                        created_at DATETIME NOT NULL,
+                        updated_at DATETIME NOT NULL,
+                        deleted_at DATETIME
+                    )
+                """)
+            )
+            await conn.execute(
+                text("CREATE INDEX ix_preview_contents_url_hash ON preview_contents(url_hash)")
+            )
+
     async def _init_default_sources(self) -> None:
         from src.db.database import async_session_factory
         from src.services.source_service import SourceService

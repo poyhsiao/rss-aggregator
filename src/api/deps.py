@@ -12,6 +12,7 @@ from src.services.auth_service import AuthService
 from src.services.feed_service import FeedService
 from src.services.fetch_service import FetchService
 from src.services.history_service import HistoryService
+from src.services.preview_service import PreviewService
 from src.services.rate_limiter import RateLimiter
 from src.services.source_service import SourceService
 
@@ -75,6 +76,13 @@ async def get_history_service(
 ) -> HistoryService:
     """Get HistoryService instance."""
     return HistoryService(session)
+
+
+async def get_preview_service(
+    session: AsyncSession = Depends(get_session),
+) -> PreviewService:
+    """Get PreviewService instance."""
+    return PreviewService(session)
 
 
 async def require_api_key(

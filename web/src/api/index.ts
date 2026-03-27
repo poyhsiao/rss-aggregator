@@ -110,7 +110,8 @@ async function tauriFetch<T>(
       if (response.status === 401) {
         authStore.logout()
       }
-      const error = await response.json().catch(() => ({ message: response.statusText }))
+      const errorData = await response.json().catch(() => ({ message: response.statusText }))
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}`
       
       if (logConfig) {
         logApiOperation({
@@ -118,11 +119,11 @@ async function tauriFetch<T>(
           status: 'error',
           targetId: logConfig.targetId,
           request: sanitizeRequestData(requestBody),
-          error: error.detail || error.message || `HTTP ${response.status}`,
+          error: errorMessage,
         })
       }
       
-      throw new Error(error.message || `HTTP ${response.status}`)
+      throw new Error(errorMessage)
     }
 
     const data = await response.json()

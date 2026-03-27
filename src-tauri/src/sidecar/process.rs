@@ -305,7 +305,16 @@ impl SidecarManager {
         // Check for JSON-RPC error
         if let Some(error) = &response.error {
             log::error!("[JSON-RPC] Error: {:?}", error);
-            return Err(SidecarError::JsonRpc(error.message.clone()));
+            let error_message = if let Some(data) = &error.data {
+                if let Some(detail) = data.get("detail") {
+                    format!("{}: {}", error.message, detail)
+                } else {
+                    error.message.clone()
+                }
+            } else {
+                error.message.clone()
+            };
+            return Err(SidecarError::JsonRpc(error_message));
         }
 
         Ok(response)

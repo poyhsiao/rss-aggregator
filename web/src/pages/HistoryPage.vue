@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X } from "lucide-vue-next"
+import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X } from "lucide-vue-next"
 import { computed, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
 import { deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
 import Button from "@/components/ui/Button.vue"
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
+import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
 import type { HistoryBatch, HistoryItem } from "@/types/history"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
@@ -43,6 +44,10 @@ const previewItems = ref<HistoryItem[]>([])
 const previewLoading = ref(false)
 const previewFormat = ref<"rss" | "json" | "markdown">("rss")
 const previewCopied = ref(false)
+
+// Article preview state
+const articlePreviewOpen = ref(false)
+const selectedArticle = ref<{ url: string; title: string } | null>(null)
 
 onMounted(async () => {
   await fetchBatches()
@@ -271,6 +276,14 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;")
 }
 
+function openArticlePreview(item: HistoryItem): void {
+  selectedArticle.value = {
+    url: item.link,
+    title: item.title,
+  }
+  articlePreviewOpen.value = true
+}
+
 const itemCount = computed(() => previewItems.value.length)
 
 const previewSourceName = computed(() => {
@@ -417,15 +430,17 @@ const previewSourceName = computed(() => {
               {{ t("history.empty_items") }}
             </div>
             <div v-else class="divide-y divide-neutral-200 dark:divide-neutral-700">
-              <a
+              <div
                 v-for="item in expandedItems"
                 :key="item.id"
-                :href="item.link"
-                target="_blank"
                 class="block p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
               >
                 <div class="flex items-start justify-between gap-3">
-                  <div class="flex-1 min-w-0">
+                  <a
+                    :href="item.link"
+                    target="_blank"
+                    class="flex-1 min-w-0"
+                  >
                     <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1">
                       <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
                       <span v-if="item.published_at">•</span>
@@ -437,10 +452,27 @@ const previewSourceName = computed(() => {
                     <p v-if="item.description" class="mt-1 text-xs text-neutral-500 line-clamp-2">
                       {{ item.description }}
                     </p>
+                  </a>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
+                      :title="t('preview.preview_article')"
+                      @click.stop="openArticlePreview(item)"
+                    >
+                      <Eye class="h-4 w-4" />
+                    </button>
+                    <a
+                      :href="item.link"
+                      target="_blank"
+                      class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
+                      :title="t('preview.open_in_new')"
+                    >
+                      <ExternalLink class="h-4 w-4" />
+                    </a>
                   </div>
-                  <ExternalLink class="h-4 w-4 text-neutral-400 flex-shrink-0 mt-1" />
                 </div>
-              </a>
+              </div>
             </div>
           </div>
         </div>
@@ -586,6 +618,13 @@ const previewSourceName = computed(() => {
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Article Preview Dialog -->
+    <ArticlePreviewDialog
+      v-model:open="articlePreviewOpen"
+      :url="selectedArticle?.url || ''"
+      :title="selectedArticle?.title"
+    />
   </div>
 </template>
 

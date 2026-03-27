@@ -10,6 +10,7 @@ from src.api.deps import (
     get_feed_service,
     get_fetch_service,
     get_history_service,
+    get_preview_service,
     get_session,
     get_source_service,
 )
@@ -207,6 +208,18 @@ class StdioRouter:
 
             if re.match(r"^/api/v1/history/batches/\d+$", path) and http_method == "DELETE":
                 return await self._handle_delete_batch(path, session)
+
+            if path == "/api/v1/previews/fetch" and http_method == "POST":
+                return await self._handle_fetch_preview(body, session)
+
+            if path.startswith("/api/v1/previews/") and http_method == "GET":
+                return await self._handle_get_preview_by_hash(path, session)
+
+            if path == "/api/v1/previews" and http_method == "GET":
+                return await self._handle_get_preview_by_url(query, session)
+
+            if path == "/api/v1/previews" and http_method == "POST":
+                return await self._handle_create_preview(body, session)
 
             raise MethodNotFound({"detail": f"Route not found: {http_method} {path}"})
 
@@ -864,3 +877,121 @@ class StdioRouter:
             }
 
         return {"status": 200, "headers": {}, "body": {"success": True}}
+
+    async def _handle_fetch_preview(
+        self, body: Any, session: Any
+    ) -> dict[str, Any]:
+        if not body or "url" not in body:
+            raise InvalidParams({"detail": "url is required"})
+
+        preview_service = await get_preview_service(session)
+        result = await preview_service.fetch_and_cache(body["url"])
+
+        from src.utils.time import to_iso_string
+
+        return {
+            "status": 201,
+            "headers": {},
+            "body": {
+                "id": result.id,
+                "url": result.url,
+                "url_hash": result.url_hash,
+                "markdown_content": result.markdown_content,
+                "title": result.title,
+                "created_at": to_iso_string(result.created_at) or "",
+                "updated_at": to_iso_string(result.updated_at) or "",
+            },
+        }
+
+    async def _handle_get_preview_by_hash(
+        self, path: str, session: Any
+    ) -> dict[str, Any]:
+        match = re.match(r"/api/v1/previews/([a-f0-9]{64})$", path)
+        if not match:
+            raise InvalidParams({"detail": f"Invalid path format: {path}"})
+        url_hash = match.group(1)
+
+        preview_service = await get_preview_service(session)
+        result = await preview_service.get_by_url_hash(url_hash)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Preview not found")
+
+        from src.utils.time import to_iso_string
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "id": result.id,
+                "url": result.url,
+                "url_hash": result.url_hash,
+                "markdown_content": result.markdown_content,
+                "title": result.title,
+                "created_at": to_iso_string(result.created_at) or "",
+                "updated_at": to_iso_string(result.updated_at) or "",
+            },
+        }
+
+    async def _handle_get_preview_by_url(
+        self, query: dict[str, Any], session: Any
+    ) -> dict[str, Any]:
+        url = query.get("url")
+        if not url:
+            raise InvalidParams({"detail": "url query parameter is required"})
+
+        preview_service = await get_preview_service(session)
+        result = await preview_service.get_by_url(url)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Preview not found")
+
+        from src.utils.time import to_iso_string
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "id": result.id,
+                "url": result.url,
+                "url_hash": result.url_hash,
+                "markdown_content": result.markdown_content,
+                "title": result.title,
+                "created_at": to_iso_string(result.created_at) or "",
+                "updated_at": to_iso_string(result.updated_at) or "",
+            },
+        }
+
+    async def _handle_create_preview(
+        self, body: Any, session: Any
+    ) -> dict[str, Any]:
+        if not body:
+            raise InvalidParams({"detail": "Request body is required"})
+
+        if "url" not in body or "markdown_content" not in body:
+            raise InvalidParams(
+                {"detail": "url and markdown_content are required"}
+            )
+
+        preview_service = await get_preview_service(session)
+        result = await preview_service.upsert(
+            url=body["url"],
+            markdown_content=body["markdown_content"],
+            title=body.get("title"),
+        )
+
+        from src.utils.time import to_iso_string
+
+        return {
+            "status": 201,
+            "headers": {},
+            "body": {
+                "id": result.id,
+                "url": result.url,
+                "url_hash": result.url_hash,
+                "markdown_content": result.markdown_content,
+                "title": result.title,
+                "created_at": to_iso_string(result.created_at) or "",
+                "updated_at": to_iso_string(result.updated_at) or "",
+            },
+        }
