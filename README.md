@@ -17,6 +17,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - API key authentication and rate limiting
 - **Article Quick Preview** - Preview article content with markdown rendering and caching
 - **Desktop application support** (Windows, macOS, Linux)
+- **Enhanced UI** - Animations, Lucide Icons, and accessible components (Skeleton, EmptyState, Tooltip)
 
 ## Installation
 
@@ -252,6 +253,18 @@ pnpm generate-icons
 - **i18n**: Chinese/English support
 - **PWA**: Installable on desktop and mobile
 - **Responsive**: Desktop sidebar + Mobile bottom navigation
+- **Animations**: Page transitions, card hover effects, toast animations
+- **Accessibility**: Reduced motion support, keyboard navigation
+
+### UI Components
+
+| Component | Description |
+|-----------|-------------|
+| `Skeleton` | Loading placeholder with variants (text, avatar, card) |
+| `EmptyState` | Empty state display with icon and action button |
+| `Tooltip` | Accessible tooltip with positioning options |
+| `Card` | Container with hover effects and variants |
+| `Toast` | Notification with slide animations |
 
 ### Tech Stack
 

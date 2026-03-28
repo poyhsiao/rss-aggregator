@@ -3,7 +3,13 @@ import { cn } from '@/utils/cn'
 </script>
 
 <template>
-  <div :class="cn('rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800', $attrs.class as string)">
+  <div
+    :class="cn(
+      'rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800',
+      'hover-card',
+      $attrs.class as string
+    )"
+  >
     <slot />
   </div>
 </template>

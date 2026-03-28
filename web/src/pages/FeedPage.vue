@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Clock, Database, Eye, FileText, RefreshCw } from "lucide-vue-next";
+import { Clock, Database, Eye, FileText, RefreshCw, Rss } from "lucide-vue-next";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getFeed } from "@/api/feed";
@@ -68,7 +68,10 @@ watch([sortBy, keywords], () => {
   <div class="space-y-6">
     <!-- Header Row -->
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">📰 {{ t('feed.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <Rss class="h-6 w-6" />
+        <h1 class="text-2xl font-semibold">{{ t('feed.title') }}</h1>
+      </div>
     </div>
     
     <!-- Controls -->

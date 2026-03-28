@@ -1,0 +1,313 @@
+/**
+ * Animation utilities for RSS Aggregator
+ * Follows interaction design best practices:
+ * - 200-300ms for small transitions
+ * - Smooth 60fps animations using transform and opacity
+ * - Respects prefers-reduced-motion
+ */
+
+/* ============================================
+   Keyframe Animations
+   ============================================ */
+
+/* Fade In */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade Out */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Slide In From Right */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide In From Left */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide In From Top */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide In From Bottom */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Scale Out */
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* ============================================
+   Animation Classes
+   ============================================ */
+
+/* Fade animations */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-in;
+}
+
+/* Slide animations */
+.animate-slide-in-right {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.animate-slide-in-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* Scale animations */
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-scale-out {
+  animation: scaleOut 0.2s ease-in;
+}
+
+/* ============================================
+   Transition Utilities
+   ============================================ */
+
+/* Base transition */
+.transition-base {
+  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fast transition (100-150ms) */
+.transition-fast {
+  transition-property: transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Medium transition (200-300ms) */
+.transition-medium {
+  transition-property: transform, opacity, box-shadow;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Slow transition (300-500ms) */
+.transition-slow {
+  transition-property: transform, opacity, box-shadow;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Shadow transition */
+.transition-shadow {
+  transition-property: box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Transform transition */
+.transition-transform {
+  transition-property: transform;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Opacity transition */
+.transition-opacity {
+  transition-property: opacity;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Vue Transition Classes
+   ============================================ */
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide fade transition */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* Scale fade transition */
+.scale-fade-enter-active,
+.scale-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.scale-fade-enter-from,
+.scale-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* ============================================
+   Hover Effects
+   ============================================ */
+
+/* Card hover effect */
+.hover-card {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+.dark .hover-card:hover {
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* Button hover effect */
+.hover-button {
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+
+.hover-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+}
+
+.hover-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ============================================
+   Accessibility: Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-fade-in,
+  .animate-fade-out,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-slide-in-top,
+  .animate-slide-in-bottom,
+  .animate-scale-in,
+  .animate-scale-out {
+    animation: none;
+  }
+
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-fade-enter-active,
+  .slide-fade-leave-active,
+  .scale-fade-enter-active,
+  .scale-fade-leave-active {
+    transition: none;
+  }
+
+  .hover-card:hover,
+  .hover-button:hover {
+    transform: none;
+  }
+}

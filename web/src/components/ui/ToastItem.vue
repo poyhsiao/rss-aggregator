@@ -31,20 +31,24 @@ const colorClass = computed(() => colorMap[props.toast.type])
 </script>
 
 <template>
-  <div
-    :class="cn(
-      'flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg',
-      'animate-in slide-in-from-right-full',
-      colorClass
-    )"
+  <Transition
+    name="slide-fade"
+    appear
   >
-    <component :is="Icon" class="h-5 w-5 flex-shrink-0" />
-    <span class="flex-1 text-sm font-medium">{{ toast.message }}</span>
-    <button
-      class="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-      @click="emit('remove', toast.id)"
+    <div
+      :class="cn(
+        'flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg',
+        colorClass
+      )"
     >
-      <X class="h-4 w-4" />
-    </button>
-  </div>
+      <component :is="Icon" class="h-5 w-5 flex-shrink-0" />
+      <span class="flex-1 text-sm font-medium">{{ toast.message }}</span>
+      <button
+        class="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+        @click="emit('remove', toast.id)"
+      >
+        <X class="h-4 w-4" />
+      </button>
+    </div>
+  </Transition>
 </template>

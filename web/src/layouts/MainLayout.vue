@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Languages } from 'lucide-vue-next'
+import { Languages, Rss, History, Radio, Settings } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
@@ -50,10 +50,10 @@ function handleFeedIconClick(): void {
 
 const menuItems = computed(() => {
   const items = [
-    { path: '/', label: t('nav.feed'), icon: '📰' },
-    { path: '/history', label: t('nav.history'), icon: '🔍' },
-    { path: '/sources', label: t('nav.sources'), icon: '📡' },
-    { path: '/settings', label: t('common.settings'), icon: '⚙️' },
+    { path: '/', label: t('nav.feed'), icon: Rss },
+    { path: '/history', label: t('nav.history'), icon: History },
+    { path: '/sources', label: t('nav.sources'), icon: Radio },
+    { path: '/settings', label: t('common.settings'), icon: Settings },
   ]
   return items
 })
@@ -64,7 +64,7 @@ const menuItems = computed(() => {
     <header class="fixed top-0 left-0 right-0 h-16 border-b border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 z-40">
       <div class="flex items-center justify-between h-full px-4 md:px-6">
         <div class="flex items-center gap-3">
-          <span class="text-xl cursor-pointer select-none" @click="handleFeedIconClick">📰</span>
+          <Rss class="h-6 w-6 cursor-pointer select-none" @click="handleFeedIconClick" />
           <span class="font-semibold text-lg hidden sm:block">{{ t('app.name') }}</span>
         </div>
         
@@ -90,11 +90,11 @@ const menuItems = computed(() => {
             :key="item.path"
             :to="item.path"
             class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-            :class="{ 
-              'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400': route.path === item.path 
+            :class="{
+              'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400': route.path === item.path
             }"
           >
-            <span class="text-lg">{{ item.icon }}</span>
+            <component :is="item.icon" class="h-5 w-5" />
             <span>{{ item.label }}</span>
           </router-link>
         </nav>
@@ -112,11 +112,11 @@ const menuItems = computed(() => {
           :key="item.path"
           :to="item.path"
           class="flex flex-col items-center justify-center gap-1 flex-1 transition-colors"
-          :class="route.path === item.path 
-            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium' 
+          :class="route.path === item.path
+            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium'
             : 'text-neutral-500 dark:text-neutral-400'"
         >
-          <span class="text-xl">{{ item.icon }}</span>
+          <component :is="item.icon" class="h-6 w-6" />
           <span class="text-xs">{{ item.label }}</span>
         </router-link>
       </div>

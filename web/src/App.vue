@@ -14,7 +14,11 @@ onMounted(() => {
 
 <template>
   <MainLayout>
-    <router-view />
+    <router-view v-slot="{ Component, route }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" :key="route.path" />
+      </Transition>
+    </router-view>
   </MainLayout>
   <ToastContainer />
 </template>

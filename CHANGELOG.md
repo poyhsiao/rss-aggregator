@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.12.0 - 2026-03-28
+
+### Added
+
+- **UI Components**: New Skeleton, EmptyState, and Tooltip components
+- **Animations**: Page transitions, card hover effects, and toast animations
+- **Design System**: Enhanced color palette with accent and semantic colors
+- **Animation Utilities**: Comprehensive CSS animations with accessibility support
+
+### Changed
+
+- **Icon System**: Replaced navigation emoji icons with Lucide Icons for visual consistency
+- **Color System**: Added accent (orange) and semantic colors (success, warning, error)
+- **Shadows**: New soft shadow variants (soft, soft-md, soft-lg)
+- **MainLayout**: Navigation now uses Lucide icons (Rss, History, Radio, Settings)
+- **FeedPage**: Header icon replaced with Rss icon
+- **SourcesPage**: Header icon replaced with Radio icon, status indicators (🟢/🔴) preserved as emoji
+
+### Files Modified
+
+- `web/tailwind.config.js` - Enhanced design tokens
+- `web/src/styles/main.css` - Animation classes and utilities
+- `web/src/styles/animations.css` - Keyframe animations (new)
+- `web/src/App.vue` - Page transitions
+- `web/src/layouts/MainLayout.vue` - Lucide icons
+- `web/src/pages/FeedPage.vue` - Rss icon
+- `web/src/pages/SourcesPage.vue` - Radio icon
+- `web/src/components/ui/Card.vue` - Hover effects
+- `web/src/components/ui/ToastItem.vue` - Slide animations
+
+### New Components
+
+- `web/src/components/ui/Skeleton.vue` - Loading skeleton with variants
+- `web/src/components/ui/EmptyState.vue` - Empty state display
+- `web/src/components/ui/Tooltip.vue` - Accessible tooltip using radix-vue
+
 ## v0.11.1 - 2026-03-28
 
 ### Fixed

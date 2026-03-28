@@ -2,17 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './animations.css';
+
 @layer base {
   html {
     @apply antialiased;
   }
-  
+
   body {
     @apply bg-neutral-50 text-neutral-900;
     @apply dark:bg-neutral-900 dark:text-neutral-100;
   }
 
-  /* Fix select dropdown in dark mode */
   select {
     @apply bg-white text-neutral-900;
     @apply dark:bg-neutral-800 dark:text-neutral-100;
@@ -21,5 +22,59 @@
   select option {
     @apply bg-white text-neutral-900;
     @apply dark:bg-neutral-800 dark:text-neutral-100;
+  }
+}
+
+@layer components {
+  .card-base {
+    @apply bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700;
+    @apply transition-shadow duration-200 ease-smooth;
+  }
+
+  .card-hover {
+    @apply hover:shadow-soft hover:border-neutral-300 dark:hover:border-neutral-600;
+  }
+
+  .page-enter-active {
+    @apply animate-fade-in;
+  }
+
+  .page-leave-active {
+    @apply animate-fade-out;
+  }
+
+  /* Global transition classes for interactive elements */
+  .interactive-element {
+    @apply transition-base;
+  }
+
+  .interactive-element-fast {
+    @apply transition-fast;
+  }
+
+  .interactive-element-medium {
+    @apply transition-medium;
+  }
+}
+
+@layer utilities {
+  .transition-transform-opacity {
+    @apply transition-all duration-200 ease-smooth;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-out,
+  .animate-slide-in-right,
+  .animate-slide-out-right,
+  .animate-scale-in,
+  .animate-scale-out,
+  .animate-pulse-soft {
+    animation: none;
   }
 }

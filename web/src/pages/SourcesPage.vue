@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileText, RefreshCw, Trash2, RotateCcw, XCircle } from 'lucide-vue-next'
+import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
 import { 
   getTrashItems, 
@@ -290,7 +290,10 @@ onMounted(fetchSources)
 <template>
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <h1 class="text-2xl font-semibold">📡 {{ t('sources.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <Radio class="h-6 w-6" />
+        <h1 class="text-2xl font-semibold">{{ t('sources.title') }}</h1>
+      </div>
       <div class="flex flex-wrap gap-2">
         <template v-if="activeTab === 'active'">
           <Button
