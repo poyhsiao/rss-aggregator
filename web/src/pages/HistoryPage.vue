@@ -321,7 +321,7 @@ const previewSourceName = computed(() => {
         <div
           v-for="batch in batches"
           :key="batch.id"
-          class="w-full text-left bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors overflow-hidden"
+          class="w-full text-left bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors overflow-hidden max-w-full"
         >
           <div class="p-4 flex items-center justify-between">
             <div class="flex-1">
@@ -433,20 +433,20 @@ const previewSourceName = computed(() => {
               <div
                 v-for="item in expandedItems"
                 :key="item.id"
-                class="block p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+                class="block p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors max-w-full overflow-hidden"
               >
-                <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start justify-between gap-3 min-w-0 max-w-full overflow-hidden">
                   <a
                     :href="item.link"
                     target="_blank"
-                    class="flex-1 min-w-0"
+                    class="flex-1 min-w-0 overflow-hidden"
                   >
-                    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1">
+                    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1 shrink-0">
                       <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
                       <span v-if="item.published_at">•</span>
                       <span v-if="item.published_at">{{ formatDate(item.published_at) }}</span>
                     </div>
-                    <h4 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                    <h4 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-snug">
                       {{ item.title }}
                     </h4>
                     <p v-if="item.description" class="mt-1 text-xs text-neutral-500 line-clamp-2">

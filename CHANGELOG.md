@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.12.1 - 2026-03-30
+
+### Fixed
+
+- History page news titles causing horizontal overflow on mobile devices
+- News titles now use `line-clamp-2` for better mobile readability
+- Source and date metadata no longer compressed on mobile viewports
+- Added `leading-snug` for improved line height in news titles
+
+### Added
+
+- Comprehensive E2E tests for History page RWD (history-rwd.spec.ts)
+- Mobile viewport testing (375x667)
+- Tablet viewport testing (768x1024)
+- Desktop viewport testing (1280x720)
+- Horizontal overflow detection tests
+- Line clamping validation tests
+- Long title handling tests
+
+### Files Modified
+
+- `web/src/pages/HistoryPage.vue` - Fixed RWD issues with news titles
+- `web/e2e/history-rwd.spec.ts` - New E2E test suite for RWD validation
+
 ## v0.12.0 - 2026-03-28
 
 ### Added
