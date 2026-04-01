@@ -127,7 +127,7 @@ class TestBackupServiceImport:
             "app_name": "RSS-Aggregator",
             "data": {
                 "sources": [
-                    {"id": 1, "url": "https://test.com/rss.xml", "name": "Test", "fetch_interval": 0, "is_active": True}
+                    {"id": 1, "url": "https://test.com/rss.xml", "name": "Test", "is_active": True}
                 ],
                 "feed_items": [],
                 "api_keys": [],

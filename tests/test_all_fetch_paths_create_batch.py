@@ -18,7 +18,6 @@ async def test_source(db_session):
     source = Source(
         name="Test Source",
         url="https://test.example.com/feed",
-        fetch_interval=1800,
         is_active=True,
     )
     db_session.add(source)

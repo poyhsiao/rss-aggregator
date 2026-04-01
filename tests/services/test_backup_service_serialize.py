@@ -23,7 +23,6 @@ def create_mock_source() -> MagicMock:
         create_mock_column("id"),
         create_mock_column("name"),
         create_mock_column("url"),
-        create_mock_column("fetch_interval"),
         create_mock_column("is_active"),
         create_mock_column("last_fetched_at"),
         create_mock_column("last_error"),
@@ -33,7 +32,6 @@ def create_mock_source() -> MagicMock:
     mock_source.id = 1
     mock_source.name = "Test Source"
     mock_source.url = "https://example.com/rss.xml"
-    mock_source.fetch_interval = 3600
     mock_source.is_active = True
     mock_source.last_fetched_at = datetime(2026, 3, 27, 10, 0, 0)
     mock_source.last_error = None

@@ -127,12 +127,10 @@ class TestRestoreSource:
         self, async_client: AsyncClient, test_session: AsyncSession
     ) -> None:
         deleted = Source(name="Overwrite Test", url="https://overwrite-test.com/rss")
-        deleted.fetch_interval = 900
         deleted.soft_delete()
         test_session.add(deleted)
 
         existing = Source(name="Existing", url="https://overwrite-test.com/rss")
-        existing.fetch_interval = 1800
         test_session.add(existing)
         await test_session.commit()
 

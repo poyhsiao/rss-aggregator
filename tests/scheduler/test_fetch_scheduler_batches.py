@@ -49,7 +49,6 @@ async def test_source(db_session: AsyncSession) -> Source:
     source = Source(
         name="Test Feed",
         url="https://example.com/feed.xml",
-        fetch_interval=60,  # Needs periodic fetching
         is_active=True,
     )
     db_session.add(source)
@@ -64,7 +63,6 @@ async def test_source_never_fetched(db_session: AsyncSession) -> Source:
     source = Source(
         name="Never Fetched",
         url="https://example.com/never-fetched.xml",
-        fetch_interval=60,
         is_active=True,
         last_fetched_at=None,
     )

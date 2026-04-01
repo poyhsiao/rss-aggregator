@@ -45,7 +45,6 @@ async def test_source():
         source = Source(
             name="Test Source",
             url="https://test.example.com/feed",
-            fetch_interval=1800,
             is_active=True,
         )
         session.add(source)
