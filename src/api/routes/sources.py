@@ -3,8 +3,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_feed_service, get_scheduler, get_source_service, require_api_key
+from src.api.deps import get_feed_service, get_scheduler, get_source_group_service, get_source_service, require_api_key
 from src.services.feed_service import FeedService
+from src.services.source_group_service import SourceGroupService
 from src.services.source_service import SourceService
 from src.utils.time import to_iso_string
 
@@ -38,6 +39,7 @@ class SourceResponse(BaseModel):
     last_error: str | None
     created_at: str
     updated_at: str
+    groups: list[dict] = []
 
 
 class BatchCreate(BaseModel):
@@ -49,29 +51,35 @@ class BatchCreate(BaseModel):
 @router.get("", response_model=list[SourceResponse])
 async def list_sources(
     source_service: SourceService = Depends(get_source_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
 ) -> list[SourceResponse]:
     """List all sources."""
     sources = await source_service.get_sources()
-    return [
-        SourceResponse(
-            id=s.id,
-            name=s.name,
-            url=s.url,
-            is_active=s.is_active,
-            last_fetched_at=to_iso_string(s.last_fetched_at),
-            last_error=s.last_error,
-            created_at=to_iso_string(s.created_at) or "",
-            updated_at=to_iso_string(s.updated_at) or "",
+    result = []
+    for s in sources:
+        groups = await group_service.get_source_groups(s.id)
+        result.append(
+            SourceResponse(
+                id=s.id,
+                name=s.name,
+                url=s.url,
+                is_active=s.is_active,
+                last_fetched_at=to_iso_string(s.last_fetched_at),
+                last_error=s.last_error,
+                created_at=to_iso_string(s.created_at) or "",
+                updated_at=to_iso_string(s.updated_at) or "",
+                groups=[{"id": g.id, "name": g.name} for g in groups],
+            )
         )
-        for s in sources
-    ]
+    return result
 
 
 @router.post("", response_model=SourceResponse, status_code=status.HTTP_201_CREATED)
 async def create_source(
     data: SourceCreate,
     source_service: SourceService = Depends(get_source_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
 ) -> SourceResponse:
     """Create a new source."""
@@ -83,6 +91,7 @@ async def create_source(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    groups = await group_service.get_source_groups(source.id)
     return SourceResponse(
         id=source.id,
         name=source.name,
@@ -92,6 +101,7 @@ async def create_source(
         last_error=None,
         created_at=to_iso_string(source.created_at) or "",
         updated_at=to_iso_string(source.updated_at) or "",
+        groups=[{"id": g.id, "name": g.name} for g in groups],
     )
 
 
@@ -99,6 +109,7 @@ async def create_source(
 async def batch_create_sources(
     data: BatchCreate,
     source_service: SourceService = Depends(get_source_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
 ) -> dict:
     """Batch create sources."""
@@ -111,7 +122,12 @@ async def batch_create_sources(
                 name=source_data.name,
                 url=source_data.url,
             )
-            created.append({"id": source.id, "name": source.name})
+            groups = await group_service.get_source_groups(source.id)
+            created.append({
+                "id": source.id,
+                "name": source.name,
+                "groups": [{"id": g.id, "name": g.name} for g in groups],
+            })
         except ValueError as e:
             errors.append({"url": source_data.url, "error": str(e)})
 
@@ -122,6 +138,7 @@ async def batch_create_sources(
 async def get_source(
     source_id: int,
     source_service: SourceService = Depends(get_source_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
 ) -> SourceResponse:
     """Get a specific source."""
@@ -129,6 +146,7 @@ async def get_source(
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
 
+    groups = await group_service.get_source_groups(source.id)
     return SourceResponse(
         id=source.id,
         name=source.name,
@@ -138,6 +156,7 @@ async def get_source(
         last_error=source.last_error,
         created_at=to_iso_string(source.created_at) or "",
         updated_at=to_iso_string(source.updated_at) or "",
+        groups=[{"id": g.id, "name": g.name} for g in groups],
     )
 
 
@@ -146,6 +165,7 @@ async def update_source(
     source_id: int,
     data: SourceUpdate,
     source_service: SourceService = Depends(get_source_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
 ) -> SourceResponse:
     """Update a source."""
@@ -157,6 +177,7 @@ async def update_source(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+    groups = await group_service.get_source_groups(source.id)
     return SourceResponse(
         id=source.id,
         name=source.name,
@@ -166,6 +187,7 @@ async def update_source(
         last_error=source.last_error,
         created_at=to_iso_string(source.created_at) or "",
         updated_at=to_iso_string(source.updated_at) or "",
+        groups=[{"id": g.id, "name": g.name} for g in groups],
     )
 
 

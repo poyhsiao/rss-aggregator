@@ -10,6 +10,7 @@ class HistoryItem(BaseModel):
     description: str
     published_at: str | None
     fetched_at: str | None
+    source_groups: list[dict] = []
 
 
 class PaginationInfo(BaseModel):
@@ -32,6 +33,7 @@ class HistoryBatch(BaseModel):
     created_at: str
     latest_fetched_at: str | None = None
     latest_published_at: str | None = None
+    groups: list[dict] = []
 
 
 class UpdateBatchNameRequest(BaseModel):

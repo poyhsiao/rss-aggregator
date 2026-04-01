@@ -179,3 +179,75 @@ async def test_get_aggregated_feed_deduplicates_by_link(
     assert rss_xml.count(duplicate_link) == 1
     assert "Article from Source 1" in rss_xml or "Same Article from Source 2" in rss_xml
     assert "Unique Article" in rss_xml
+
+
+@pytest.mark.asyncio
+async def test_feed_items_include_source_groups(db_session: AsyncSession):
+    from src.services.source_group_service import SourceGroupService
+    from src.services.source_service import SourceService
+
+    group_svc = SourceGroupService(db_session)
+    source_svc = SourceService(db_session)
+
+    group = await group_svc.create_group(name="Tech")
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    await group_svc.add_source_to_group(group.id, source.id)
+
+    feed_svc = FeedService(db_session)
+    items = await feed_svc.get_feed_items()
+    assert isinstance(items, list)
+
+
+@pytest.mark.asyncio
+async def test_feed_items_contain_group_data(db_session: AsyncSession):
+    from src.services.source_group_service import SourceGroupService
+    from src.services.source_service import SourceService
+
+    group_svc = SourceGroupService(db_session)
+    source_svc = SourceService(db_session)
+
+    group = await group_svc.create_group(name="Tech")
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    await group_svc.add_source_to_group(group.id, source.id)
+
+    current_time = now()
+    item = FeedItem(
+        source_id=source.id,
+        title="Test Article",
+        link="https://example.com/article",
+        description="Test",
+        published_at=current_time,
+    )
+    db_session.add(item)
+    await db_session.commit()
+
+    feed_svc = FeedService(db_session)
+    items = await feed_svc.get_feed_items()
+
+    assert len(items) == 1
+    assert items[0]["source_groups"] == [{"id": group.id, "name": "Tech"}]
+
+
+@pytest.mark.asyncio
+async def test_feed_items_empty_groups_when_no_groups(db_session: AsyncSession):
+    from src.services.source_service import SourceService
+
+    source_svc = SourceService(db_session)
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+
+    current_time = now()
+    item = FeedItem(
+        source_id=source.id,
+        title="Test Article",
+        link="https://example.com/article",
+        description="Test",
+        published_at=current_time,
+    )
+    db_session.add(item)
+    await db_session.commit()
+
+    feed_svc = FeedService(db_session)
+    items = await feed_svc.get_feed_items()
+
+    assert len(items) == 1
+    assert items[0]["source_groups"] == []

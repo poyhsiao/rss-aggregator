@@ -284,3 +284,110 @@ class TestGetBatchDisplayName:
 
         assert batch.id is not None
         assert result is not None
+
+
+class TestSourceGroupsInHistory:
+    @pytest.mark.asyncio
+    async def test_history_includes_source_groups(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group = await group_svc.create_group(name="Tech")
+        source = await source_svc.create_source("Feed", "https://example.com/rss")
+        await group_svc.add_source_to_group(group.id, source.id)
+
+        history_svc = HistoryService(db_session)
+        batches = await history_svc.get_history_batches()
+        assert isinstance(batches.batches, list)
+
+    @pytest.mark.asyncio
+    async def test_history_items_contain_source_groups(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group = await group_svc.create_group(name="Tech")
+        source = await source_svc.create_source("Feed", "https://example.com/rss")
+        await group_svc.add_source_to_group(group.id, source.id)
+
+        item = FeedItem(
+            source_id=source.id,
+            title="Test",
+            link="https://example.com/1",
+            fetched_at=datetime(2024, 1, 15, 10, 0, 0),
+        )
+        db_session.add(item)
+        await db_session.commit()
+
+        history_svc = HistoryService(db_session)
+        items, _ = await history_svc.get_history()
+
+        assert len(items) == 1
+        assert items[0].source_groups == [{"id": group.id, "name": "Tech"}]
+
+    @pytest.mark.asyncio
+    async def test_batch_feed_items_contain_source_groups(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group = await group_svc.create_group(name="News")
+        source = await source_svc.create_source("Feed", "https://example.com/rss")
+        await group_svc.add_source_to_group(group.id, source.id)
+
+        batch = FetchBatch(items_count=1, sources='["Feed"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        item = FeedItem(
+            source_id=source.id,
+            batch_id=batch.id,
+            title="Test",
+            link="https://example.com/1",
+        )
+        db_session.add(item)
+        await db_session.commit()
+
+        history_svc = HistoryService(db_session)
+        items = await history_svc.get_batch_feed_items(batch.id)
+
+        assert len(items) == 1
+        assert items[0].source_groups == [{"id": group.id, "name": "News"}]
+
+    @pytest.mark.asyncio
+    async def test_batch_groups_aggregated(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group = await group_svc.create_group(name="Tech")
+        source = await source_svc.create_source("Feed", "https://example.com/rss")
+        await group_svc.add_source_to_group(group.id, source.id)
+
+        batch = FetchBatch(items_count=1, sources='["Feed"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        item = FeedItem(
+            source_id=source.id,
+            batch_id=batch.id,
+            title="Test",
+            link="https://example.com/1",
+        )
+        db_session.add(item)
+        await db_session.commit()
+
+        history_svc = HistoryService(db_session)
+        batches_response = await history_svc.get_history_batches()
+
+        assert len(batches_response.batches) == 1
+        assert batches_response.batches[0].groups == [{"id": group.id, "name": "Tech"}]

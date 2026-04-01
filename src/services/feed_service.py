@@ -88,7 +88,9 @@ class FeedService:
         """Fetch filtered feed items from database."""
         query = (
             select(FeedItem)
-            .options(joinedload(FeedItem.source))
+            .options(
+                joinedload(FeedItem.source).joinedload(Source.groups)
+            )
             .where(
                 FeedItem.deleted_at.is_(None),
                 FeedItem.source.has(Source.is_active == True),  # noqa: E712
@@ -209,6 +211,10 @@ class FeedService:
                 "description": item.description or "",
                 "source": item.source.name if item.source else "",
                 "published_at": to_iso_string(item.published_at),
+                "source_groups": [
+                    {"id": g.id, "name": g.name}
+                    for g in item.source.groups
+                ] if item.source else [],
             }
             for item in items
         ]

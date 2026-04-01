@@ -5,7 +5,7 @@ from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.models import FeedItem, FetchBatch, Source
+from src.models import FeedItem, FetchBatch, Source, SourceGroup, SourceGroupMember
 from src.schemas.history import (
     HistoryBatch,
     HistoryBatchesResponse,
@@ -18,6 +18,15 @@ from src.schemas.history import (
 class HistoryService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def _get_source_groups(self, source_id: int) -> list[dict]:
+        """Fetch groups for a given source_id."""
+        groups_result = await self.session.execute(
+            select(SourceGroup)
+            .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+            .where(SourceGroupMember.source_id == source_id)
+        )
+        return [{"id": g.id, "name": g.name} for g in groups_result.scalars().all()]
 
     def _get_batch_display_name(self, batch: FetchBatch) -> str:
         if batch.notes:
@@ -73,6 +82,21 @@ class HistoryService:
                     latest_fetched_at = row[0].isoformat() if row[0] else None
                     latest_published_at = row[1].isoformat() if row[1] else None
 
+            # Aggregate groups from all sources in the batch
+            batch_groups: list[dict] = []
+            if batch.id:
+                groups_result = await self.session.execute(
+                    select(SourceGroup)
+                    .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+                    .join(FeedItem, FeedItem.source_id == SourceGroupMember.source_id)
+                    .where(FeedItem.batch_id == batch.id)
+                    .distinct()
+                )
+                batch_groups = [
+                    {"id": g.id, "name": g.name}
+                    for g in groups_result.scalars().all()
+                ]
+
             batch_list.append(
                 HistoryBatch(
                     id=batch.id,
@@ -82,6 +106,7 @@ class HistoryService:
                     created_at=batch.created_at.isoformat() if batch.created_at else "",
                     latest_fetched_at=latest_fetched_at,
                     latest_published_at=latest_published_at,
+                    groups=batch_groups,
                 )
             )
 
@@ -115,19 +140,24 @@ class HistoryService:
         result = await self.session.execute(query)
         items = list(result.unique().scalars().all())
 
-        return [
-            HistoryItem(
-                id=item.id,
-                source_id=item.source_id,
-                source=item.source.name if item.source else "",
-                title=item.title,
-                link=item.link,
-                description=item.description or "",
-                published_at=item.published_at.isoformat() if item.published_at else None,
-                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+        history_items = []
+        for item in items:
+            source_groups = await self._get_source_groups(item.source_id)
+            history_items.append(
+                HistoryItem(
+                    id=item.id,
+                    source_id=item.source_id,
+                    source=item.source.name if item.source else "",
+                    title=item.title,
+                    link=item.link,
+                    description=item.description or "",
+                    published_at=item.published_at.isoformat() if item.published_at else None,
+                    fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+                    source_groups=source_groups,
+                )
             )
-            for item in items
-        ], PaginationInfo(
+
+        return history_items, PaginationInfo(
             page=page,
             page_size=page_size,
             total_items=total_items,
@@ -194,19 +224,24 @@ class HistoryService:
         result = await self.session.execute(query)
         items = list(result.unique().scalars().all())
 
-        return [
-            HistoryItem(
-                id=item.id,
-                source_id=item.source_id,
-                source=item.source.name if item.source else "",
-                title=item.title,
-                link=item.link,
-                description=item.description or "",
-                published_at=item.published_at.isoformat() if item.published_at else None,
-                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+        history_items = []
+        for item in items:
+            source_groups = await self._get_source_groups(item.source_id)
+            history_items.append(
+                HistoryItem(
+                    id=item.id,
+                    source_id=item.source_id,
+                    source=item.source.name if item.source else "",
+                    title=item.title,
+                    link=item.link,
+                    description=item.description or "",
+                    published_at=item.published_at.isoformat() if item.published_at else None,
+                    fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+                    source_groups=source_groups,
+                )
             )
-            for item in items
-        ], PaginationInfo(
+
+        return history_items, PaginationInfo(
             page=page,
             page_size=page_size,
             total_items=total_items,
@@ -293,16 +328,20 @@ class HistoryService:
         result = await self.session.execute(query)
         items = list(result.unique().scalars().all())
 
-        return [
-            HistoryItem(
-                id=item.id,
-                source_id=item.source_id,
-                source=item.source.name if item.source else "",
-                title=item.title,
-                link=item.link,
-                description=item.description or "",
-                published_at=item.published_at.isoformat() if item.published_at else None,
-                fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+        history_items = []
+        for item in items:
+            source_groups = await self._get_source_groups(item.source_id)
+            history_items.append(
+                HistoryItem(
+                    id=item.id,
+                    source_id=item.source_id,
+                    source=item.source.name if item.source else "",
+                    title=item.title,
+                    link=item.link,
+                    description=item.description or "",
+                    published_at=item.published_at.isoformat() if item.published_at else None,
+                    fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
+                    source_groups=source_groups,
+                )
             )
-            for item in items
-        ]
+        return history_items
