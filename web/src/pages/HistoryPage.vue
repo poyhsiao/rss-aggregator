@@ -3,10 +3,12 @@ import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink
 import { computed, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
 import { deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
+import { getGroups } from "@/api/source-groups"
 import Button from "@/components/ui/Button.vue"
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
 import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
 import type { HistoryBatch, HistoryItem } from "@/types/history"
+import type { SourceGroup } from "@/types/source-group"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
@@ -20,12 +22,21 @@ const toast = useToast()
 const confirm = useConfirm()
 
 const batches = ref<HistoryBatch[]>([])
+const groups = ref<SourceGroup[]>([])
+const selectedGroupId = ref<number | null>(null)
 const loading = ref(false)
 const expandedBatch = ref<number | null>(null)
 const expandedItems = ref<HistoryItem[]>([])
 const loadingItems = ref(false)
 const totalItems = ref(0)
 const totalBatches = ref(0)
+
+const filteredBatches = computed(() => {
+  if (selectedGroupId.value === null) return batches.value;
+  return batches.value.filter(batch =>
+    batch.groups?.some(g => g.id === selectedGroupId.value)
+  );
+});
 
 // Edit name state
 const editingBatchId = ref<number | null>(null)
@@ -51,6 +62,9 @@ const selectedArticle = ref<{ url: string; title: string } | null>(null)
 
 onMounted(async () => {
   await fetchBatches()
+  try {
+    groups.value = await getGroups()
+  } catch { /* ignore */ }
 })
 
 async function fetchBatches(): Promise<void> {
@@ -304,11 +318,39 @@ const previewSourceName = computed(() => {
       </Button>
     </div>
 
+    <!-- Group Filter Chips -->
+    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+      <button
+        :class="[
+          'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+          selectedGroupId === null
+            ? 'bg-primary-600 text-white'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600'
+        ]"
+        @click="selectedGroupId = null"
+      >
+        {{ t('groups.all') }}
+      </button>
+      <button
+        v-for="group in groups"
+        :key="group.id"
+        :class="[
+          'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+          selectedGroupId === group.id
+            ? 'bg-primary-600 text-white'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600'
+        ]"
+        @click="selectedGroupId = group.id"
+      >
+        {{ group.name }}
+      </button>
+    </div>
+
     <div v-if="loading" class="text-center py-12 text-neutral-500">
       {{ t("common.loading") }}
     </div>
 
-    <div v-else-if="batches.length === 0" class="text-center py-12 text-neutral-500">
+    <div v-else-if="filteredBatches.length === 0" class="text-center py-12 text-neutral-500">
       😴 {{ t("history.empty") }}
     </div>
 
@@ -319,7 +361,7 @@ const previewSourceName = computed(() => {
 
       <div class="space-y-3">
         <div
-          v-for="batch in batches"
+          v-for="batch in filteredBatches"
           :key="batch.id"
           class="w-full text-left bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors overflow-hidden max-w-full"
         >
@@ -375,6 +417,18 @@ const previewSourceName = computed(() => {
                   • {{ batch.sources.slice(0, 3).join(", ") }}
                   <span v-if="batch.sources.length > 3">+{{ batch.sources.length - 3 }}</span>
                 </span>
+                <template v-if="batch.groups?.length">
+                  <span
+                    v-for="g in batch.groups.slice(0, 3)"
+                    :key="g.id"
+                    class="ml-1 inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  >
+                    {{ g.name }}
+                  </span>
+                  <span v-if="batch.groups.length > 3" class="ml-1 text-xs text-neutral-500">
+                    +{{ batch.groups.length - 3 }}
+                  </span>
+                </template>
               </div>
             </div>
             <div class="ml-4 flex items-center gap-1">
@@ -441,8 +495,23 @@ const previewSourceName = computed(() => {
                     target="_blank"
                     class="flex-1 min-w-0 overflow-hidden"
                   >
-                    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1 shrink-0">
+                    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-1 shrink-0 flex-wrap">
                       <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
+                      <template v-if="item.source_groups?.length">
+                        <span
+                          v-for="g in item.source_groups.slice(0, 2)"
+                          :key="g.id"
+                          class="inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                        >
+                          {{ g.name }}
+                        </span>
+                        <span
+                          v-if="item.source_groups.length > 2"
+                          class="inline-block px-2 py-0.5 text-xs rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
+                        >
+                          +{{ item.source_groups.length - 2 }}
+                        </span>
+                      </template>
                       <span v-if="item.published_at">•</span>
                       <span v-if="item.published_at">{{ formatDate(item.published_at) }}</span>
                     </div>

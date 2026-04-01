@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { Clock, Database, Eye, FileText, RefreshCw, Rss } from "lucide-vue-next";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getFeed } from "@/api/feed";
+import { getGroups } from "@/api/source-groups";
 import { refreshAllSources } from "@/api/sources";
 import RssPreviewDialog from "@/components/RssPreviewDialog.vue";
 import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue";
 import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import type { FeedItem } from "@/types/feed";
+import type { SourceGroup } from "@/types/source-group";
 import { useToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/format";
 
@@ -16,6 +18,8 @@ const { t } = useI18n();
 const toast = useToast();
 
 const feedItems = ref<FeedItem[]>([]);
+const groups = ref<SourceGroup[]>([]);
+const selectedGroupId = ref<number | null>(null);
 const loading = ref(true);
 const refreshing = ref(false);
 const sortBy = ref<"published_at" | "source">("published_at");
@@ -23,6 +27,13 @@ const keywords = ref("");
 const rssDialogOpen = ref(false);
 const articlePreviewOpen = ref(false);
 const selectedArticle = ref<{ url: string; title: string } | null>(null);
+
+const filteredItems = computed(() => {
+  if (selectedGroupId.value === null) return feedItems.value;
+  return feedItems.value.filter(item =>
+    item.source_groups?.some(g => g.id === selectedGroupId.value)
+  );
+});
 
 async function fetchFeed(): Promise<void> {
 	loading.value = true;
@@ -34,6 +45,12 @@ async function fetchFeed(): Promise<void> {
 	} finally {
 		loading.value = false;
 	}
+}
+
+async function fetchGroups(): Promise<void> {
+  try {
+    groups.value = await getGroups();
+  } catch { /* ignore */ }
 }
 
 async function handleRefreshAll(): Promise<void> {
@@ -57,7 +74,10 @@ function openArticlePreview(item: FeedItem): void {
 	articlePreviewOpen.value = true;
 }
 
-onMounted(fetchFeed);
+onMounted(() => {
+  fetchFeed();
+  fetchGroups();
+});
 
 watch([sortBy, keywords], () => {
 	fetchFeed();
@@ -101,6 +121,131 @@ watch([sortBy, keywords], () => {
             <span class="hidden sm:inline ml-1.5">{{ t('feed.sort_source') }}</span>
           </Button>
         </div>
+
+        <!-- Search -->
+        <Input
+          v-model="keywords"
+          :placeholder="t('feed.search_placeholder')"
+          class="w-28 sm:w-40 shrink min-w-0"
+        />
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex items-center gap-2 shrink-0">
+        <Button
+          variant="outline"
+          size="sm"
+          :title="t('feed.Refresh')"
+          :disabled="refreshing"
+          class="whitespace-nowrap"
+          @click="handleRefreshAll"
+        >
+          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4" />
+          <span class="hidden sm:inline ml-1.5">{{ t('feed.Refresh') }}</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          :title="t('feed.preview_feed')"
+          class="whitespace-nowrap"
+          @click="rssDialogOpen = true"
+        >
+          <FileText class="h-4 w-4" />
+          <span class="hidden sm:inline ml-1.5">{{ t('feed.preview_feed') }}</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- Group Filter Chips -->
+    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+      <button
+        :class="[
+          'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+          selectedGroupId === null
+            ? 'bg-primary-600 text-white'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600'
+        ]"
+        @click="selectedGroupId = null"
+      >
+        {{ t('groups.all') }}
+      </button>
+      <button
+        v-for="group in groups"
+        :key="group.id"
+        :class="[
+          'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+          selectedGroupId === group.id
+            ? 'bg-primary-600 text-white'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600'
+        ]"
+        @click="selectedGroupId = group.id"
+      >
+        {{ group.name }}
+      </button>
+    </div>
+    
+    <div v-if="loading" class="text-center py-12 text-neutral-500">
+      {{ t('common.loading') }}
+    </div>
+    
+    <div v-else-if="!filteredItems.length" class="text-center py-12 text-neutral-500">
+      😴 {{ t('feed.empty') }}
+    </div>
+    
+    <div v-else class="grid gap-4">
+      <div
+        v-for="item in filteredItems"
+        :key="item.id"
+        class="block p-6 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <a
+            :href="item.link"
+            target="_blank"
+            class="flex-1 min-w-0"
+          >
+            <div class="flex items-center gap-2 text-sm text-neutral-500 mb-2 flex-wrap">
+              <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
+              <template v-if="item.source_groups?.length">
+                <span
+                  v-for="g in item.source_groups.slice(0, 2)"
+                  :key="g.id"
+                  class="inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                >
+                  {{ g.name }}
+                </span>
+                <span
+                  v-if="item.source_groups.length > 2"
+                  class="inline-block px-2 py-0.5 text-xs rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
+                >
+                  +{{ item.source_groups.length - 2 }}
+                </span>
+              </template>
+              <span>•</span>
+              <span>{{ formatDate(item.published_at) }}</span>
+            </div>
+            
+            <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+              {{ item.title }}
+            </h3>
+            
+            <p class="text-neutral-600 dark:text-neutral-400 line-clamp-2">
+              {{ item.description }}
+            </p>
+          </a>
+          
+          <button
+            type="button"
+            class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors shrink-0"
+            :title="t('preview.preview_article')"
+            @click="openArticlePreview(item)"
+          >
+            <Eye class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
 
         <!-- Search -->
         <Input
