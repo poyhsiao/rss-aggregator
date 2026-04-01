@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio } from 'lucide-vue-next'
+import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, FolderOpen } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
+import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources } from '@/api/source-groups'
 import { 
   getTrashItems, 
   restoreSource, 
@@ -13,9 +14,13 @@ import {
   RestoreConflictError 
 } from '@/api/trash'
 import type { Source } from '@/types/source'
+import type { SourceGroup } from '@/types/source-group'
 import type { FeedParams } from '@/api/feed'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
+import Dialog from '@/components/ui/Dialog.vue'
+import Input from '@/components/ui/Input.vue'
+import { X, Check } from 'lucide-vue-next'
 import SourceDialog from '@/components/SourceDialog.vue'
 import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
@@ -28,13 +33,19 @@ const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 
-const activeTab = ref<'active' | 'trash'>('active')
+const activeTab = ref<'active' | 'trash' | 'groups'>('active')
 const sources = ref<Source[]>([])
 const trashItems = ref<TrashItem[]>([])
+const groups = ref<SourceGroup[]>([])
+const groupSources = ref<Record<number, Source[]>>({})
 const loading = ref(true)
 const refreshing = ref(false)
 const showDialog = ref(false)
+const showGroupDialog = ref(false)
 const editingSource = ref<Source | null>(null)
+const editingGroup = ref<SourceGroup | null>(null)
+const newGroupName = ref('')
+const expandedGroupId = ref<number | null>(null)
 const previewDialogOpen = ref(false)
 const previewParams = ref<FeedParams | undefined>(undefined)
 const previewTitle = ref<string | undefined>(undefined)
@@ -46,12 +57,18 @@ const showEmptyState = computed(() => {
   if (activeTab.value === 'active') {
     return !sources.value.length
   }
+  if (activeTab.value === 'groups') {
+    return !groups.value.length
+  }
   return !trashItems.value.length
 })
 
 const emptyMessage = computed(() => {
   if (activeTab.value === 'active') {
     return t('sources.empty')
+  }
+  if (activeTab.value === 'groups') {
+    return t('groups.empty')
   }
   return t('trash.empty')
 })
@@ -80,15 +97,6 @@ async function fetchTrash(): Promise<void> {
     trashItems.value = await getTrashItems()
   } finally {
     loading.value = false
-  }
-}
-
-async function handleTabChange(tab: 'active' | 'trash'): Promise<void> {
-  activeTab.value = tab
-  if (tab === 'active') {
-    await fetchSources()
-  } else {
-    await fetchTrash()
   }
 }
 
@@ -284,6 +292,119 @@ function getDisplayUrl(url: string): { display: string; full: string } {
   }
 }
 
+// Group management
+async function fetchGroups(): Promise<void> {
+  try {
+    groups.value = await getGroups()
+  } catch { /* ignore */ }
+}
+
+async function fetchGroupSources(groupId: number): Promise<void> {
+  try {
+    groupSources.value[groupId] = await getGroupSources(groupId)
+  } catch { /* ignore */ }
+}
+
+function openAddGroupDialog(): void {
+  editingGroup.value = null
+  newGroupName.value = ''
+  showGroupDialog.value = true
+}
+
+function openEditGroupDialog(group: SourceGroup): void {
+  editingGroup.value = group
+  newGroupName.value = group.name
+  showGroupDialog.value = true
+}
+
+async function handleSaveGroup(): Promise<void> {
+  if (!newGroupName.value.trim()) {
+    toast.error(t('groups.name_required'))
+    return
+  }
+  try {
+    if (editingGroup.value) {
+      await updateGroup(editingGroup.value.id, { name: newGroupName.value })
+      toast.success(t('groups.updated'))
+    } else {
+      await createGroup({ name: newGroupName.value })
+      toast.success(t('groups.created'))
+    }
+    showGroupDialog.value = false
+    await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+async function handleDeleteGroup(id: number): Promise<void> {
+  const confirmed = await confirm.show({
+    title: t('groups.delete_title'),
+    message: t('groups.delete_confirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
+  try {
+    await deleteGroup(id)
+    toast.success(t('groups.deleted'))
+    delete groupSources.value[id]
+    await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+async function handleToggleGroupExpand(groupId: number): Promise<void> {
+  if (expandedGroupId.value === groupId) {
+    expandedGroupId.value = null
+  } else {
+    expandedGroupId.value = groupId
+    if (!groupSources.value[groupId]) {
+      await fetchGroupSources(groupId)
+    }
+  }
+}
+
+async function handleAddSourceToGroup(groupId: number, sourceId: number): Promise<void> {
+  try {
+    await addSourceToGroup(groupId, sourceId)
+    toast.success(t('common.success'))
+    await fetchGroupSources(groupId)
+    await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+async function handleRemoveSourceFromGroup(groupId: number, sourceId: number): Promise<void> {
+  try {
+    await removeSourceFromGroup(groupId, sourceId)
+    toast.success(t('common.success'))
+    await fetchGroupSources(groupId)
+    await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+const availableSourcesForGroup = computed(() => {
+  const groupSourceIds = new Set((groupSources.value[expandedGroupId.value!] || []).map(s => s.id))
+  return sources.value.filter(s => !groupSourceIds.has(s.id))
+})
+
+async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void> {
+  activeTab.value = tab
+  if (tab === 'active') {
+    await fetchSources()
+  } else if (tab === 'groups') {
+    await fetchGroups()
+  } else {
+    await fetchTrash()
+  }
+}
+
 onMounted(fetchSources)
 </script>
 
@@ -345,6 +466,15 @@ onMounted(fetchSources)
         @click="handleTabChange('trash')"
       >
         🗑️ {{ t('trash.tab_trash') }} ({{ trashItems.length }})
+      </button>
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+        :class="activeTab === 'groups' 
+          ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
+        @click="handleTabChange('groups')"
+      >
+        📁 {{ t('groups.title') }} ({{ groups.length }})
       </button>
     </div>
     
@@ -439,7 +569,7 @@ onMounted(fetchSources)
     </div>
 
     <!-- Trash Items List -->
-    <div v-else class="space-y-3">
+    <div v-else-if="activeTab === 'trash'" class="space-y-3">
       <div
         v-for="item in trashItems"
         :key="item.id"
@@ -492,11 +622,83 @@ onMounted(fetchSources)
       </div>
     </div>
 
+    <!-- Groups Tab -->
+    <div v-else class="space-y-4">
+      <div class="flex justify-end">
+        <Button @click="openAddGroupDialog" :title="t('groups.add')">
+          <FolderPlus class="h-4 w-4 mr-2" /> {{ t('groups.add') }}
+        </Button>
+      </div>
+      <div v-for="group in groups" :key="group.id" class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <button class="flex items-center gap-2 flex-1 text-left" @click="handleToggleGroupExpand(group.id)">
+            <FolderOpen class="h-5 w-5 text-blue-500" />
+            <span class="font-medium">{{ group.name }}</span>
+            <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
+          </button>
+          <div class="flex gap-1">
+            <Button variant="ghost" size="sm" :title="t('common.edit')" @click="openEditGroupDialog(group)">
+              ✏️
+            </Button>
+            <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
+              🗑️
+            </Button>
+          </div>
+        </div>
+        <div v-if="expandedGroupId === group.id" class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+          <div v-if="groupSources[group.id]?.length" class="space-y-2 mb-4">
+            <div v-for="s in groupSources[group.id]" :key="s.id" class="flex items-center justify-between text-sm">
+              <span class="truncate">{{ s.name }}</span>
+              <Button variant="ghost" size="sm" :title="t('groups.remove_source')" @click="handleRemoveSourceFromGroup(group.id, s.id)">
+                <XCircle class="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          </div>
+          <div v-else class="text-sm text-neutral-500 mb-4">{{ t('groups.no_sources') }}</div>
+          <div v-if="availableSourcesForGroup.length" class="flex flex-wrap gap-2">
+            <select
+              :id="`add-source-${group.id}`"
+              class="text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1"
+              @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
+            >
+              <option value="">{{ t('groups.add_source') }}</option>
+              <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <SourceDialog
       v-model:open="showDialog"
       :source="editingSource"
       @saved="handleSaved"
     />
+
+    <!-- Group Dialog -->
+    <Dialog v-model:open="showGroupDialog">
+      <div class="p-6">
+        <h2 class="text-xl font-semibold mb-4">
+          {{ editingGroup ? t('groups.edit') : t('groups.add') }}
+        </h2>
+        <form class="space-y-4" @submit.prevent="handleSaveGroup">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              {{ t('groups.name') }} *
+            </label>
+            <Input v-model="newGroupName" :placeholder="t('groups.name_placeholder')" />
+          </div>
+          <div class="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" @click="showGroupDialog = false" :title="t('common.cancel')">
+              <X class="h-4 w-4" /> {{ t('common.cancel') }}
+            </Button>
+            <Button type="submit" :title="t('common.confirm')">
+              <Check class="h-4 w-4" /> {{ t('common.confirm') }}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </Dialog>
 
     <RssPreviewDialog
       v-model:open="previewDialogOpen"

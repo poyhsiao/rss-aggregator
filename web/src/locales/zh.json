@@ -125,6 +125,25 @@
     "interval_3d": "3 天",
     "interval_7d": "7 天"
   },
+  "groups": {
+    "title": "群組",
+    "add": "新增群組",
+    "edit": "編輯群組",
+    "name": "群組名稱",
+    "name_placeholder": "輸入群組名稱",
+    "name_required": "群組名稱為必填",
+    "created": "群組已建立",
+    "updated": "群組已更新",
+    "deleted": "群組已刪除",
+    "delete_title": "刪除群組",
+    "delete_confirm": "確定要刪除此群組嗎？群組內的來源不會被刪除。",
+    "empty": "沒有群組",
+    "members": "成員",
+    "add_source": "新增來源",
+    "remove_source": "從群組移除",
+    "no_sources": "此群組沒有來源",
+    "all": "全部"
+  },
   "keys": {
     "title": "API 金鑰",
     "add": "新增 Key",

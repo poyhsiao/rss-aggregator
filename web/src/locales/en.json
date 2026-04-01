@@ -125,6 +125,25 @@
     "interval_3d": "3 days",
     "interval_7d": "7 days"
   },
+  "groups": {
+    "title": "Groups",
+    "add": "Add Group",
+    "edit": "Edit Group",
+    "name": "Group Name",
+    "name_placeholder": "Enter group name",
+    "name_required": "Group name is required",
+    "created": "Group created",
+    "updated": "Group updated",
+    "deleted": "Group deleted",
+    "delete_title": "Delete Group",
+    "delete_confirm": "Are you sure you want to delete this group? Sources will NOT be deleted.",
+    "empty": "No groups",
+    "members": "members",
+    "add_source": "Add Source",
+    "remove_source": "Remove from Group",
+    "no_sources": "No sources in this group",
+    "all": "All"
+  },
   "keys": {
     "title": "API Keys",
     "add": "Add Key",
