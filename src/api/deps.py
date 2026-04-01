@@ -16,6 +16,7 @@ from src.services.preview_service import PreviewService
 from src.services.rate_limiter import RateLimiter
 from src.services.source_service import SourceService
 from src.services.backup_service import BackupService
+from src.services.source_group_service import SourceGroupService
 
 
 _rate_limiter: RateLimiter | None = None
@@ -91,8 +92,13 @@ async def get_preview_service(
 async def get_backup_service(
     session: AsyncSession = Depends(get_session),
 ) -> BackupService:
-    """Get BackupService instance."""
     return BackupService(session)
+
+
+async def get_source_group_service(
+    session: AsyncSession = Depends(get_session),
+) -> SourceGroupService:
+    return SourceGroupService(session)
 
 
 async def require_api_key(
