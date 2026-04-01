@@ -2,6 +2,7 @@
 
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from src.models import Source, SourceGroup, SourceGroupMember
 
@@ -21,7 +22,7 @@ async def test_source_group_unique_name(db_session):
     db_session.add(SourceGroup(name="Tech"))
     await db_session.commit()
     db_session.add(SourceGroup(name="Tech"))
-    with pytest.raises(Exception):
+    with pytest.raises(IntegrityError):
         await db_session.commit()
 
 
