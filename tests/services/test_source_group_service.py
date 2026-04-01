@@ -127,3 +127,75 @@ async def test_get_group_with_member_count(
     groups = await group_service.list_groups_with_count()
     tech_group = [g for g in groups if g["name"] == "Tech"][0]
     assert tech_group["member_count"] == 1
+
+
+# ==================== Error Path Tests ====================
+
+
+@pytest.mark.asyncio
+async def test_update_nonexistent_group_raises(group_service: SourceGroupService):
+    """Test updating a non-existent group raises ValueError."""
+    with pytest.raises(ValueError, match="not found"):
+        await group_service.update_group(9999, name="New")
+
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_group_raises(group_service: SourceGroupService):
+    """Test deleting a non-existent group raises ValueError."""
+    with pytest.raises(ValueError, match="not found"):
+        await group_service.delete_group(9999)
+
+
+@pytest.mark.asyncio
+async def test_add_source_to_nonexistent_group_raises(
+    group_service: SourceGroupService, source_svc: SourceService
+):
+    """Test adding source to non-existent group raises ValueError."""
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    with pytest.raises(ValueError, match="Group.*not found"):
+        await group_service.add_source_to_group(9999, source.id)
+
+
+@pytest.mark.asyncio
+async def test_add_nonexistent_source_to_group_raises(
+    group_service: SourceGroupService,
+):
+    """Test adding non-existent source to group raises ValueError."""
+    group = await group_service.create_group(name="Tech")
+    with pytest.raises(ValueError, match="Source.*not found"):
+        await group_service.add_source_to_group(group.id, 9999)
+
+
+@pytest.mark.asyncio
+async def test_add_duplicate_membership_raises(
+    group_service: SourceGroupService, source_svc: SourceService
+):
+    """Test adding same source to same group twice raises ValueError."""
+    group = await group_service.create_group(name="Tech")
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    await group_service.add_source_to_group(group.id, source.id)
+    with pytest.raises(ValueError, match="already in group"):
+        await group_service.add_source_to_group(group.id, source.id)
+
+
+@pytest.mark.asyncio
+async def test_add_deleted_source_to_group_raises(
+    group_service: SourceGroupService, source_svc: SourceService, db_session
+):
+    """Test adding soft-deleted source to group raises ValueError."""
+    group = await group_service.create_group(name="Tech")
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    await source_svc.delete_source(source.id)
+    with pytest.raises(ValueError, match="Source.*not found"):
+        await group_service.add_source_to_group(group.id, source.id)
+
+
+@pytest.mark.asyncio
+async def test_remove_nonexistent_membership_raises(
+    group_service: SourceGroupService, source_svc: SourceService
+):
+    """Test removing non-existent membership raises ValueError."""
+    group = await group_service.create_group(name="Tech")
+    source = await source_svc.create_source("Feed", "https://example.com/rss")
+    with pytest.raises(ValueError, match="not in group"):
+        await group_service.remove_source_from_group(group.id, source.id)

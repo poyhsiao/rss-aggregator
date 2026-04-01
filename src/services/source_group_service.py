@@ -31,30 +31,33 @@ class SourceGroupService:
         return group
 
     async def list_groups(self) -> list[SourceGroup]:
+        """List all source groups."""
         result = await self.session.execute(select(SourceGroup))
         return list(result.scalars().all())
 
     async def list_groups_with_count(self) -> list[dict]:
-        result = await self.session.execute(select(SourceGroup))
-        groups = list(result.scalars().all())
-
-        output = []
-        for group in groups:
-            count_result = await self.session.execute(
-                select(func.count())
-                .select_from(SourceGroupMember)
-                .where(SourceGroupMember.group_id == group.id)
+        """List all groups with member counts using a single JOIN query."""
+        result = await self.session.execute(
+            select(
+                SourceGroup.id,
+                SourceGroup.name,
+                SourceGroup.created_at,
+                SourceGroup.updated_at,
+                func.count(SourceGroupMember.source_id).label("member_count"),
             )
-            output.append(
-                {
-                    "id": group.id,
-                    "name": group.name,
-                    "member_count": count_result.scalar() or 0,
-                    "created_at": group.created_at,
-                    "updated_at": group.updated_at,
-                }
-            )
-        return output
+            .outerjoin(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+            .group_by(SourceGroup.id)
+        )
+        return [
+            {
+                "id": row.id,
+                "name": row.name,
+                "member_count": row.member_count,
+                "created_at": row.created_at,
+                "updated_at": row.updated_at,
+            }
+            for row in result.all()
+        ]
 
     async def update_group(self, group_id: int, **kwargs) -> SourceGroup:
         """Update a group.
@@ -144,6 +147,7 @@ class SourceGroupService:
         await self.session.commit()
 
     async def get_source_groups(self, source_id: int) -> list[SourceGroup]:
+        """Get all groups a source belongs to."""
         result = await self.session.execute(
             select(SourceGroup)
             .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
@@ -152,11 +156,13 @@ class SourceGroupService:
         return list(result.scalars().all())
 
     async def get_group_sources(self, group_id: int) -> list[Source]:
+        """Get all sources in a group (excluding soft-deleted)."""
         result = await self.session.execute(
             select(Source)
             .join(SourceGroupMember, Source.id == SourceGroupMember.source_id)
             .where(
-                SourceGroupMember.group_id == group_id, Source.deleted_at.is_(None)
+                SourceGroupMember.group_id == group_id,
+                Source.deleted_at.is_(None),
             )
         )
         return list(result.scalars().all())
