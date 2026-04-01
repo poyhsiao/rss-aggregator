@@ -7,6 +7,7 @@ export interface HistoryItem {
   description: string
   published_at: string | null
   fetched_at: string | null
+  source_groups?: { id: number; name: string }[]
 }
 
 export interface PaginationInfo {
@@ -29,6 +30,7 @@ export interface HistoryBatch {
   created_at: string
   latest_fetched_at: string | null
   latest_published_at: string | null
+  groups?: { id: number; name: string }[]
 }
 
 export interface HistoryBatchesResponse {

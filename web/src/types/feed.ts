@@ -5,4 +5,5 @@ export interface FeedItem {
   description: string
   source: string
   published_at: string | null
+  source_groups?: { id: number; name: string }[]
 }

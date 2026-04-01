@@ -9,6 +9,7 @@ export interface FeedItem {
   description: string
   source: string
   published_at: string
+  source_groups?: { id: number; name: string }[]
 }
 
 export interface FeedParams {

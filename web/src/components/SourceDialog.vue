@@ -6,7 +6,6 @@ import { X, Check } from 'lucide-vue-next'
 import Dialog from '@/components/ui/Dialog.vue'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
-import Select from '@/components/ui/Select.vue'
 import { createSource, updateSource } from '@/api/sources'
 import { useToast } from '@/composables/useToast'
 import type { Source } from '@/types/source'
@@ -29,7 +28,6 @@ const isEditMode = computed(() => !!props.source)
 const schema = z.object({
   name: z.string().min(1, t('sources.name_required')),
   url: z.string().url(t('sources.url_invalid')),
-  fetch_interval: z.number().min(0).max(604800).default(0),
   is_active: z.boolean().default(true),
 })
 
@@ -38,28 +36,11 @@ type FormData = z.infer<typeof schema>
 const form = ref<FormData>({
   name: '',
   url: '',
-  fetch_interval: 0,
   is_active: true,
-})
-
-const fetchIntervalStr = computed({
-  get: () => String(form.value.fetch_interval),
-  set: (val: string) => { form.value.fetch_interval = Number(val) }
 })
 
 const errors = ref<Partial<Record<keyof FormData, string>>>({})
 const loading = ref(false)
-
-const intervalOptions = computed(() => [
-  { value: '0', label: t('sources.interval_never') },
-  { value: '3600', label: t('sources.interval_1h') },
-  { value: '10800', label: t('sources.interval_3h') },
-  { value: '21600', label: t('sources.interval_6h') },
-  { value: '43200', label: t('sources.interval_12h') },
-  { value: '86400', label: t('sources.interval_24h') },
-  { value: '259200', label: t('sources.interval_3d') },
-  { value: '604800', label: t('sources.interval_7d') },
-])
 
 watch(() => props.open, (open) => {
   if (open) {
@@ -68,7 +49,6 @@ watch(() => props.open, (open) => {
       form.value = {
         name: props.source.name,
         url: props.source.url,
-        fetch_interval: props.source.fetch_interval,
         is_active: props.source.is_active,
       }
     }
@@ -79,7 +59,6 @@ function reset(): void {
   form.value = {
     name: '',
     url: '',
-    fetch_interval: 0,
     is_active: true,
   }
   errors.value = {}
@@ -95,7 +74,7 @@ function validate(): boolean {
     errors.value = {}
     return true
   }
-  
+
   errors.value = {}
   for (const issue of result.error.issues) {
     const field = issue.path[0] as keyof FormData
@@ -106,7 +85,7 @@ function validate(): boolean {
 
 async function handleSubmit(): Promise<void> {
   if (!validate()) return
-  
+
   loading.value = true
   try {
     let savedSource: Source
@@ -133,7 +112,7 @@ async function handleSubmit(): Promise<void> {
       <h2 class="text-xl font-semibold mb-4">
         {{ isEditMode ? t('sources.edit') : t('sources.add') }}
       </h2>
-      
+
       <form class="space-y-4" @submit.prevent="handleSubmit">
         <div>
           <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
@@ -147,7 +126,7 @@ async function handleSubmit(): Promise<void> {
             {{ errors.name }}
           </p>
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             {{ t('sources.url') }} *
@@ -161,17 +140,7 @@ async function handleSubmit(): Promise<void> {
             {{ errors.url }}
           </p>
         </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-            {{ t('sources.fetch_interval') }}
-          </label>
-          <Select
-            v-model="fetchIntervalStr"
-            :options="intervalOptions"
-          />
-        </div>
-        
+
         <div class="flex items-center gap-2">
           <input
             v-model="form.is_active"
@@ -182,7 +151,7 @@ async function handleSubmit(): Promise<void> {
             {{ t('sources.active') }}
           </label>
         </div>
-        
+
         <div class="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" @click="close" :title="t('common.cancel')">
             <X class="h-4 w-4" />

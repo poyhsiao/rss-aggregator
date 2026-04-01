@@ -12,7 +12,6 @@ export async function getSource(id: number): Promise<Source> {
 export interface CreateSourceData {
   name: string
   url: string
-  fetch_interval?: number
   is_active?: boolean
 }
 
