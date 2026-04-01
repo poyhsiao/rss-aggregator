@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Breaking Changes
+
+- Removed `fetch_interval` field from Source model and API
+- Sources are now refreshed manually only (via `/sources/{id}/refresh` or `/sources/refresh`)
+- Scheduler is disabled by default (`scheduler_enabled: False`)
+
+### Features
+
+- Added Source Groups: organize sources into many-to-many groups
+- New API: `/api/v1/source-groups` for group CRUD and membership management
+- Feed and History pages now display and filter by source groups
+- Groups tab in Sources page for group management
+- Backup/restore now includes source group data
+
+### Removed
+
+- `fetch_interval` field from Source model, API, and all UI components
+- Per-source automatic fetch scheduling
+
 ## v0.12.1 - 2026-03-30
 
 ### Fixed

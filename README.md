@@ -205,12 +205,11 @@ See `.env.example` for all available configuration options.
 | `DATABASE_URL` | SQLite database path | `sqlite+aiosqlite:///./data/rss.db` |
 | `REQUIRE_API_KEY` | Enable API key requirement | `true` |
 | `DEFAULT_API_KEY` | Default API key | - |
-| `SCHEDULER_ENABLED` | Enable background fetching | `true` |
+| `SCHEDULER_ENABLED` | Enable background fetching | `false` |
 | `SCHEDULER_INTERVAL` | Scheduler check interval in seconds | `60` |
 | `APP_TIMEZONE` | Application timezone for time display | `Asia/Taipei` |
 | `APP_DEBUG` | Enable debug mode | `false` |
 | `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated, empty for all) | `*` |
-| `DEFAULT_FETCH_INTERVAL` | Default fetch interval for new sources (seconds) | `0` |
 | `DEFAULT_SOURCES` | Comma-separated RSS URLs | - |
 
 ## Security
