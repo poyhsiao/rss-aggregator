@@ -220,7 +220,6 @@ async def create_test_data():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(255) NOT NULL,
             url VARCHAR(500) NOT NULL UNIQUE,
-            fetch_interval INTEGER NOT NULL DEFAULT 0,
             is_active BOOLEAN NOT NULL DEFAULT 1,
             last_fetched_at DATETIME,
             last_error TEXT,
@@ -246,8 +245,8 @@ async def create_test_data():
     if not cursor.fetchone():
         now = datetime.utcnow().isoformat()
         cursor.execute("""
-            INSERT INTO sources (name, url, fetch_interval, is_active, created_at, updated_at)
-            VALUES ('Test Source', 'https://test.example.com/feed', 1800, 1, ?, ?)
+            INSERT INTO sources (name, url, is_active, created_at, updated_at)
+            VALUES ('Test Source', 'https://test.example.com/feed', 1, ?, ?)
         """, (now, now))
         print("Created test source")
 

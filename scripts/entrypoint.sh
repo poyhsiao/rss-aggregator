@@ -44,7 +44,7 @@ if default_sources:
         cursor.execute('SELECT id FROM sources WHERE url = ?', (url,))
         if not cursor.fetchone():
             name = f'Source {i+1}'
-            cursor.execute('INSERT INTO sources (name, url, fetch_interval, is_active, created_at, updated_at) VALUES (?, ?, 0, 1, ?, ?)',
+            cursor.execute('INSERT INTO sources (name, url, is_active, created_at, updated_at) VALUES (?, ?, 1, ?, ?)',
                 (name, url, now, now))
             print(f'Created source: {name} ({url})')
 

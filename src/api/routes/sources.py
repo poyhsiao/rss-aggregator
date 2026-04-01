@@ -16,14 +16,12 @@ class SourceCreate(BaseModel):
 
     name: str
     url: str
-    fetch_interval: int = 0
 
 
 class SourceUpdate(BaseModel):
     """Schema for updating a source."""
 
     name: str | None = None
-    fetch_interval: int | None = None
     is_active: bool | None = None
 
 
@@ -35,7 +33,6 @@ class SourceResponse(BaseModel):
     id: int
     name: str
     url: str
-    fetch_interval: int
     is_active: bool
     last_fetched_at: str | None
     last_error: str | None
@@ -61,7 +58,6 @@ async def list_sources(
             id=s.id,
             name=s.name,
             url=s.url,
-            fetch_interval=s.fetch_interval,
             is_active=s.is_active,
             last_fetched_at=to_iso_string(s.last_fetched_at),
             last_error=s.last_error,
@@ -83,7 +79,6 @@ async def create_source(
         source = await source_service.create_source(
             name=data.name,
             url=data.url,
-            fetch_interval=data.fetch_interval,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -92,7 +87,6 @@ async def create_source(
         id=source.id,
         name=source.name,
         url=source.url,
-        fetch_interval=source.fetch_interval,
         is_active=source.is_active,
         last_fetched_at=None,
         last_error=None,
@@ -116,7 +110,6 @@ async def batch_create_sources(
             source = await source_service.create_source(
                 name=source_data.name,
                 url=source_data.url,
-                fetch_interval=source_data.fetch_interval,
             )
             created.append({"id": source.id, "name": source.name})
         except ValueError as e:
@@ -140,7 +133,6 @@ async def get_source(
         id=source.id,
         name=source.name,
         url=source.url,
-        fetch_interval=source.fetch_interval,
         is_active=source.is_active,
         last_fetched_at=to_iso_string(source.last_fetched_at),
         last_error=source.last_error,
@@ -169,7 +161,6 @@ async def update_source(
         id=source.id,
         name=source.name,
         url=source.url,
-        fetch_interval=source.fetch_interval,
         is_active=source.is_active,
         last_fetched_at=to_iso_string(source.last_fetched_at),
         last_error=source.last_error,

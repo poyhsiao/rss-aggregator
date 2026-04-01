@@ -314,7 +314,6 @@ class StdioRouter:
                 "id": s.id,
                 "name": s.name,
                 "url": s.url,
-                "fetch_interval": s.fetch_interval,
                 "is_active": s.is_active,
                 "last_fetched_at": to_iso_string(s.last_fetched_at),
                 "last_error": s.last_error,
@@ -339,7 +338,6 @@ class StdioRouter:
             source = await source_service.create_source(
                 name=body["name"],
                 url=body["url"],
-                fetch_interval=body.get("fetch_interval", 0),
             )
             await self._create_log(
                 session,
@@ -358,7 +356,6 @@ class StdioRouter:
             "id": source.id,
             "name": source.name,
             "url": source.url,
-            "fetch_interval": source.fetch_interval,
             "is_active": source.is_active,
             "last_fetched_at": None,
             "last_error": None,
@@ -385,7 +382,6 @@ class StdioRouter:
             "id": source.id,
             "name": source.name,
             "url": source.url,
-            "fetch_interval": source.fetch_interval,
             "is_active": source.is_active,
             "last_fetched_at": to_iso_string(source.last_fetched_at),
             "last_error": source.last_error,
@@ -427,7 +423,6 @@ class StdioRouter:
             "id": source.id,
             "name": source.name,
             "url": source.url,
-            "fetch_interval": source.fetch_interval,
             "is_active": source.is_active,
             "last_fetched_at": to_iso_string(source.last_fetched_at),
             "last_error": source.last_error,

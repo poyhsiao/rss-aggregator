@@ -424,9 +424,6 @@ class BackupService:
                     existing_source = existing_sources_by_url[url]
                     source_id_map[source_data["id"]] = existing_source.id
                     existing_source.name = source_data.get("name", existing_source.name)
-                    existing_source.fetch_interval = source_data.get(
-                        "fetch_interval", existing_source.fetch_interval
-                    )
                     existing_source.is_active = source_data.get(
                         "is_active", existing_source.is_active
                     )
@@ -436,7 +433,6 @@ class BackupService:
                     new_source = Source(
                         name=source_data.get("name", ""),
                         url=url,
-                        fetch_interval=source_data.get("fetch_interval", 0),
                         is_active=source_data.get("is_active", True),
                     )
                     self._db.add(new_source)

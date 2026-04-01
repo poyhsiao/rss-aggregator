@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     rate_limit_window: int = 60
 
     # RSS Fetching
-    default_fetch_interval: int = 0
     fetch_timeout: int = 30
     fetch_retry_count: int = 3
     fetch_retry_delay: int = 5

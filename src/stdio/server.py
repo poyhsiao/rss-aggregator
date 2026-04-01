@@ -141,9 +141,8 @@ class StdioServer:
                 if len(parts) >= 2:
                     name = parts[0].strip()
                     url = parts[1].strip()
-                    fetch_interval = int(parts[2]) if len(parts) > 2 else 900
                     try:
-                        await source_service.create_source(name, url, fetch_interval)
+                        await source_service.create_source(name, url)
                         print(f"[DEBUG] Created default source: {name}", file=sys.stderr, flush=True)
                     except ValueError as e:
                         print(f"[DEBUG] Failed to create source: {e}", file=sys.stderr, flush=True)

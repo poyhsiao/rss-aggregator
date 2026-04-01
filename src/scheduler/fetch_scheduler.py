@@ -71,15 +71,7 @@ class FetchScheduler:
             )
             sources = list(result.scalars().all())
 
-            sources_to_fetch = [
-                s
-                for s in sources
-                if s.fetch_interval > 0
-                and (
-                    s.last_fetched_at is None
-                    or (now - s.last_fetched_at).total_seconds() >= s.fetch_interval
-                )
-            ]
+            sources_to_fetch = list(sources)
 
             if not sources_to_fetch:
                 return

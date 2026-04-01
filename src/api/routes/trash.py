@@ -18,7 +18,6 @@ class TrashItemResponse(BaseModel):
     id: int
     name: str
     url: str
-    fetch_interval: int
     is_active: bool
     deleted_at: str
     created_at: str
@@ -51,7 +50,6 @@ async def list_trash(
             id=s.id,
             name=s.name,
             url=s.url,
-            fetch_interval=s.fetch_interval,
             is_active=s.is_active,
             deleted_at=to_iso_string(s.deleted_at) or "",
             created_at=to_iso_string(s.created_at) or "",
