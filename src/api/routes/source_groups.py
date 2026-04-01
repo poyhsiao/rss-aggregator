@@ -85,9 +85,15 @@ async def update_group(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+    count_result = await service.list_groups_with_count()
+    member_count = next(
+        (g["member_count"] for g in count_result if g["id"] == group.id), 0
+    )
+
     return GroupResponse(
         id=group.id,
         name=group.name,
+        member_count=member_count,
         created_at=group.created_at.isoformat(),
         updated_at=group.updated_at.isoformat(),
     )
