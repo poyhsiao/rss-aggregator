@@ -18,6 +18,7 @@ def anyio_backend():
 async def db_session():
     """Create a test database session."""
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with async_session_factory() as session:

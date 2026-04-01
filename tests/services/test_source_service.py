@@ -24,7 +24,6 @@ async def test_create_source(source_service: SourceService):
     assert source.id is not None
     assert source.name == "Test Feed"
     assert source.url == "https://example.com/feed.xml"
-    assert source.fetch_interval == 900  # service default
     assert source.is_active is True
 
 
@@ -71,10 +70,9 @@ async def test_update_source(source_service: SourceService):
     )
 
     updated = await source_service.update_source(
-        source.id, name="Updated", fetch_interval=1800
+        source.id, name="Updated"
     )
     assert updated.name == "Updated"
-    assert updated.fetch_interval == 1800
 
 
 @pytest.mark.asyncio
@@ -197,18 +195,13 @@ async def test_restore_source_no_conflict(source_service: SourceService):
 async def test_restore_source_overwrite(source_service: SourceService, db_session: AsyncSession):
     """Test restoring with overwrite."""
     deleted = await source_service.create_source("Overwrite", "https://overwrite.com/rss")
-    deleted.fetch_interval = 900
-    await db_session.commit()
     await source_service.delete_source(deleted.id)
 
     existing = await source_service.create_source("Overwrite", "https://overwrite.com/rss")
-    existing.fetch_interval = 1800
-    await db_session.commit()
 
     restored = await source_service.restore_source(deleted.id, overwrite=True)
 
     assert restored.deleted_at is None
-    assert restored.fetch_interval == 900
 
     await db_session.refresh(existing)
     assert existing.deleted_at is not None

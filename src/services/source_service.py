@@ -18,14 +18,13 @@ class SourceService:
         self.session = session
 
     async def create_source(
-        self, name: str, url: str, fetch_interval: int = 900
+        self, name: str, url: str
     ) -> Source:
         """Create a new RSS source.
 
         Args:
             name: Display name for the source.
             url: URL of the RSS feed.
-            fetch_interval: Interval in seconds between fetches. Defaults to 900.
 
         Returns:
             The created Source instance.
@@ -40,7 +39,7 @@ class SourceService:
         if existing.scalar_one_or_none():
             raise ValueError(f"Source with URL '{url}' already exists")
 
-        source = Source(name=name, url=url, fetch_interval=fetch_interval)
+        source = Source(name=name, url=url)
         self.session.add(source)
         await self.session.commit()
         await self.session.refresh(source)
