@@ -290,6 +290,21 @@ class HistoryService:
             latest_fetched_at = row[0].isoformat() if row[0] else None
             latest_published_at = row[1].isoformat() if row[1] else None
 
+        # Aggregate groups from all sources in the batch
+        batch_groups: list[dict] = []
+        if batch.id:
+            groups_result = await self.session.execute(
+                select(SourceGroup)
+                .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+                .join(FeedItem, FeedItem.source_id == SourceGroupMember.source_id)
+                .where(FeedItem.batch_id == batch.id)
+                .distinct()
+            )
+            batch_groups = [
+                {"id": g.id, "name": g.name}
+                for g in groups_result.scalars().all()
+            ]
+
         return HistoryBatch(
             id=batch.id,
             name=self._get_batch_display_name(batch),
@@ -298,6 +313,7 @@ class HistoryService:
             created_at=batch.created_at.isoformat() if batch.created_at else "",
             latest_fetched_at=latest_fetched_at,
             latest_published_at=latest_published_at,
+            groups=batch_groups,
         )
 
     async def delete_batch(self, batch_id: int) -> bool:
