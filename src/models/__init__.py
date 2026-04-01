@@ -7,12 +7,15 @@ from src.models.fetch_log import FetchLog
 from src.models.feed_item import FeedItem
 from src.models.preview_content import PreviewContent
 from src.models.source import Source
+from src.models.source_group import SourceGroup, SourceGroupMember
 from src.models.stats import Stats
 
 __all__ = [
     "Base",
     "TimestampMixin",
     "Source",
+    "SourceGroup",
+    "SourceGroupMember",
     "APIKey",
     "FeedItem",
     "FetchBatch",

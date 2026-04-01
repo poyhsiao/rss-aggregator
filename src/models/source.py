@@ -12,6 +12,7 @@ from src.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from src.models.feed_item import FeedItem
+    from src.models.source_group import SourceGroup
 
 
 class Source(Base, TimestampMixin):
@@ -32,6 +33,13 @@ class Source(Base, TimestampMixin):
 
     feed_items: Mapped[list[FeedItem]] = relationship(
         "FeedItem", back_populates="source", cascade="all, delete-orphan", init=False
+    )
+
+    groups: Mapped[list[SourceGroup]] = relationship(
+        "SourceGroup",
+        secondary="source_group_members",
+        back_populates="sources",
+        init=False,
     )
 
     def __repr__(self) -> str:
