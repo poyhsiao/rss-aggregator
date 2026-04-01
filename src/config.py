@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     max_feed_items: int = 1000
 
     # Scheduler
-    scheduler_enabled: bool = True
+    scheduler_enabled: bool = False
     scheduler_interval: int = 60
 
     # Default Sources
