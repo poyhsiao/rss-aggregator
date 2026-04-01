@@ -62,10 +62,16 @@ class TestBackupServiceImport:
             backup_service, "_get_all_feed_items", new_callable=AsyncMock
         ) as mock_feed_items, patch.object(
             backup_service, "_get_all_api_keys", new_callable=AsyncMock
-        ) as mock_api_keys:
+        ) as mock_api_keys, patch.object(
+            backup_service, "_get_all_source_groups", new_callable=AsyncMock
+        ) as mock_groups, patch.object(
+            backup_service, "_get_all_source_group_members", new_callable=AsyncMock
+        ) as mock_members:
             mock_sources.return_value = []
             mock_feed_items.return_value = []
             mock_api_keys.return_value = []
+            mock_groups.return_value = []
+            mock_members.return_value = []
 
             result = await backup_service.import_backup(valid_backup_zip)
 
@@ -147,10 +153,16 @@ class TestBackupServiceImport:
             backup_service, "_get_all_feed_items", new_callable=AsyncMock
         ) as mock_feed_items, patch.object(
             backup_service, "_get_all_api_keys", new_callable=AsyncMock
-        ) as mock_api_keys:
+        ) as mock_api_keys, patch.object(
+            backup_service, "_get_all_source_groups", new_callable=AsyncMock
+        ) as mock_groups, patch.object(
+            backup_service, "_get_all_source_group_members", new_callable=AsyncMock
+        ) as mock_members:
             mock_sources.return_value = []
             mock_feed_items.return_value = []
             mock_api_keys.return_value = []
+            mock_groups.return_value = []
+            mock_members.return_value = []
 
             result = await backup_service.import_backup(encrypted.getvalue())
 
@@ -168,3 +180,89 @@ class TestBackupServiceImport:
         assert preview is not None
         assert preview.version == "0.10.0"
         assert preview.counts is not None
+
+    @pytest.mark.asyncio
+    async def test_import_backup_with_source_groups(
+        self, mock_db: MagicMock, backup_service: BackupService
+    ) -> None:
+        """Test import restores source groups and memberships."""
+        import json
+
+        backup_data = {
+            "version": "0.10.0",
+            "exported_at": "2026-03-27T15:30:00+00:00",
+            "app_name": "RSS-Aggregator",
+            "data": {
+                "sources": [
+                    {
+                        "id": 1,
+                        "url": "https://test.com/rss.xml",
+                        "name": "Test Feed",
+                        "is_active": True,
+                    }
+                ],
+                "feed_items": [],
+                "api_keys": [],
+                "preview_contents": [],
+                "fetch_batches": [],
+                "fetch_logs": [],
+                "stats": [],
+                "source_groups": [
+                    {
+                        "id": 1,
+                        "name": "Tech",
+                        "created_at": "2026-03-27T10:00:00",
+                        "updated_at": "2026-03-27T10:00:00",
+                    }
+                ],
+                "source_group_members": [
+                    {"source_id": 1, "group_id": 1},
+                ],
+            },
+            "config": {"timezone": "Asia/Taipei", "language": "zh"},
+        }
+        json_data = json.dumps(backup_data).encode("utf-8")
+        encrypted = backup_service._encrypt_zip(json_data)
+
+        auto_id = 0
+        added_objects: list = []
+        original_add = mock_db.add
+
+        def track_add(obj: object) -> None:
+            added_objects.append(obj)
+            original_add(obj)
+
+        mock_db.add = MagicMock(side_effect=track_add)
+
+        async def assign_ids() -> None:
+            nonlocal auto_id
+            for obj in added_objects:
+                if hasattr(obj, "id") and obj.id is None:
+                    auto_id += 1
+                    obj.id = auto_id
+
+        mock_db.flush = AsyncMock(side_effect=assign_ids)
+
+        with patch.object(
+            backup_service, "_get_all_sources", new_callable=AsyncMock
+        ) as mock_sources, patch.object(
+            backup_service, "_get_all_feed_items", new_callable=AsyncMock
+        ) as mock_feed_items, patch.object(
+            backup_service, "_get_all_api_keys", new_callable=AsyncMock
+        ) as mock_api_keys, patch.object(
+            backup_service, "_get_all_source_groups", new_callable=AsyncMock
+        ) as mock_groups, patch.object(
+            backup_service, "_get_all_source_group_members", new_callable=AsyncMock
+        ) as mock_members:
+            mock_sources.return_value = []
+            mock_feed_items.return_value = []
+            mock_api_keys.return_value = []
+            mock_groups.return_value = []
+            mock_members.return_value = []
+
+            result = await backup_service.import_backup(encrypted.getvalue())
+
+            assert result.success is True
+            assert result.summary is not None
+            assert result.summary.source_groups_imported == 1
+            assert result.summary.source_group_members_imported == 1

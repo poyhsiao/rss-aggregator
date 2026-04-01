@@ -25,6 +25,8 @@ class BackupCounts(BaseModel):
     fetch_batches: int = 0
     fetch_logs: int = 0
     stats: int = 0
+    source_groups: int = 0
+    source_group_members: int = 0
 
 
 class BackupContent(BaseModel):
@@ -52,6 +54,8 @@ class ImportSummary(BaseModel):
     sources_merged: int = 0
     feed_items_imported: int = 0
     api_keys_imported: int = 0
+    source_groups_imported: int = 0
+    source_group_members_imported: int = 0
 
 
 class ImportResult(BaseModel):

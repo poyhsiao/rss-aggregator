@@ -213,11 +213,27 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert result["sources"] == []
-                                    assert result["feed_items"] == []
-                                    assert result["api_keys"] == []
+                                            assert result["sources"] == []
+                                            assert result["feed_items"] == []
+                                            assert result["api_keys"] == []
+                                            assert result["source_groups"] == []
+                                            assert (
+                                                result["source_group_members"] == []
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_sources(self, backup_service: BackupService) -> None:
@@ -241,14 +257,29 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["sources"]) == 1
-                                    assert result["sources"][0]["name"] == "Test Source"
-                                    assert (
-                                        result["sources"][0]["url"]
-                                        == "https://example.com/rss.xml"
-                                    )
+                                            assert len(result["sources"]) == 1
+                                            assert (
+                                                result["sources"][0]["name"]
+                                                == "Test Source"
+                                            )
+                                            assert (
+                                                result["sources"][0]["url"]
+                                                == "https://example.com/rss.xml"
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_feed_items(self, backup_service: BackupService) -> None:
@@ -272,10 +303,25 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["feed_items"]) == 1
-                                    assert result["feed_items"][0]["title"] == "Test Article"
+                                            assert len(result["feed_items"]) == 1
+                                            assert (
+                                                result["feed_items"][0]["title"]
+                                                == "Test Article"
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_api_keys(self, backup_service: BackupService) -> None:
@@ -299,10 +345,25 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["api_keys"]) == 1
-                                    assert result["api_keys"][0]["name"] == "Test Key"
+                                            assert len(result["api_keys"]) == 1
+                                            assert (
+                                                result["api_keys"][0]["name"]
+                                                == "Test Key"
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_fetch_logs(self, backup_service: BackupService) -> None:
@@ -324,10 +385,25 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["fetch_logs"]) == 1
-                                    assert result["fetch_logs"][0]["status"] == "success"
+                                            assert len(result["fetch_logs"]) == 1
+                                            assert (
+                                                result["fetch_logs"][0]["status"]
+                                                == "success"
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_preview_contents(
@@ -353,13 +429,25 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["preview_contents"]) == 1
-                                    assert (
-                                        result["preview_contents"][0]["title"]
-                                        == "Test Article"
-                                    )
+                                            assert len(result["preview_contents"]) == 1
+                                            assert (
+                                                result["preview_contents"][0]["title"]
+                                                == "Test Article"
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_fetch_batches(self, backup_service: BackupService) -> None:
@@ -383,10 +471,27 @@ class TestBackupServiceSerialize:
                                 with patch.object(
                                     backup_service, "_get_all_stats", return_value=[]
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["fetch_batches"]) == 1
-                                    assert result["fetch_batches"][0]["items_count"] == 10
+                                            assert len(result["fetch_batches"]) == 1
+                                            assert (
+                                                result["fetch_batches"][0][
+                                                    "items_count"
+                                                ]
+                                                == 10
+                                            )
 
     @pytest.mark.asyncio
     async def test_serialize_stats(self, backup_service: BackupService) -> None:
@@ -410,10 +515,25 @@ class TestBackupServiceSerialize:
                                     "_get_all_stats",
                                     return_value=[mock_stat],
                                 ):
-                                    result = await backup_service._serialize_data()
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
 
-                                    assert len(result["stats"]) == 1
-                                    assert result["stats"][0]["total_requests"] == 100
+                                            assert len(result["stats"]) == 1
+                                            assert (
+                                                result["stats"][0]["total_requests"]
+                                                == 100
+                                            )
 
     def test_serialize_model_datetime(self, backup_service: BackupService) -> None:
         """Test _serialize_model with datetime field."""
@@ -450,3 +570,80 @@ class TestBackupServiceSerialize:
 
         assert "last_error" in result
         assert result["last_error"] is None
+
+    @pytest.mark.asyncio
+    async def test_serialize_source_groups(self, backup_service: BackupService) -> None:
+        """Test serializing source groups."""
+        mock_group = MagicMock()
+        mock_group.__table__ = MagicMock()
+        mock_group.__table__.columns = [
+            create_mock_column("id"),
+            create_mock_column("name"),
+            create_mock_column("created_at"),
+            create_mock_column("updated_at"),
+        ]
+        mock_group.id = 1
+        mock_group.name = "Tech"
+        mock_group.created_at = datetime(2026, 3, 27, 10, 0, 0)
+        mock_group.updated_at = datetime(2026, 3, 27, 10, 0, 0)
+
+        mock_member = MagicMock()
+        mock_member.__table__ = MagicMock()
+        mock_member.__table__.columns = [
+            create_mock_column("source_id"),
+            create_mock_column("group_id"),
+        ]
+        mock_member.source_id = 1
+        mock_member.group_id = 1
+
+        with patch.object(backup_service, "_get_all_sources", return_value=[]):
+            with patch.object(backup_service, "_get_all_feed_items", return_value=[]):
+                with patch.object(backup_service, "_get_all_api_keys", return_value=[]):
+                    with patch.object(
+                        backup_service, "_get_all_preview_contents", return_value=[]
+                    ):
+                        with patch.object(
+                            backup_service, "_get_all_fetch_batches", return_value=[]
+                        ):
+                            with patch.object(
+                                backup_service, "_get_all_fetch_logs", return_value=[]
+                            ):
+                                with patch.object(
+                                    backup_service, "_get_all_stats", return_value=[]
+                                ):
+                                    with patch.object(
+                                        backup_service,
+                                        "_get_all_source_groups",
+                                        return_value=[mock_group],
+                                    ):
+                                        with patch.object(
+                                            backup_service,
+                                            "_get_all_source_group_members",
+                                            return_value=[mock_member],
+                                        ):
+                                            result = (
+                                                await backup_service._serialize_data()
+                                            )
+
+                                            assert "source_groups" in result
+                                            assert "source_group_members" in result
+                                            assert len(result["source_groups"]) == 1
+                                            assert (
+                                                result["source_groups"][0]["name"]
+                                                == "Tech"
+                                            )
+                                            assert (
+                                                len(result["source_group_members"]) == 1
+                                            )
+                                            assert (
+                                                result["source_group_members"][0][
+                                                    "source_id"
+                                                ]
+                                                == 1
+                                            )
+                                            assert (
+                                                result["source_group_members"][0][
+                                                    "group_id"
+                                                ]
+                                                == 1
+                                            )

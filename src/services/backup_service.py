@@ -15,6 +15,8 @@ from src.models import (
     FetchLog,
     PreviewContent,
     Source,
+    SourceGroup,
+    SourceGroupMember,
     Stats,
 )
 from src.schemas.backup import (
@@ -111,6 +113,24 @@ class BackupService:
         result = await self._db.execute(select(Stats))
         return list(result.scalars().all())
 
+    async def _get_all_source_groups(self) -> list[SourceGroup]:
+        """Get all source groups from database.
+
+        Returns:
+            List of all SourceGroup records.
+        """
+        result = await self._db.execute(select(SourceGroup))
+        return list(result.scalars().all())
+
+    async def _get_all_source_group_members(self) -> list[SourceGroupMember]:
+        """Get all source group members from database.
+
+        Returns:
+            List of all SourceGroupMember records.
+        """
+        result = await self._db.execute(select(SourceGroupMember))
+        return list(result.scalars().all())
+
     def _serialize_model(self, obj: Any) -> dict[str, Any]:
         """Serialize a SQLAlchemy model to dictionary.
 
@@ -143,6 +163,8 @@ class BackupService:
         fetch_batches = await self._get_all_fetch_batches()
         fetch_logs = await self._get_all_fetch_logs()
         stats = await self._get_all_stats()
+        source_groups = await self._get_all_source_groups()
+        source_group_members = await self._get_all_source_group_members()
 
         return {
             "sources": [self._serialize_model(s) for s in sources],
@@ -152,6 +174,10 @@ class BackupService:
             "fetch_batches": [self._serialize_model(b) for b in fetch_batches],
             "fetch_logs": [self._serialize_model(l) for l in fetch_logs],
             "stats": [self._serialize_model(s) for s in stats],
+            "source_groups": [self._serialize_model(g) for g in source_groups],
+            "source_group_members": [
+                self._serialize_model(m) for m in source_group_members
+            ],
         }
 
     def _get_config(self) -> dict[str, str]:
@@ -502,6 +528,48 @@ class BackupService:
                     self._db.add(new_key)
                     api_keys_imported += 1
 
+            # Restore source groups
+            source_groups_imported = 0
+            existing_groups = await self._get_all_source_groups()
+            existing_groups_by_name = {g.name: g for g in existing_groups}
+            group_id_map: dict[int, int] = {}
+
+            backup_groups = content.data.get("source_groups", [])
+            for group_data in backup_groups:
+                name = group_data.get("name")
+                old_id = group_data.get("id")
+                if name in existing_groups_by_name:
+                    group_id_map[old_id] = existing_groups_by_name[name].id
+                else:
+                    new_group = SourceGroup(name=name)
+                    self._db.add(new_group)
+                    await self._db.flush()
+                    group_id_map[old_id] = new_group.id
+                    source_groups_imported += 1
+
+            # Restore source group members
+            source_group_members_imported = 0
+            existing_members = await self._get_all_source_group_members()
+            existing_member_pairs = {
+                (m.group_id, m.source_id) for m in existing_members
+            }
+
+            backup_members = content.data.get("source_group_members", [])
+            for member_data in backup_members:
+                old_group_id = member_data.get("group_id")
+                old_source_id = member_data.get("source_id")
+                new_group_id = group_id_map.get(old_group_id)
+                new_source_id = source_id_map.get(old_source_id)
+
+                if new_group_id and new_source_id:
+                    if (new_group_id, new_source_id) not in existing_member_pairs:
+                        new_member = SourceGroupMember(
+                            group_id=new_group_id,
+                            source_id=new_source_id,
+                        )
+                        self._db.add(new_member)
+                        source_group_members_imported += 1
+
             await self._db.commit()
 
             return ImportResult(
@@ -512,6 +580,8 @@ class BackupService:
                     sources_merged=sources_merged,
                     feed_items_imported=feed_items_imported,
                     api_keys_imported=api_keys_imported,
+                    source_groups_imported=source_groups_imported,
+                    source_group_members_imported=source_group_members_imported,
                 ),
             )
 
@@ -545,6 +615,10 @@ class BackupService:
                     fetch_batches=len(content.data.get("fetch_batches", [])),
                     fetch_logs=len(content.data.get("fetch_logs", [])),
                     stats=len(content.data.get("stats", [])),
+                    source_groups=len(content.data.get("source_groups", [])),
+                    source_group_members=len(
+                        content.data.get("source_group_members", [])
+                    ),
                 ),
                 config=content.config,
             )
