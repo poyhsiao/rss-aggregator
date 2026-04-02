@@ -6,66 +6,66 @@
 
 ## Problem Statement
 
-目前 Source Group 只能透過手動方式觸發更新（`/source-groups/{id}/refresh`），缺少自動排程功能。使用者希望能像 cron 一樣設定定時自動更新，但不需要學習複雜的 cron 語法。
+Currently, Source Groups can only be manually refreshed via API or UI (`/source-groups/{id}/refresh`). Users need automated scheduled updates similar to cron, but without learning complex cron syntax.
 
 ## Goals
 
-1. **定時自動更新** — 讓每個 Group 可以設定多組排程，時間到自動更新該群組的所有 Sources
-2. **直覺 UI** — 圖形化勾選方式設定時間，不需要理解 cron syntax
-3. **快捷設定** — 支援常用間隔（每15分鐘、每天等）快速設定
-4. **下次執行時間** — 讓使用者能看到下次什麼時候會執行
+1. **Automated Scheduled Updates** — Each group can have multiple schedules (max 10), triggering automatic refresh of all sources in the group when the schedule runs
+2. **Intuitive UI** — Checkbox-based time selection UI without requiring understanding of cron syntax
+3. **Quick Settings** — Predefined intervals (every 15 min, daily, etc.) for quick configuration
+4. **Next Run Time** — Display when a schedule will next execute
 
 ## Non-Goals
 
-- 不實作日曆檢視（calendar view）
-- 不實作巢狀排程（cron chains）
-- 不實作 per-source 排程（僅 per-group）
-- 不實作排程執行歷史紀錄（除了 fetch batch）
+- Calendar view of schedule triggers
+- Nested schedules (cron chains)
+- Per-source schedules (group-level only)
+- Schedule execution history beyond fetch batch
 
 ## Architecture Decisions
 
 ### Decision 1: Cron Expression Storage
 
-**Chosen:** 存儲完整的 cron expression 字串（如 `25,27 11,12 * * 3,6`）
+**Chosen:** Store complete cron expression string (e.g., `25,27 11,12 * * 3,6`)
 
 **Alternatives considered:**
-- 存儲 JSON 結構（`{minutes: [], hours: [], weekdays: []}`）— rejected：增加複雜度，需要額外翻譯
-- 存儲 minutes/hours/weekdays 分開的欄位 — rejected：查詢和修改困難
+- Store JSON structure (`{minutes: [], hours: [], weekdays: []}`) — rejected: adds complexity, requires additional translation
+- Store minutes/hours/weekdays as separate columns — rejected: difficult to query and modify
 
-**Reasoning:** Cron expression 是標準格式，便於擴展和外部工具整合。
+**Reasoning:** Cron expression is a standard format, easy to extend and integrate with external tools.
 
 ### Decision 2: Scheduler Implementation
 
-**Chosen:** 新建獨立的 `ScheduleScheduler` class，與現有 `FetchScheduler` 分離
+**Chosen:** Create standalone `ScheduleScheduler` class, separate from existing `FetchScheduler`
 
 **Alternatives considered:**
-- 擴展現有 FetchScheduler — rejected：職責會變得太複雜
-- 每分鐘輪詢資料庫所有排程 — rejected：效能太差
+- Extend existing FetchScheduler — rejected: responsibilities would become too complex
+- Poll database every minute for all schedules — rejected: poor performance
 
 **Reasoning:**
-- ScheduleScheduler 專責排程管理，職責單一
-- 使用 croniter 計算下次執行時間，精確且高效
-- 每分鐘檢查一次，執行精確到分鐘
+- ScheduleScheduler is dedicated to schedule management, single responsibility
+- Use croniter for precise next run time calculation
+- Check every minute, execution precise to the minute
 
 ### Decision 3: UI Mode Toggle
 
-**Chosen:** Radio button 切換 Quick/Detailed 模式，選擇一個停用另一個
+**Chosen:** Radio button to toggle Quick/Detailed mode, selecting one disables the other
 
 **Alternatives considered:**
-- 兩者皆可同時使用 — rejected：邏輯衝突，使用者困惑
-- Tabs 切換 — rejected：Radio 更直覺，表達「二選一」
+- Allow both to be used simultaneously — rejected: logic conflict, confusing for users
+- Tabs to switch — rejected: Radio is more intuitive, expresses "choose one of two"
 
-**Reasoning:** 明確的互斥關係，避免設定衝突。
+**Reasoning:** Clear mutual exclusivity, prevents configuration conflicts.
 
 ### Decision 4: Duplicate Detection
 
-**Chosen:** 儲存前檢查 cron expression 是否與現有排程完全相同
+**Chosen:** Check for duplicate cron expression before saving
 
 **Alternatives considered:**
-- 允許重複執行 — rejected：浪費資源，可能造成問題
-- 允許但標記 warning — rejected：不是預期行為
+- Allow duplicates to run — rejected: wastes resources, may cause issues
+- Allow but mark warning — rejected: unexpected behavior
 
-**Reasoning:** 簡單明確的檢查邏輯，使用者容易理解。
+**Reasoning:** Simple and clear check logic, easy for users to understand.
 
 ## Data Model
 
@@ -145,46 +145,46 @@ Standard 5-field cron: `minute hour day month weekday`
 
 | Quick Setting | Cron Expression | Description |
 |---------------|-----------------|-------------|
-| 每 15 分鐘 | `*/15 * * * *` | Every 15 minutes |
-| 每 30 分鐘 | `*/30 * * * *` | Every 30 minutes |
-| 每 1 小時 | `0 * * * *` | Every hour at :00 |
-| 每 3 小時 | `0 */3 * * *` | Every 3 hours at :00 |
-| 每 6 小時 | `0 */6 * * *` | Every 6 hours at :00 |
-| 每 12 小時 | `0 */12 * * *` | Every 12 hours at :00 |
-| 每天 | `30 8 * * *` | Daily at 08:30 |
+| Every 15 min | `*/15 * * * *` | Every 15 minutes |
+| Every 30 min | `*/30 * * * *` | Every 30 minutes |
+| Every 1 hour | `0 * * * *` | Every hour at :00 |
+| Every 3 hours | `0 */3 * * *` | Every 3 hours at :00 |
+| Every 6 hours | `0 */6 * * *` | Every 6 hours at :00 |
+| Every 12 hours | `0 */12 * * *` | Every 12 hours at :00 |
+| Daily | `30 8 * * *` | Daily at 08:30 |
 
 ## Human-Readable Preview
 
 ### Translation Rules
 
 1. **Minutes**
-   - `*` → 每分鐘
-   - `*/N` → 每 N 分鐘
-   - `M,N` → M、N 分
+   - `*` → Every minute
+   - `*/N` → Every N minutes
+   - `M,N` → M, N minutes
 
 2. **Hours**
-   - `*` → 每小時
-   - `*/N` → 每 N 小時
-   - `H1,H2` → H1點、H2點
+   - `*` → Every hour
+   - `*/N` → Every N hours
+   - `H1,H2` → H1, H2 o'clock
 
 3. **Weekdays**
-   - `*` → 每天
-   - `0` → 週日
-   - `1` → 週一
-   - `2` → 週二
-   - `3` → 週三
-   - `4` → 週四
-   - `5` → 週五
-   - `6` → 週六
+   - `*` → Daily
+   - `0` → Sunday
+   - `1` → Monday
+   - `2` → Tuesday
+   - `3` → Wednesday
+   - `4` → Thursday
+   - `5` → Friday
+   - `6` → Saturday
 
 ### Examples
 
 | Cron Expression | Preview |
 |-----------------|---------|
-| `25,27 11,12 * * 3,6` | 每週三、六 11:13, 11:27, 12:13, 12:27 |
-| `30 8 * * *` | 每天 08:30 |
-| `*/15 * * * *` | 每 15 分鐘 |
-| `0 */3 * * *` | 每 3 小時 |
+| `25,27 11,12 * * 3,6` | Every Wed, Sat at 11:13, 11:27, 12:13, 12:27 |
+| `30 8 * * *` | Daily at 08:30 |
+| `*/15 * * * *` | Every 15 minutes |
+| `0 */3 * * *` | Every 3 hours |
 
 ## Scheduler Implementation
 
@@ -261,38 +261,39 @@ def calculate_next_run(cron_expression: str, from_time: datetime | None = None) 
 ### Layout in SourcesPage - Groups Tab
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ 📁 群組名稱                    [刷新] [預覽] [編輯] [刪除] ▼ │
-├─────────────────────────────────────────────────────────┤
-│ 成員數: 5                                                     │
-├─────────────────────────────────────────────────────────┤
-│ ⚙️ 定時更新 (collapsible)                                   │
-├─────────────────────────────────────────────────────────┤
-│ ○ 快捷設定    ○ 詳細設定                                    │
-├─────────────────────────────────────────────────────────┤
-│ [快捷選項 ▼]                                                │
-│   └ 每 15 分鐘 / 每 30 分鐘 / 每 1 小時 / 每 3 小時 /      │
-│     每 6 小時 / 每 12 小時 / 每天 (08:30)                   │
-├─────────────────────────────────────────────────────────┤
-│ 詳细設定（非快捷模式時啟用）:                                │
-│   分鐘: [■13 □27 □其他...]                                  │
-│   小時: [■11 □12 □其他...]                                  │
-│   星期: [■3(週三) □6(週六)]                                 │
-│                                                         │
-│   預覽: 每週三、六 11:13、11:27、12:13、12:27              │
-├─────────────────────────────────────────────────────────┤
-│ [+ 新增排程]  [儲存]                                        │
-├─────────────────────────────────────────────────────────┤
-│ 已設定排程:                                                  │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ 🕐 每週三、六 11:13, 12:27  │ 04/03 11:25 下次執行  │ │
-│ │    [開啟/關閉] [編輯] [刪除]                          │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ 🕐 每天 08:30               │ 04/03 08:30 下次執行  │ │
-│ │    [關閉] [編輯] [刪除]                              │ │
-│ └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+| [Group Name]                 [Refresh] [Preview] [Edit] [Delete] v |
++-------------------------------------------------------------+
+| Members: 5                                                      |
++-------------------------------------------------------------+
+| [Scheduled Update (collapsible)]                              |
++-------------------------------------------------------------+
+| (o) Quick Settings    ( ) Detailed Settings                  |
++-------------------------------------------------------------+
+| [Quick Options v]                                             |
+|    Every 15 min / Every 30 min / Every 1 hour /              |
+|    Every 3 hours / Every 6 hours / Every 12 hours /          |
+|    Daily (08:30)                                              |
++-------------------------------------------------------------+
+| Detailed Settings (enabled when not in Quick mode):          |
+|   Minutes: [x]13 [ ]27 [ ]other...                           |
+|   Hours: [x]11 [x]12 [ ]other...                             |
+|   Weekdays: [x]3(Wed) [x]6(Sat)                              |
+|                                                               |
+|   Preview: Every Wed, Sat at 11:13, 11:27, 12:13, 12:27     |
++-------------------------------------------------------------+
+| [+ Add Schedule]  [Save]                                      |
++-------------------------------------------------------------+
+| Configured Schedules:                                         |
+| +---------------------------------------------------------------+
+| | [Clock] Every Wed, Sat 11:13, 12:27 | 04/03 11:25 next     | |
+| |    [Enable/Disable] [Edit] [Delete]                          | |
+| +---------------------------------------------------------------+
+| +---------------------------------------------------------------+
+| | [Clock] Daily 08:30              | 04/03 08:30 next        | |
+| |    [Disable] [Edit] [Delete]                                | |
+| +---------------------------------------------------------------+
++-------------------------------------------------------------+
 ```
 
 ### Component Structure
