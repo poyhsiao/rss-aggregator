@@ -17,6 +17,7 @@ from src.services.rate_limiter import RateLimiter
 from src.services.source_service import SourceService
 from src.services.backup_service import BackupService
 from src.services.source_group_service import SourceGroupService
+from src.services.source_group_schedule_service import SourceGroupScheduleService
 
 
 _rate_limiter: RateLimiter | None = None
@@ -99,6 +100,12 @@ async def get_source_group_service(
     session: AsyncSession = Depends(get_session),
 ) -> SourceGroupService:
     return SourceGroupService(session)
+
+
+async def get_schedule_service(
+    session: AsyncSession = Depends(get_session),
+) -> SourceGroupScheduleService:
+    return SourceGroupScheduleService(session)
 
 
 async def require_api_key(
