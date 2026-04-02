@@ -9,6 +9,7 @@ from src.api.deps import get_scheduler, set_scheduler
 from src.api.routes import backup, feed, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
 from src.config import settings
 from src.scheduler.fetch_scheduler import FetchScheduler
+from src.scheduler.schedule_scheduler import ScheduleScheduler
 
 
 @asynccontextmanager
@@ -22,12 +23,19 @@ async def lifespan(app: FastAPI):
     )
     set_scheduler(scheduler)
 
+    schedule_scheduler = ScheduleScheduler(
+        session_factory=async_session_factory,
+        fetch_scheduler=scheduler,
+    )
+
     if settings.scheduler_enabled:
         await scheduler.start()
+        await schedule_scheduler.start()
 
     yield
 
     if settings.scheduler_enabled:
+        await schedule_scheduler.stop()
         await scheduler.stop()
 
 
