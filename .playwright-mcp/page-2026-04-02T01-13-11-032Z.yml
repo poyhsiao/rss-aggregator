@@ -1,0 +1,218 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7] [cursor=pointer]
+        - generic [ref=e11]: RSS Aggregator
+      - generic [ref=e12]:
+        - button "🌙" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 🌙
+        - button "中" [ref=e15] [cursor=pointer]:
+          - img [ref=e16]
+          - text: 中
+  - generic [ref=e20]:
+    - complementary [ref=e21]:
+      - navigation [ref=e22]:
+        - link "動態" [ref=e23] [cursor=pointer]:
+          - /url: /
+          - img [ref=e24]
+          - generic [ref=e28]: 動態
+        - link "歷史查詢" [ref=e29] [cursor=pointer]:
+          - /url: /history
+          - img [ref=e30]
+          - generic [ref=e34]: 歷史查詢
+        - link "來源" [active] [ref=e35] [cursor=pointer]:
+          - /url: /sources
+          - img [ref=e36]
+          - generic [ref=e42]: 來源
+        - link "設定" [ref=e43] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e44]
+          - generic [ref=e47]: 設定
+    - main [ref=e48]:
+      - generic [ref=e1670]:
+        - generic [ref=e1671]:
+          - generic [ref=e1672]:
+            - img [ref=e1673]
+            - heading "來源" [level=1] [ref=e1679]
+          - generic [ref=e1680]:
+            - button "一鍵更新" [ref=e1681] [cursor=pointer]:
+              - img [ref=e1682]
+              - text: 一鍵更新
+            - button "➕ 新增來源" [ref=e1687] [cursor=pointer]
+        - generic [ref=e1688]:
+          - button "🟢 啟用中 (9)" [ref=e1689] [cursor=pointer]
+          - button "🗑️ 垃圾桶 (0)" [ref=e1690] [cursor=pointer]
+          - button "📁 群組 (0)" [ref=e1691] [cursor=pointer]
+        - generic [ref=e1692]:
+          - generic [ref=e1693]:
+            - generic [ref=e1694]:
+              - generic [ref=e1695]:
+                - generic [ref=e1696]: 🟢
+                - generic [ref=e1697]:
+                  - generic [ref=e1698]: 下架
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/8771132983711331521" [ref=e1699]: www.google.com...295206897648/8771132983711331521
+              - generic [ref=e1700]:
+                - generic [ref=e1701]: 啟用
+                - generic [ref=e1702]:
+                  - button "✏️" [ref=e1703] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1704] [cursor=pointer]:
+                    - img [ref=e1705]
+                  - button "🔄" [ref=e1708] [cursor=pointer]
+                  - button "🗑️" [ref=e1709] [cursor=pointer]
+            - generic [ref=e1711]:
+              - generic [ref=e1712]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1713]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1714]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1715]:
+            - generic [ref=e1716]:
+              - generic [ref=e1717]:
+                - generic [ref=e1718]: 🟢
+                - generic [ref=e1719]:
+                  - generic [ref=e1720]: 不合格
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/15977787427686840562" [ref=e1721]: www.google.com...95206897648/15977787427686840562
+              - generic [ref=e1722]:
+                - generic [ref=e1723]: 啟用
+                - generic [ref=e1724]:
+                  - button "✏️" [ref=e1725] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1726] [cursor=pointer]:
+                    - img [ref=e1727]
+                  - button "🔄" [ref=e1730] [cursor=pointer]
+                  - button "🗑️" [ref=e1731] [cursor=pointer]
+            - generic [ref=e1733]:
+              - generic [ref=e1734]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1735]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1736]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1737]:
+            - generic [ref=e1738]:
+              - generic [ref=e1739]:
+                - generic [ref=e1740]: 🟢
+                - generic [ref=e1741]:
+                  - generic [ref=e1742]: 回收
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/858296615764274760" [ref=e1743]: www.google.com...8295206897648/858296615764274760
+              - generic [ref=e1744]:
+                - generic [ref=e1745]: 啟用
+                - generic [ref=e1746]:
+                  - button "✏️" [ref=e1747] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1748] [cursor=pointer]:
+                    - img [ref=e1749]
+                  - button "🔄" [ref=e1752] [cursor=pointer]
+                  - button "🗑️" [ref=e1753] [cursor=pointer]
+            - generic [ref=e1755]:
+              - generic [ref=e1756]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1757]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1758]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1759]:
+            - generic [ref=e1760]:
+              - generic [ref=e1761]:
+                - generic [ref=e1762]: 🟢
+                - generic [ref=e1763]:
+                  - generic [ref=e1764]: 摻假
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/7750413354995128314" [ref=e1765]: www.google.com...295206897648/7750413354995128314
+              - generic [ref=e1766]:
+                - generic [ref=e1767]: 啟用
+                - generic [ref=e1768]:
+                  - button "✏️" [ref=e1769] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1770] [cursor=pointer]:
+                    - img [ref=e1771]
+                  - button "🔄" [ref=e1774] [cursor=pointer]
+                  - button "🗑️" [ref=e1775] [cursor=pointer]
+            - generic [ref=e1777]:
+              - generic [ref=e1778]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1779]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1780]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1781]:
+            - generic [ref=e1782]:
+              - generic [ref=e1783]:
+                - generic [ref=e1784]: 🟢
+                - generic [ref=e1785]:
+                  - generic [ref=e1786]: 標示
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/7793429260631908675" [ref=e1787]: www.google.com...295206897648/7793429260631908675
+              - generic [ref=e1788]:
+                - generic [ref=e1789]: 啟用
+                - generic [ref=e1790]:
+                  - button "✏️" [ref=e1791] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1792] [cursor=pointer]:
+                    - img [ref=e1793]
+                  - button "🔄" [ref=e1796] [cursor=pointer]
+                  - button "🗑️" [ref=e1797] [cursor=pointer]
+            - generic [ref=e1799]:
+              - generic [ref=e1800]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1801]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1802]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1803]:
+            - generic [ref=e1804]:
+              - generic [ref=e1805]:
+                - generic [ref=e1806]: 🟢
+                - generic [ref=e1807]:
+                  - generic [ref=e1808]: 檢出
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/5418400828002675426" [ref=e1809]: www.google.com...295206897648/5418400828002675426
+              - generic [ref=e1810]:
+                - generic [ref=e1811]: 啟用
+                - generic [ref=e1812]:
+                  - button "✏️" [ref=e1813] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1814] [cursor=pointer]:
+                    - img [ref=e1815]
+                  - button "🔄" [ref=e1818] [cursor=pointer]
+                  - button "🗑️" [ref=e1819] [cursor=pointer]
+            - generic [ref=e1821]:
+              - generic [ref=e1822]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1823]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1824]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1825]:
+            - generic [ref=e1826]:
+              - generic [ref=e1827]:
+                - generic [ref=e1828]: 🟢
+                - generic [ref=e1829]:
+                  - generic [ref=e1830]: 詐欺
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/7750413354995129943" [ref=e1831]: www.google.com...295206897648/7750413354995129943
+              - generic [ref=e1832]:
+                - generic [ref=e1833]: 啟用
+                - generic [ref=e1834]:
+                  - button "✏️" [ref=e1835] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1836] [cursor=pointer]:
+                    - img [ref=e1837]
+                  - button "🔄" [ref=e1840] [cursor=pointer]
+                  - button "🗑️" [ref=e1841] [cursor=pointer]
+            - generic [ref=e1843]:
+              - generic [ref=e1844]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1845]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1846]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1847]:
+            - generic [ref=e1848]:
+              - generic [ref=e1849]:
+                - generic [ref=e1850]: 🟢
+                - generic [ref=e1851]:
+                  - generic [ref=e1852]: 過期
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/11386262423670412898" [ref=e1853]: www.google.com...95206897648/11386262423670412898
+              - generic [ref=e1854]:
+                - generic [ref=e1855]: 啟用
+                - generic [ref=e1856]:
+                  - button "✏️" [ref=e1857] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1858] [cursor=pointer]:
+                    - img [ref=e1859]
+                  - button "🔄" [ref=e1862] [cursor=pointer]
+                  - button "🗑️" [ref=e1863] [cursor=pointer]
+            - generic [ref=e1865]:
+              - generic [ref=e1866]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1867]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1868]: "⏱️ 最後抓取: 1 小時前"
+          - generic [ref=e1869]:
+            - generic [ref=e1870]:
+              - generic [ref=e1871]:
+                - generic [ref=e1872]: 🟢
+                - generic [ref=e1873]:
+                  - generic [ref=e1874]: 食安
+                  - generic "https://www.google.com/alerts/feeds/08386838295206897648/12633346845282007382" [ref=e1875]: www.google.com...95206897648/12633346845282007382
+              - generic [ref=e1876]:
+                - generic [ref=e1877]: 啟用
+                - generic [ref=e1878]:
+                  - button "✏️" [ref=e1879] [cursor=pointer]
+                  - button "預覽摘要" [ref=e1880] [cursor=pointer]:
+                    - img [ref=e1881]
+                  - button "🔄" [ref=e1884] [cursor=pointer]
+                  - button "🗑️" [ref=e1885] [cursor=pointer]
+            - generic [ref=e1887]:
+              - generic [ref=e1888]: "📅 建立時間: 1 小時前"
+              - generic [ref=e1889]: "🔄 更新時間: 1 小時前"
+              - generic [ref=e1890]: "⏱️ 最後抓取: 1 小時前"

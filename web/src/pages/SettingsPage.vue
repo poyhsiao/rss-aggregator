@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { RefreshCw, Copy, Check, Trash2, Key, BarChart3, Settings } from 'lucide-vue-next'
+import { RefreshCw, Copy, Check, Trash2, Key, BarChart3, Settings, Plus, Inbox, FileText } from 'lucide-vue-next'
 import { getPlatformFeatures } from '@/utils/environment'
 import { restartBackend } from '@/utils/tauri-bridge'
 import { useToast } from '@/composables/useToast'
@@ -205,9 +205,9 @@ onMounted(() => {
     <!-- ==================== API Keys Tab ==================== -->
     <div v-if="activeTab === 'keys'" class="space-y-6">
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-semibold">🔑 {{ t('keys.title') }}</h2>
+        <h2 class="text-xl font-semibold"><Key class="h-5 w-5 inline mr-2" />{{ t('keys.title') }}</h2>
         <Button @click="showKeyDialog = true">
-          ➕ {{ t('keys.add') }}
+          <Plus class="h-4 w-4 mr-2" /> {{ t('keys.add') }}
         </Button>
       </div>
 
@@ -216,7 +216,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="!keys.length" class="text-center py-12 text-neutral-500">
-        🔑 {{ t('keys.empty') }}
+        <Key class="h-5 w-5 inline mr-2" />{{ t('keys.empty') }}
       </div>
 
       <div v-else class="space-y-3">
@@ -272,7 +272,7 @@ onMounted(() => {
     <div v-if="activeTab === 'stats'" class="space-y-6">
       <!-- Statistics -->
       <div class="space-y-4">
-        <h2 class="text-xl font-semibold">📊 {{ t('stats.title') }}</h2>
+        <h2 class="text-xl font-semibold"><BarChart3 class="h-5 w-5 inline mr-2" />{{ t('stats.title') }}</h2>
 
         <div v-if="statsLoading" class="text-center py-12 text-neutral-500">
           {{ t('common.loading') }}
@@ -310,7 +310,7 @@ onMounted(() => {
 
       <!-- Logs -->
       <div class="space-y-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-        <h2 class="text-xl font-semibold">📋 {{ t('logs.title') }}</h2>
+        <h2 class="text-xl font-semibold"><FileText class="h-5 w-5 inline mr-2" />{{ t('logs.title') }}</h2>
 
         <!-- Logs Tabs -->
         <div class="flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
@@ -355,7 +355,8 @@ onMounted(() => {
           </div>
 
           <div v-else-if="!systemLogs.length" class="text-center py-12 text-neutral-500">
-            ✨ {{ t('logs.empty') }}
+            <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+            {{ t('logs.empty') }}
           </div>
 
           <div v-else class="space-y-2">
@@ -370,7 +371,8 @@ onMounted(() => {
         <!-- Operation Logs -->
         <div v-else>
           <div v-if="!logStore.logs.length" class="text-center py-12 text-neutral-500">
-            ✨ {{ t('logs.no_operation_logs') }}
+            <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+            {{ t('logs.no_operation_logs') }}
           </div>
 
           <div v-else class="space-y-2">

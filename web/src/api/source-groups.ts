@@ -29,3 +29,7 @@ export async function addSourceToGroup(groupId: number, sourceId: number): Promi
 export async function removeSourceFromGroup(groupId: number, sourceId: number): Promise<void> {
   return api.delete(`/source-groups/${groupId}/sources/${sourceId}`)
 }
+
+export async function refreshGroupSources(id: number): Promise<void> {
+  return api.post(`/source-groups/${id}/refresh`)
+}

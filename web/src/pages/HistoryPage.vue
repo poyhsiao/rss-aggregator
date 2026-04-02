@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X } from "lucide-vue-next"
-import { computed, onMounted, ref } from "vue"
+import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X, ScrollText, Inbox, Newspaper } from "lucide-vue-next"
+import { computed, onMounted, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import { deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
 import { getGroups } from "@/api/source-groups"
@@ -70,7 +70,7 @@ onMounted(async () => {
 async function fetchBatches(): Promise<void> {
   loading.value = true
   try {
-    const response = await getHistoryBatches(50, 0)
+    const response = await getHistoryBatches(50, 0, selectedGroupId.value ?? undefined)
     batches.value = response.batches
     totalBatches.value = response.total_batches
     totalItems.value = response.total_items
@@ -80,6 +80,10 @@ async function fetchBatches(): Promise<void> {
     loading.value = false
   }
 }
+
+watch(selectedGroupId, () => {
+  fetchBatches()
+})
 
 async function toggleBatch(batchId: number): Promise<void> {
   if (expandedBatch.value === batchId) {
@@ -311,9 +315,9 @@ const previewSourceName = computed(() => {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">📜 {{ t("history.title") }}</h1>
+      <h1 class="text-2xl font-semibold"><ScrollText class="h-6 w-6 inline mr-2" />{{ t("history.title") }}</h1>
       <Button @click="fetchBatches">
-        <RefreshCw class="h-4 w-4" />
+        <RefreshCw class="h-4 w-4 text-green-500" />
         <span class="ml-1.5">{{ t("common.refresh") }}</span>
       </Button>
     </div>
@@ -351,7 +355,8 @@ const previewSourceName = computed(() => {
     </div>
 
     <div v-else-if="filteredBatches.length === 0" class="text-center py-12 text-neutral-500">
-      😴 {{ t("history.empty") }}
+      <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+      {{ t("history.empty") }}
     </div>
 
     <template v-else>
@@ -408,7 +413,7 @@ const previewSourceName = computed(() => {
               </div>
               <div class="mt-1 text-sm text-neutral-500">
                 <span v-if="batch.latest_published_at" class="text-primary-600 dark:text-primary-400">
-                  📰 {{ formatDate(batch.latest_published_at) }}
+                  <Newspaper class="h-4 w-4 inline mr-1" />{{ formatDate(batch.latest_published_at) }}
                 </span>
                 <span v-if="batch.latest_fetched_at" class="ml-2">
                   • {{ t("history.fetched") }} {{ formatDate(batch.latest_fetched_at) }}
@@ -438,15 +443,15 @@ const previewSourceName = computed(() => {
                 :title="t('history.edit_name')"
                 @click.stop="startEditName(batch)"
               >
-                <Pencil class="h-4 w-4" />
+                <Pencil class="h-4 w-4 text-blue-500" />
               </button>
               <button
                 type="button"
-                class="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400 transition-colors"
+                class="p-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-600 dark:text-purple-400 transition-colors"
                 :title="t('history.preview')"
                 @click.stop="openPreview(batch)"
               >
-                <FileText class="h-4 w-4" />
+                <FileText class="h-4 w-4 text-purple-500" />
               </button>
               <button
                 type="button"
@@ -454,7 +459,7 @@ const previewSourceName = computed(() => {
                 :title="t('common.delete')"
                 @click.stop="confirmDeleteBatch(batch.id)"
               >
-                <Trash2 class="h-4 w-4" />
+                <Trash2 class="h-4 w-4 text-red-500" />
               </button>
               <button
                 type="button"
@@ -525,11 +530,11 @@ const previewSourceName = computed(() => {
                   <div class="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
-                      class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
+                      class="p-1.5 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-500 dark:text-purple-400 transition-colors"
                       :title="t('preview.preview_article')"
                       @click.stop="openArticlePreview(item)"
                     >
-                      <Eye class="h-4 w-4" />
+                      <Eye class="h-4 w-4 text-purple-500" />
                     </button>
                     <a
                       :href="item.link"

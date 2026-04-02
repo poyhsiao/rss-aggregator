@@ -95,7 +95,7 @@ export class SourcesPage extends BasePage {
 
   async editSource(oldName: string, newName: string) {
     const card = await this.getSourceCardByName(oldName)
-    await card.getByRole('button', { name: '✏️' }).click()
+    await card.getByRole('button', { name: /edit/i }).click()
     
     const dialog = this.page.locator('[class*="rounded-2xl"]').filter({ has: this.page.getByRole('heading', { level: 2 }) })
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
@@ -117,7 +117,7 @@ export class SourcesPage extends BasePage {
     this.page.once('dialog', async dialog => {
       await dialog.accept()
     })
-    await card.getByRole('button', { name: '🗑️' }).click()
+    await card.getByRole('button', { name: /delete/i }).click()
     await this.page.waitForLoadState('networkidle')
     await this.page.waitForTimeout(500)
   }

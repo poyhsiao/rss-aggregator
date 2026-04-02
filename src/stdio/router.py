@@ -167,7 +167,7 @@ class StdioRouter:
                 return await self._handle_create_source(body, session)
 
             if path == "/api/v1/sources/refresh" and http_method == "POST":
-                return await self._handle_refresh_all_sources(session)
+                return await self._handle_refresh_all_sources(query, session)
 
             if path.startswith("/api/v1/sources/") and path.endswith("/refresh") and http_method == "POST":
                 return await self._handle_refresh_source(path, session)
@@ -235,6 +235,42 @@ class StdioRouter:
             if path == "/api/v1/backup/preview" and http_method == "POST":
                 return await self._handle_preview_backup(body, session)
 
+            if path == "/api/v1/source-groups" and http_method == "GET":
+                return await self._handle_list_groups(session)
+
+            if path == "/api/v1/source-groups" and http_method == "POST":
+                return await self._handle_create_group(body, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+$", path) and http_method == "PUT":
+                return await self._handle_update_group(path, body, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+$", path) and http_method == "DELETE":
+                return await self._handle_delete_group(path, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+/sources$", path) and http_method == "GET":
+                return await self._handle_get_group_sources(path, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+/sources$", path) and http_method == "POST":
+                return await self._handle_add_source_to_group(path, body, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+/sources/\d+$", path) and http_method == "DELETE":
+                return await self._handle_remove_source_from_group(path, session)
+
+            if re.match(r"^/api/v1/source-groups/\d+/refresh$", path) and http_method == "POST":
+                return await self._handle_refresh_group(path, session)
+
+            if path == "/api/v1/trash" and http_method == "GET":
+                return await self._handle_list_trash(session)
+
+            if re.match(r"^/api/v1/trash/\d+/restore$", path) and http_method == "POST":
+                return await self._handle_restore_source(path, body, session)
+
+            if re.match(r"^/api/v1/trash/\d+$", path) and http_method == "DELETE":
+                return await self._handle_permanent_delete_source(path, session)
+
+            if path == "/api/v1/trash" and http_method == "DELETE":
+                return await self._handle_clear_trash(session)
+
             raise MethodNotFound({"detail": f"Route not found: {http_method} {path}"})
 
     async def _validate_api_key(
@@ -272,6 +308,7 @@ class StdioRouter:
         valid_time = query.get("valid_time")
         keywords = query.get("keywords")
         source_id = query.get("source_id")
+        group_id = query.get("group_id")
 
         # For JSON format, return parsed objects instead of JSON string
         if format_val == "json":
@@ -280,6 +317,8 @@ class StdioRouter:
                 sort_order=sort_order,
                 valid_time=valid_time,
                 keywords=keywords,
+                source_id=source_id,
+                group_id=group_id,
             )
             return {
                 "status": 200,
@@ -294,6 +333,7 @@ class StdioRouter:
             valid_time=valid_time,
             keywords=keywords,
             source_id=source_id,
+            group_id=group_id,
         )
 
         return {
@@ -489,9 +529,42 @@ class StdioRouter:
 
         return {"status": 200, "headers": {}, "body": {"message": "Refresh triggered"}}
 
-    async def _handle_refresh_all_sources(self, session: Any) -> dict[str, Any]:
+    async def _handle_refresh_all_sources(self, query: dict[str, Any], session: Any) -> dict[str, Any]:
+        import json as json_module
+        from src.models import FetchBatch, Source, SourceGroupMember
+        from src.services.fetch_service import FetchService
+        from sqlalchemy import select
+
+        group_id = query.get("group_id")
+        if group_id is not None and isinstance(group_id, str):
+            try:
+                group_id = int(group_id)
+            except ValueError:
+                raise InvalidParams({"detail": "group_id must be a valid integer"})
+
         if self._scheduler:
-            await self._scheduler.refresh_all()
+            if group_id is not None:
+                await self._scheduler.refresh_group(group_id)
+            else:
+                await self._scheduler.refresh_all()
+        elif group_id is not None:
+            result = await session.execute(
+                select(Source)
+                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
+                .where(SourceGroupMember.group_id == group_id, Source.is_active == True, Source.deleted_at.is_(None))
+            )
+            sources = list(result.scalars().all())
+            if sources:
+                fetch_service = await get_fetch_service(session)
+                batch = FetchBatch(items_count=0, sources=json_module.dumps([s.name for s in sources]))
+                session.add(batch)
+                await session.flush()
+                total_items = 0
+                for source in sources:
+                    items = await fetch_service.fetch_source(source, batch_id=batch.id)
+                    total_items += len(items)
+                batch.items_count = total_items
+                await session.commit()
         else:
             fetch_service = await get_fetch_service(session)
             await fetch_service.fetch_all()
@@ -742,6 +815,13 @@ class StdioRouter:
             except ValueError:
                 raise InvalidParams({"detail": "offset must be a valid integer"})
 
+        group_id = query.get("group_id")
+        if group_id is not None and isinstance(group_id, str):
+            try:
+                group_id = int(group_id)
+            except ValueError:
+                raise InvalidParams({"detail": "group_id must be a valid integer"})
+
         if not isinstance(limit, int) or limit < 1 or limit > 100:
             raise InvalidParams({"detail": "limit must be between 1 and 100"})
 
@@ -749,7 +829,7 @@ class StdioRouter:
             raise InvalidParams({"detail": "offset must be >= 0"})
 
         history_service = await get_history_service(session)
-        result = await history_service.get_history_batches(limit=limit, offset=offset)
+        result = await history_service.get_history_batches(limit=limit, offset=offset, group_id=group_id)
 
         body = {
             "batches": [
@@ -1099,3 +1179,255 @@ class StdioRouter:
                 "config": preview.config.model_dump(),
             },
         }
+
+    async def _handle_list_groups(self, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        svc = SourceGroupService(session)
+        groups = await svc.list_groups_with_count()
+        body = [
+            {
+                "id": g["id"],
+                "name": g["name"],
+                "member_count": g["member_count"],
+                "created_at": g["created_at"].isoformat(),
+                "updated_at": g["updated_at"].isoformat(),
+            }
+            for g in groups
+        ]
+        return {"status": 200, "headers": {}, "body": body}
+
+    async def _handle_create_group(self, body: Any, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        if not body or "name" not in body:
+            raise InvalidParams({"detail": "name is required"})
+
+        svc = SourceGroupService(session)
+        try:
+            group = await svc.create_group(name=body["name"])
+        except ValueError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+
+        return {
+            "status": 201,
+            "headers": {},
+            "body": {
+                "id": group.id,
+                "name": group.name,
+                "member_count": 0,
+                "created_at": group.created_at.isoformat(),
+                "updated_at": group.updated_at.isoformat(),
+            },
+        }
+
+    async def _handle_update_group(self, path: str, body: Any, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)$")
+        svc = SourceGroupService(session)
+        try:
+            group = await svc.update_group(group_id, **{k: v for k, v in body.items() if v is not None})
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+        count_result = await svc.list_groups_with_count()
+        member_count = next((g["member_count"] for g in count_result if g["id"] == group.id), 0)
+
+        return {
+            "status": 200,
+            "headers": {},
+            "body": {
+                "id": group.id,
+                "name": group.name,
+                "member_count": member_count,
+                "created_at": group.created_at.isoformat(),
+                "updated_at": group.updated_at.isoformat(),
+            },
+        }
+
+    async def _handle_delete_group(self, path: str, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)$")
+        svc = SourceGroupService(session)
+        try:
+            await svc.delete_group(group_id)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+        return {"status": 204, "headers": {}, "body": None}
+
+    async def _handle_get_group_sources(self, path: str, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+        from src.utils.time import to_iso_string
+
+        group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)/sources$")
+        svc = SourceGroupService(session)
+        sources = await svc.get_group_sources(group_id)
+        body = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "url": s.url,
+                "is_active": s.is_active,
+                "last_fetched_at": to_iso_string(s.last_fetched_at),
+                "last_error": s.last_error,
+                "created_at": to_iso_string(s.created_at) or "",
+                "updated_at": to_iso_string(s.updated_at) or "",
+            }
+            for s in sources
+        ]
+        return {"status": 200, "headers": {}, "body": body}
+
+    async def _handle_add_source_to_group(self, path: str, body: Any, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)/sources$")
+        if not body or "source_id" not in body:
+            raise InvalidParams({"detail": "source_id is required"})
+
+        svc = SourceGroupService(session)
+        try:
+            await svc.add_source_to_group(group_id, body["source_id"])
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        return {"status": 200, "headers": {}, "body": {"message": "Source added to group"}}
+
+    async def _handle_remove_source_from_group(self, path: str, session: Any) -> dict[str, Any]:
+        from src.services.source_group_service import SourceGroupService
+
+        match = re.match(r"/api/v1/source-groups/(\d+)/sources/(\d+)$", path)
+        if not match:
+            raise InvalidParams({"detail": f"Invalid path format: {path}"})
+
+        group_id = int(match.group(1))
+        source_id = int(match.group(2))
+        svc = SourceGroupService(session)
+        try:
+            await svc.remove_source_from_group(group_id, source_id)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+        return {"status": 204, "headers": {}, "body": None}
+
+    async def _handle_refresh_group(self, path: str, session: Any) -> dict[str, Any]:
+        import json as json_module
+        from src.models import FetchBatch, Source, SourceGroupMember
+        from src.services.fetch_service import FetchService
+        from sqlalchemy import select
+
+        group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)/refresh$")
+
+        if self._scheduler:
+            await self._scheduler.refresh_group(group_id)
+        else:
+            result = await session.execute(
+                select(Source)
+                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
+                .where(SourceGroupMember.group_id == group_id, Source.is_active == True, Source.deleted_at.is_(None))
+            )
+            sources = list(result.scalars().all())
+
+            if sources:
+                fetch_service = await get_fetch_service(session)
+                batch = FetchBatch(items_count=0, sources=json_module.dumps([s.name for s in sources]))
+                session.add(batch)
+                await session.flush()
+
+                total_items = 0
+                for source in sources:
+                    items = await fetch_service.fetch_source(source, batch_id=batch.id)
+                    total_items += len(items)
+
+                batch.items_count = total_items
+                await session.commit()
+
+        return {"status": 200, "headers": {}, "body": {"message": "Group sources refresh triggered"}}
+
+    async def _handle_list_trash(self, session: Any) -> dict[str, Any]:
+        from src.services.source_service import SourceService
+        from src.utils.time import to_iso_string
+
+        svc = SourceService(session)
+        sources = await svc.get_trash_sources()
+        body = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "url": s.url,
+                "is_active": s.is_active,
+                "deleted_at": to_iso_string(s.deleted_at) or "",
+                "created_at": to_iso_string(s.created_at) or "",
+                "updated_at": to_iso_string(s.updated_at) or "",
+            }
+            for s in sources
+        ]
+        return {"status": 200, "headers": {}, "body": body}
+
+    async def _handle_restore_source(self, path: str, body: Any, session: Any) -> dict[str, Any]:
+        from src.services.source_service import SourceService
+
+        source_id = self._extract_path_param(path, r"/api/v1/trash/(\d+)/restore$")
+        svc = SourceService(session)
+        body = body or {}
+        conflict_resolution = body.get("conflict_resolution")
+
+        try:
+            conflict = await svc.check_restore_conflict(source_id)
+            if conflict:
+                if conflict_resolution == "overwrite":
+                    source = await svc.restore_source(source_id, overwrite=True)
+                    return {"status": 200, "headers": {}, "body": {"id": source.id, "name": source.name, "restored": True}}
+                elif conflict_resolution == "keep_existing":
+                    trash = await svc.get_trash_source(source_id)
+                    if trash is None:
+                        raise HTTPException(status_code=404, detail="Trash item not found")
+                    return {"status": 200, "headers": {}, "body": {"id": trash.id, "name": trash.name, "restored": False}}
+                else:
+                    trash = await svc.get_trash_source(source_id)
+                    if trash is None:
+                        raise HTTPException(status_code=404, detail="Trash item not found")
+                    raise HTTPException(
+                        status_code=409,
+                        detail={
+                            "error": "conflict_detected",
+                            "message": "A source with this name or URL already exists",
+                            "conflict": {
+                                "trash_item": {"id": trash.id, "name": trash.name, "url": trash.url},
+                                "existing_item": {
+                                    "id": conflict["existing_item"].id,
+                                    "name": conflict["existing_item"].name,
+                                    "url": conflict["existing_item"].url,
+                                },
+                                "conflict_type": conflict["conflict_type"],
+                            },
+                        }
+                    )
+
+            source = await svc.restore_source(source_id)
+            return {"status": 200, "headers": {}, "body": {"id": source.id, "name": source.name, "restored": True}}
+        except ValueError as e:
+            if "not found" in str(e):
+                raise HTTPException(status_code=404, detail="Trash item not found")
+            raise HTTPException(status_code=400, detail=str(e))
+
+    async def _handle_permanent_delete_source(self, path: str, session: Any) -> dict[str, Any]:
+        from src.services.source_service import SourceService
+
+        source_id = self._extract_path_param(path, r"/api/v1/trash/(\d+)$")
+        svc = SourceService(session)
+        try:
+            await svc.permanent_delete_source(source_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Trash item not found")
+
+        return {"status": 200, "headers": {}, "body": {"deleted": True}}
+
+    async def _handle_clear_trash(self, session: Any) -> dict[str, Any]:
+        from src.services.source_service import SourceService
+
+        svc = SourceService(session)
+        count = await svc.clear_trash()
+        return {"status": 200, "headers": {}, "body": {"deleted_count": count}}

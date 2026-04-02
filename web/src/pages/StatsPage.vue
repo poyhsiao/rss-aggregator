@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BarChart3 } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getStats } from '@/api/stats'
@@ -29,7 +30,7 @@ onMounted(fetchStats)
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-semibold">📊 {{ t('stats.title') }}</h1>
+    <h1 class="text-2xl font-semibold"><BarChart3 class="h-6 w-6 inline-block mr-2" />{{ t('stats.title') }}</h1>
     
     <div v-if="loading" class="text-center py-12 text-neutral-500">
       {{ t('common.loading') }}

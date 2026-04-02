@@ -391,3 +391,60 @@ class TestSourceGroupsInHistory:
 
         assert len(batches_response.batches) == 1
         assert batches_response.batches[0].groups == [{"id": group.id, "name": "Tech"}]
+
+    @pytest.mark.asyncio
+    async def test_get_history_batches_filter_by_group_id(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group1 = await group_svc.create_group(name="Tech")
+        group2 = await group_svc.create_group(name="News")
+
+        source1 = await source_svc.create_source("Tech Feed", "https://tech.com/rss")
+        source2 = await source_svc.create_source("News Feed", "https://news.com/rss")
+
+        await group_svc.add_source_to_group(group1.id, source1.id)
+        await group_svc.add_source_to_group(group2.id, source2.id)
+
+        batch1 = FetchBatch(items_count=1, sources='["Tech Feed"]')
+        batch2 = FetchBatch(items_count=1, sources='["News Feed"]')
+        db_session.add_all([batch1, batch2])
+        await db_session.flush()
+
+        db_session.add_all([
+            FeedItem(source_id=source1.id, batch_id=batch1.id, title="Tech", link="https://tech.com/1"),
+            FeedItem(source_id=source2.id, batch_id=batch2.id, title="News", link="https://news.com/1"),
+        ])
+        await db_session.commit()
+
+        history_svc = HistoryService(db_session)
+        batches_response = await history_svc.get_history_batches(group_id=group1.id)
+
+        assert len(batches_response.batches) == 1
+        assert batch1.id in [b.id for b in batches_response.batches]
+
+    @pytest.mark.asyncio
+    async def test_get_history_batches_filter_by_group_id_returns_empty(self, db_session):
+        from src.services.source_group_service import SourceGroupService
+        from src.services.source_service import SourceService
+
+        group_svc = SourceGroupService(db_session)
+        source_svc = SourceService(db_session)
+
+        group = await group_svc.create_group(name="Tech")
+        source = await source_svc.create_source("Other Feed", "https://other.com/rss")
+
+        batch = FetchBatch(items_count=1, sources='["Other Feed"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        db_session.add(FeedItem(source_id=source.id, batch_id=batch.id, title="Other", link="https://other.com/1"))
+        await db_session.commit()
+
+        history_svc = HistoryService(db_session)
+        batches_response = await history_svc.get_history_batches(group_id=group.id)
+
+        assert len(batches_response.batches) == 0

@@ -40,6 +40,10 @@ async def get_feed(
         None,
         description="Filter by source ID",
     ),
+    group_id: int | None = Query(
+        None,
+        description="Filter by source group ID",
+    ),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
 ) -> Any:
@@ -63,5 +67,6 @@ async def get_feed(
         valid_time=valid_time,
         keywords=keywords,
         source_id=source_id,
+        group_id=group_id,
     )
     return Response(content=content, media_type=content_type)

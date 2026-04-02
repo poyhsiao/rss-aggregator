@@ -39,6 +39,7 @@ class HistoryService:
         self,
         limit: int = 50,
         offset: int = 0,
+        group_id: int | None = None,
     ) -> HistoryBatchesResponse:
         count_query = select(func.count()).select_from(FetchBatch)
         total_result = await self.session.execute(count_query)
@@ -56,6 +57,20 @@ class HistoryService:
             .limit(limit)
             .offset(offset)
         )
+
+        if group_id is not None:
+            query = (
+                select(FetchBatch)
+                .join(FeedItem, FeedItem.batch_id == FetchBatch.id)
+                .join(Source, Source.id == FeedItem.source_id)
+                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
+                .where(SourceGroupMember.group_id == group_id)
+                .distinct()
+                .order_by(FetchBatch.created_at.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+
         result = await self.session.execute(query)
         batches = list(result.scalars().all())
 
@@ -82,7 +97,6 @@ class HistoryService:
                     latest_fetched_at = row[0].isoformat() if row[0] else None
                     latest_published_at = row[1].isoformat() if row[1] else None
 
-            # Aggregate groups from all sources in the batch
             batch_groups: list[dict] = []
             if batch.id:
                 groups_result = await self.session.execute(

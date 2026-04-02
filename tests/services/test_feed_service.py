@@ -251,3 +251,55 @@ async def test_feed_items_empty_groups_when_no_groups(db_session: AsyncSession):
 
     assert len(items) == 1
     assert items[0]["source_groups"] == []
+
+
+@pytest.mark.asyncio
+async def test_feed_items_filter_by_group_id(db_session: AsyncSession):
+    from src.services.source_group_service import SourceGroupService
+    from src.services.source_service import SourceService
+
+    group_svc = SourceGroupService(db_session)
+    source_svc = SourceService(db_session)
+
+    group1 = await group_svc.create_group(name="Tech")
+    group2 = await group_svc.create_group(name="News")
+
+    source1 = await source_svc.create_source("Tech Feed", "https://tech.com/rss")
+    source2 = await source_svc.create_source("News Feed", "https://news.com/rss")
+
+    await group_svc.add_source_to_group(group1.id, source1.id)
+    await group_svc.add_source_to_group(group2.id, source2.id)
+
+    current_time = now()
+    db_session.add_all([
+        FeedItem(source_id=source1.id, title="Tech Article", link="https://tech.com/1", description="Tech", published_at=current_time),
+        FeedItem(source_id=source2.id, title="News Article", link="https://news.com/1", description="News", published_at=current_time),
+    ])
+    await db_session.commit()
+
+    feed_svc = FeedService(db_session)
+    items = await feed_svc.get_feed_items(group_id=group1.id)
+
+    assert len(items) == 1
+    assert items[0]["title"] == "Tech Article"
+
+
+@pytest.mark.asyncio
+async def test_feed_items_filter_by_group_id_returns_empty(db_session: AsyncSession):
+    from src.services.source_group_service import SourceGroupService
+    from src.services.source_service import SourceService
+
+    group_svc = SourceGroupService(db_session)
+    source_svc = SourceService(db_session)
+
+    group = await group_svc.create_group(name="Tech")
+    source = await source_svc.create_source("Other Feed", "https://other.com/rss")
+
+    current_time = now()
+    db_session.add(FeedItem(source_id=source.id, title="Other Article", link="https://other.com/1", description="Other", published_at=current_time))
+    await db_session.commit()
+
+    feed_svc = FeedService(db_session)
+    items = await feed_svc.get_feed_items(group_id=group.id)
+
+    assert len(items) == 0

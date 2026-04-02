@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FileText, Inbox } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getLogs } from '@/api/logs'
@@ -35,7 +36,7 @@ onMounted(fetchSystemLogs)
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-semibold">📝 {{ t('logs.title') }}</h1>
+    <h1 class="text-2xl font-semibold"><FileText class="h-6 w-6 inline mr-2" />{{ t('logs.title') }}</h1>
 
     <div class="flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
       <button
@@ -64,7 +65,8 @@ onMounted(fetchSystemLogs)
       </div>
 
       <div v-else-if="!systemLogs.length" class="text-center py-12 text-neutral-500">
-        ✨ {{ t('logs.empty') }}
+        <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+        {{ t('logs.empty') }}
       </div>
 
       <div v-else class="space-y-2">
@@ -78,7 +80,8 @@ onMounted(fetchSystemLogs)
 
     <div v-else-if="activeTab === 'operation'">
       <div v-if="!logStore.hasLogs" class="text-center py-12 text-neutral-500">
-        ✨ {{ t('logs.no_operation_logs') }}
+        <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+        {{ t('logs.no_operation_logs') }}
       </div>
 
       <div v-else class="space-y-2">

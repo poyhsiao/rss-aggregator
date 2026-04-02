@@ -18,6 +18,7 @@ export interface FeedParams {
   valid_time?: number
   keywords?: string
   source_id?: number
+  group_id?: number
 }
 
 export type FeedFormat = 'rss' | 'json' | 'markdown'

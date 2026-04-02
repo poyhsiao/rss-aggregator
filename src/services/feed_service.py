@@ -32,6 +32,7 @@ class FeedService:
         valid_time: int | None = None,
         keywords: str | None = None,
         source_id: int | None = None,
+        group_id: int | None = None,
     ) -> tuple[str, str]:
         """Get formatted feed in specified format.
 
@@ -42,6 +43,7 @@ class FeedService:
             valid_time: Time range in hours (None = all items).
             keywords: Semicolon-separated keywords for title filtering.
             source_id: Filter by source ID (None = all sources).
+            group_id: Filter by source group ID (None = all groups).
 
         Returns:
             tuple[str, str]: (formatted content, MIME type)
@@ -52,6 +54,7 @@ class FeedService:
             valid_time=valid_time,
             keywords=keywords,
             source_id=source_id,
+            group_id=group_id,
         )
         formatter = get_formatter(format)
         return formatter.format(items), formatter.get_content_type()
@@ -84,6 +87,7 @@ class FeedService:
         valid_time: int | None,
         keywords: str | None,
         source_id: int | None = None,
+        group_id: int | None = None,
     ) -> list[FeedItem]:
         """Fetch filtered feed items from database."""
         query = (
@@ -97,6 +101,13 @@ class FeedService:
                 FeedItem.source.has(Source.deleted_at.is_(None)),
             )
         )
+
+        if group_id is not None:
+            query = query.where(
+                FeedItem.source.has(
+                    Source.groups.any(id=group_id)
+                )
+            )
 
         if valid_time is not None:
             cutoff = now() - timedelta(hours=valid_time)
@@ -183,6 +194,7 @@ class FeedService:
         valid_time: int | None = None,
         keywords: str | None = None,
         source_id: int | None = None,
+        group_id: int | None = None,
     ) -> list[dict[str, Any]]:
         """Get feed items as list of dictionaries.
 
@@ -192,6 +204,7 @@ class FeedService:
             valid_time: Time range in hours (None = all items).
             keywords: Semicolon-separated keywords for title filtering.
             source_id: Filter by source ID (None = all sources).
+            group_id: Filter by source group ID (None = all groups).
 
         Returns:
             List of feed item dictionaries.
@@ -202,6 +215,7 @@ class FeedService:
             valid_time=valid_time,
             keywords=keywords,
             source_id=source_id,
+            group_id=group_id,
         )
         return [
             {

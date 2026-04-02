@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, FolderOpen } from 'lucide-vue-next'
+import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, FolderOpen, X, Check, ChevronDown, ChevronUp, Plus, Inbox, Pencil, Circle, Calendar, RotateCw, Clock, AlertTriangle } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
-import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources } from '@/api/source-groups'
+import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources, refreshGroupSources } from '@/api/source-groups'
 import { 
   getTrashItems, 
   restoreSource, 
@@ -20,7 +20,6 @@ import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import Dialog from '@/components/ui/Dialog.vue'
 import Input from '@/components/ui/Input.vue'
-import { X, Check } from 'lucide-vue-next'
 import SourceDialog from '@/components/SourceDialog.vue'
 import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
@@ -52,6 +51,9 @@ const previewTitle = ref<string | undefined>(undefined)
 const conflictDialogOpen = ref(false)
 const currentConflict = ref<RestoreConflict | null>(null)
 const restoringId = ref<number | null>(null)
+const editingGroupId = ref<number | null>(null)
+const editingGroupName = ref('')
+const savingGroupName = ref(false)
 
 const isActiveTab = computed(() => activeTab.value === 'active')
 const isTrashTab = computed(() => activeTab.value === 'trash')
@@ -295,10 +297,33 @@ function openAddGroupDialog(): void {
   showGroupDialog.value = true
 }
 
-function openEditGroupDialog(group: SourceGroup): void {
-  editingGroup.value = group
-  newGroupName.value = group.name
-  showGroupDialog.value = true
+function startEditGroupName(group: SourceGroup): void {
+  editingGroupId.value = group.id
+  editingGroupName.value = group.name
+}
+
+function cancelEditGroupName(): void {
+  editingGroupId.value = null
+  editingGroupName.value = ''
+}
+
+async function saveGroupName(groupId: number): Promise<void> {
+  if (!editingGroupName.value.trim()) {
+    toast.error(t('groups.name_required'))
+    return
+  }
+  savingGroupName.value = true
+  try {
+    await updateGroup(groupId, { name: editingGroupName.value.trim() })
+    toast.success(t('groups.updated'))
+    editingGroupId.value = null
+    editingGroupName.value = ''
+    await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  } finally {
+    savingGroupName.value = false
+  }
 }
 
 async function handleSaveGroup(): Promise<void> {
@@ -378,6 +403,24 @@ const availableSourcesForGroup = computed(() => {
   return sources.value.filter(s => !groupSourceIds.has(s.id))
 })
 
+async function handleRefreshGroup(groupId: number): Promise<void> {
+  try {
+    await refreshGroupSources(groupId)
+    if (groupSources.value[groupId]) {
+      await fetchGroupSources(groupId)
+    }
+    toast.success(t('common.success'))
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+function openPreviewGroupDialog(group: SourceGroup): void {
+  previewParams.value = { group_id: group.id }
+  previewTitle.value = group.name
+  previewDialogOpen.value = true
+}
+
 async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void> {
   activeTab.value = tab
   if (tab === 'active') {
@@ -389,7 +432,9 @@ async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void
   }
 }
 
-onMounted(fetchSources)
+onMounted(async () => {
+  await Promise.all([fetchSources(), fetchTrash(), fetchGroups()])
+})
 </script>
 
 <template>
@@ -414,7 +459,7 @@ onMounted(fetchSources)
             @click="openAddDialog"
             :title="t('sources.add')"
           >
-            ➕ {{ t('sources.add') }}
+            <Plus class="h-4 w-4 mr-2" /> {{ t('sources.add') }}
           </Button>
         </template>
         <template v-else-if="isGroupsTab">
@@ -448,7 +493,7 @@ onMounted(fetchSources)
           : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
         @click="handleTabChange('active')"
       >
-        🟢 {{ t('trash.tab_active') }} ({{ sources.length }})
+        <Circle class="h-3 w-3 text-green-500 inline-block" /> {{ t('trash.tab_active') }} ({{ sources.length }})
       </button>
       <button
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
@@ -457,7 +502,7 @@ onMounted(fetchSources)
           : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
         @click="handleTabChange('trash')"
       >
-        🗑️ {{ t('trash.tab_trash') }} ({{ trashItems.length }})
+        <Trash2 class="h-4 w-4 inline-block" /> {{ t('trash.tab_trash') }} ({{ trashItems.length }})
       </button>
       <button
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
@@ -466,7 +511,7 @@ onMounted(fetchSources)
           : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
         @click="handleTabChange('groups')"
       >
-        📁 {{ t('groups.title') }} ({{ groups.length }})
+        <FolderOpen class="h-4 w-4 inline-block" /> {{ t('groups.title') }} ({{ groups.length }})
       </button>
     </div>
     
@@ -477,7 +522,8 @@ onMounted(fetchSources)
     <!-- Active Sources List -->
     <div v-else-if="activeTab === 'active'">
       <div v-if="!sources.length" class="text-center py-12 text-neutral-500">
-        📭 {{ t('sources.empty') }}
+        <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+        {{ t('sources.empty') }}
       </div>
       <div v-else class="space-y-3">
       <div
@@ -487,7 +533,7 @@ onMounted(fetchSources)
       >
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div class="flex items-start gap-3 min-w-0 flex-1">
-            <span class="mt-0.5 shrink-0">{{ source.is_active ? '🟢' : '🔴' }}</span>
+            <Circle class="h-3 w-3 mt-0.5 shrink-0" :class="source.is_active ? 'text-green-500' : 'text-red-500'" />
             <div class="min-w-0 flex-1">
               <div class="font-medium truncate">{{ source.name }}</div>
               <div 
@@ -511,7 +557,7 @@ onMounted(fetchSources)
                 :title="t('common.edit')"
                 @click="openEditDialog(source)"
               >
-                ✏️
+                <Pencil class="h-4 w-4 text-blue-500" />
               </Button>
               <Button
                 variant="ghost"
@@ -519,7 +565,7 @@ onMounted(fetchSources)
                 :title="t('sources.view_data')"
                 @click="openPreviewDialog(source)"
               >
-                <FileText class="h-4 w-4" />
+                <FileText class="h-4 w-4 text-purple-500" />
               </Button>
               <Button
                 variant="ghost"
@@ -527,7 +573,7 @@ onMounted(fetchSources)
                 :title="t('common.refresh')"
                 @click="handleRefresh(source.id)"
               >
-                🔄
+                <RefreshCw class="h-4 w-4 text-green-500" />
               </Button>
               <Button
                 variant="ghost"
@@ -535,7 +581,7 @@ onMounted(fetchSources)
                 :title="t('common.delete')"
                 @click="handleDelete(source.id)"
               >
-                🗑️
+                <Trash2 class="h-4 w-4 text-red-500" />
               </Button>
             </div>
           </div>
@@ -544,17 +590,17 @@ onMounted(fetchSources)
         <div class="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
           <div class="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-x-4 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
             <span class="truncate">
-              📅 {{ t('sources.created_at') }}: {{ formatDate(source.created_at) }}
+              <Calendar class="h-3 w-3 inline mr-1" />{{ t('sources.created_at') }}: {{ formatDate(source.created_at) }}
             </span>
             <span class="truncate">
-              🔄 {{ t('sources.updated_at') }}: {{ formatDate(source.updated_at) }}
+              <RotateCw class="h-3 w-3 inline mr-1" />{{ t('sources.updated_at') }}: {{ formatDate(source.updated_at) }}
             </span>
             <span v-if="source.last_fetched_at" class="truncate">
-              ⏱️ {{ t('sources.last_fetched') }}: {{ formatDate(source.last_fetched_at) }}
+              <Clock class="h-3 w-3 inline mr-1" />{{ t('sources.last_fetched') }}: {{ formatDate(source.last_fetched_at) }}
             </span>
           </div>
           <div v-if="source.last_error" class="mt-2 text-xs sm:text-sm text-red-500 dark:text-red-400 truncate">
-            ⚠️ {{ source.last_error }}
+            <AlertTriangle class="h-3 w-3 inline mr-1" />{{ source.last_error }}
           </div>
         </div>
       </div>
@@ -564,7 +610,8 @@ onMounted(fetchSources)
     <!-- Trash Items List -->
     <div v-if="isTrashTab && !loading">
       <div v-if="!trashItems.length" class="text-center py-12 text-neutral-500">
-        📭 {{ t('trash.empty') }}
+        <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+        {{ t('trash.empty') }}
       </div>
       <div v-else class="space-y-3">
       <div
@@ -574,7 +621,7 @@ onMounted(fetchSources)
       >
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div class="flex items-start gap-3 min-w-0 flex-1">
-            <span class="mt-0.5 shrink-0">🗑️</span>
+            <Trash2 class="h-4 w-4 mt-0.5 shrink-0 text-neutral-400" />
             <div class="min-w-0 flex-1">
               <div class="font-medium truncate">{{ item.name }}</div>
               <div 
@@ -612,7 +659,7 @@ onMounted(fetchSources)
         <div class="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
           <div class="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-x-4 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
             <span class="truncate">
-              🗑️ {{ t('trash.deleted_at') }}: {{ formatDate(item.deleted_at) }}
+              <Trash2 class="h-3 w-3 inline mr-1" />{{ t('trash.deleted_at') }}: {{ formatDate(item.deleted_at) }}
             </span>
           </div>
         </div>
@@ -622,28 +669,64 @@ onMounted(fetchSources)
 
     <!-- Groups Tab -->
     <div v-if="isGroupsTab && !loading">
-      <div class="flex justify-end mb-4">
-        <Button @click="openAddGroupDialog" :title="t('groups.add')">
-          <FolderPlus class="h-4 w-4 mr-2" /> {{ t('groups.add') }}
-        </Button>
-      </div>
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
-        📭 {{ t('groups.empty') }}
+        <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+        {{ t('groups.empty') }}
       </div>
       <div v-else class="space-y-4">
         <div v-for="group in groups" :key="group.id" class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
           <div class="flex items-center justify-between">
-            <button class="flex items-center gap-2 flex-1 text-left" @click="handleToggleGroupExpand(group.id)">
-              <FolderOpen class="h-5 w-5 text-blue-500" />
-              <span class="font-medium">{{ group.name }}</span>
-              <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
-            </button>
-            <div class="flex gap-1">
-              <Button variant="ghost" size="sm" :title="t('common.edit')" @click="openEditGroupDialog(group)">
-                ✏️
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <FolderOpen class="h-5 w-5 text-blue-500 shrink-0" />
+              <template v-if="editingGroupId === group.id">
+                <input
+                  v-model="editingGroupName"
+                  type="text"
+                  class="flex-1 px-2 py-1 text-sm font-medium bg-white dark:bg-neutral-900 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-neutral-100"
+                  :placeholder="t('groups.name_placeholder')"
+                  @keydown.enter="saveGroupName(group.id)"
+                  @keydown.escape="cancelEditGroupName"
+                />
+                <button
+                  type="button"
+                  :disabled="savingGroupName"
+                  class="p-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 text-green-600 dark:text-green-400 disabled:opacity-50"
+                  :title="t('common.save')"
+                  @click="saveGroupName(group.id)"
+                >
+                  <Check v-if="!savingGroupName" class="h-4 w-4" />
+                  <RefreshCw v-else class="h-4 w-4 animate-spin" />
+                </button>
+                <button
+                  type="button"
+                  class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400"
+                  :title="t('common.cancel')"
+                  @click="cancelEditGroupName"
+                >
+                  <X class="h-4 w-4" />
+                </button>
+              </template>
+              <template v-else>
+                <span class="font-medium">{{ group.name }}</span>
+                <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
+              </template>
+            </div>
+            <div class="flex items-center gap-1">
+              <Button variant="ghost" size="sm" :title="t('common.refresh')" @click="handleRefreshGroup(group.id)">
+                <RefreshCw class="h-4 w-4 text-green-500" />
+              </Button>
+              <Button variant="ghost" size="sm" :title="t('sources.view_data')" @click="openPreviewGroupDialog(group)">
+                <FileText class="h-4 w-4 text-purple-500" />
+              </Button>
+              <Button variant="ghost" size="sm" :title="t('common.edit')" @click="startEditGroupName(group)">
+                <Pencil class="h-4 w-4 text-blue-500" />
               </Button>
               <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
-                🗑️
+                <Trash2 class="h-4 w-4 text-red-500" />
+              </Button>
+              <Button variant="ghost" size="sm" :title="expandedGroupId === group.id ? t('common.collapse') : t('common.expand')" @click="handleToggleGroupExpand(group.id)">
+                <ChevronUp v-if="expandedGroupId === group.id" class="h-4 w-4" />
+                <ChevronDown v-else class="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -663,7 +746,7 @@ onMounted(fetchSources)
                 class="text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1"
                 @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
               >
-                <option value="">{{ t('groups.add_source') }}</option>
+                <option value="" disabled>{{ t('groups.add_source') }}</option>
                 <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
             </div>
@@ -678,11 +761,11 @@ onMounted(fetchSources)
       @saved="handleSaved"
     />
 
-    <!-- Group Dialog -->
+    <!-- Group Dialog (Add only) -->
     <Dialog v-model:open="showGroupDialog">
       <div class="p-6">
         <h2 class="text-xl font-semibold mb-4">
-          {{ editingGroup ? t('groups.edit') : t('groups.add') }}
+          {{ t('groups.add') }}
         </h2>
         <form class="space-y-4" @submit.prevent="handleSaveGroup">
           <div>

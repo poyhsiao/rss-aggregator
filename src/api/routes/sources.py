@@ -274,9 +274,13 @@ async def refresh_source(
 
 @router.post("/refresh")
 async def refresh_all_sources(
+    group_id: int | None = Query(None, description="Filter by source group ID"),
     scheduler=Depends(get_scheduler),
     _: str = Depends(require_api_key),
 ) -> dict:
-    """Trigger refresh for all sources."""
+    """Trigger refresh for all sources, or only sources in a specific group."""
+    if group_id is not None:
+        await scheduler.refresh_group(group_id)
+        return {"message": f"Group {group_id} sources refresh triggered"}
     await scheduler.refresh_all()
     return {"message": "All sources refresh triggered"}

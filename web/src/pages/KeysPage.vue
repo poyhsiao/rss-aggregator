@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Copy, Check, Trash2 } from 'lucide-vue-next'
+import { Copy, Check, Trash2, Key, Plus } from 'lucide-vue-next'
 import { getKeys, deleteKey } from '@/api/keys'
 import type { ApiKey } from '@/types/key'
 import Button from '@/components/ui/Button.vue'
@@ -71,9 +71,9 @@ onMounted(fetchKeys)
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">🔑 {{ t('keys.title') }}</h1>
+      <h1 class="text-2xl font-semibold"><Key class="h-6 w-6 inline mr-2" />{{ t('keys.title') }}</h1>
       <Button @click="showDialog = true" :title="t('keys.add')">
-        ➕ {{ t('keys.add') }}
+        <Plus class="h-4 w-4 mr-2" /> {{ t('keys.add') }}
       </Button>
     </div>
     
@@ -82,7 +82,7 @@ onMounted(fetchKeys)
     </div>
     
     <div v-else-if="!keys.length" class="text-center py-12 text-neutral-500">
-      🔑 {{ t('keys.empty') }}
+      <Key class="h-6 w-6 inline mr-2" />{{ t('keys.empty') }}
     </div>
     
     <div v-else class="space-y-2">

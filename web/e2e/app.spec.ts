@@ -72,7 +72,7 @@ test('should edit an existing source', async ({ page }) => {
 
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: originalName })
     await expect(card).toBeVisible({ timeout: 15000 })
-    await card.getByRole('button', { name: '✏️' }).click()
+    await card.getByRole('button', { name: /edit/i }).click()
     
     const editHeading = page.getByRole('heading', { name: /edit source/i, level: 2 })
     await expect(editHeading).toBeVisible({ timeout: 5000 })
@@ -114,7 +114,7 @@ test('should edit an existing source', async ({ page }) => {
       await dialog.accept()
     })
     
-    await card.getByRole('button', { name: '🗑️' }).click()
+    await card.getByRole('button', { name: /delete/i }).click()
     await page.waitForTimeout(1000)
     
     await expect(card).not.toBeVisible({ timeout: 10000 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Clock, Database, Eye, FileText, RefreshCw, Rss } from "lucide-vue-next";
-import { computed, onMounted, ref, watch } from "vue";
+import { Clock, Database, Eye, FileText, RefreshCw, Rss, Inbox } from "lucide-vue-next";
+import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getFeed } from "@/api/feed";
 import { getGroups } from "@/api/source-groups";
@@ -28,19 +28,13 @@ const rssDialogOpen = ref(false);
 const articlePreviewOpen = ref(false);
 const selectedArticle = ref<{ url: string; title: string } | null>(null);
 
-const filteredItems = computed(() => {
-  if (selectedGroupId.value === null) return feedItems.value;
-  return feedItems.value.filter(item =>
-    item.source_groups?.some(g => g.id === selectedGroupId.value)
-  );
-});
-
 async function fetchFeed(): Promise<void> {
 	loading.value = true;
 	try {
 		feedItems.value = await getFeed({
 			sort_by: sortBy.value,
 			keywords: keywords.value || undefined,
+			group_id: selectedGroupId.value ?? undefined,
 		});
 	} finally {
 		loading.value = false;
@@ -56,7 +50,7 @@ async function fetchGroups(): Promise<void> {
 async function handleRefreshAll(): Promise<void> {
 	refreshing.value = true;
 	try {
-		await refreshAllSources();
+		await refreshAllSources(selectedGroupId.value ?? undefined);
 		await fetchFeed();
 		toast.success(t('common.success'));
 	} catch {
@@ -79,7 +73,7 @@ onMounted(() => {
   fetchGroups();
 });
 
-watch([sortBy, keywords], () => {
+watch([sortBy, keywords, selectedGroupId], () => {
 	fetchFeed();
 });
 </script>
@@ -135,13 +129,13 @@ watch([sortBy, keywords], () => {
         <Button
           variant="outline"
           size="sm"
-          :title="t('feed.Refresh')"
+          :title="t('feed.refresh')"
           :disabled="refreshing"
           class="whitespace-nowrap"
           @click="handleRefreshAll"
         >
-          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4" />
-          <span class="hidden sm:inline ml-1.5">{{ t('feed.Refresh') }}</span>
+          <RefreshCw :class="{ 'animate-spin': refreshing }" class="h-4 w-4 text-green-500" />
+          <span class="hidden sm:inline ml-1.5">{{ t('feed.refresh') }}</span>
         </Button>
 
         <Button
@@ -151,7 +145,7 @@ watch([sortBy, keywords], () => {
           class="whitespace-nowrap"
           @click="rssDialogOpen = true"
         >
-          <FileText class="h-4 w-4" />
+          <FileText class="h-4 w-4 text-purple-500" />
           <span class="hidden sm:inline ml-1.5">{{ t('feed.preview_feed') }}</span>
         </Button>
       </div>
@@ -189,13 +183,14 @@ watch([sortBy, keywords], () => {
       {{ t('common.loading') }}
     </div>
     
-    <div v-else-if="!filteredItems.length" class="text-center py-12 text-neutral-500">
-      😴 {{ t('feed.empty') }}
+    <div v-else-if="!feedItems.length" class="text-center py-12 text-neutral-500">
+      <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
+      {{ t('feed.empty') }}
     </div>
     
     <div v-else class="grid gap-4">
       <div
-        v-for="item in filteredItems"
+        v-for="item in feedItems"
         :key="item.id"
         class="block p-6 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
       >
@@ -241,7 +236,7 @@ watch([sortBy, keywords], () => {
             :title="t('preview.preview_article')"
             @click="openArticlePreview(item)"
           >
-            <Eye class="h-5 w-5" />
+            <Eye class="h-5 w-5 text-purple-500" />
           </button>
         </div>
       </div>
@@ -252,6 +247,7 @@ watch([sortBy, keywords], () => {
       :params="{
         sort_by: sortBy,
         keywords: keywords || undefined,
+        group_id: selectedGroupId ?? undefined,
       }"
     />
 

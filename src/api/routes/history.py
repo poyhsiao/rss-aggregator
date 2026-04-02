@@ -17,10 +17,11 @@ router = APIRouter(prefix="/history", tags=["history"])
 async def get_history_batches(
     limit: int = Query(50, ge=1, le=100, description="Number of batches to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
+    group_id: int | None = Query(None, description="Filter by source group ID"),
     history_service: HistoryService = Depends(get_history_service),
     _: str = Depends(require_api_key),
 ) -> HistoryBatchesResponse:
-    return await history_service.get_history_batches(limit=limit, offset=offset)
+    return await history_service.get_history_batches(limit=limit, offset=offset, group_id=group_id)
 
 
 @router.get("/batches/{batch_id}", response_model=HistoryResponse)

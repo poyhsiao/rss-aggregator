@@ -28,6 +28,10 @@ class JsonFormatter(BaseFormatter):
                 "description": item.description or "",
                 "source": item.source.name if item.source else "",
                 "published_at": to_iso_string(item.published_at),
+                "source_groups": [
+                    {"id": g.id, "name": g.name}
+                    for g in getattr(getattr(item, "source", None), "groups", [])
+                ] if item.source else [],
             }
             for item in items
         ]

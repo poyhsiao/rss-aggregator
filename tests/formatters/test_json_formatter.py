@@ -64,6 +64,7 @@ def test_json_formatter_handles_none_description():
         def __init__(self):
             self.id = 1
             self.name = "Test Source"
+            self.groups = []
     
     # Create a simple object as item
     class SimpleItem:
@@ -80,3 +81,84 @@ def test_json_formatter_handles_none_description():
     parsed = json.loads(result)
     
     assert parsed[0]["description"] == ""
+
+
+def test_json_formatter_includes_source_groups():
+    """Test JSON formatter includes source_groups when source has groups."""
+    formatter = JsonFormatter()
+    
+    class SimpleGroup:
+        def __init__(self, gid: int, name: str):
+            self.id = gid
+            self.name = name
+    
+    class SimpleSource:
+        def __init__(self):
+            self.id = 1
+            self.name = "Test Source"
+            self.groups = [SimpleGroup(10, "Tech"), SimpleGroup(20, "News")]
+    
+    class SimpleItem:
+        def __init__(self):
+            self.id = 1
+            self.title = "Test Title"
+            self.link = "https://example.com/article"
+            self.description = "Test"
+            self.source = SimpleSource()
+            self.published_at = datetime(2024, 1, 15, 10, 30, 0)
+    
+    item = SimpleItem()
+    result = formatter.format([item])
+    parsed = json.loads(result)
+    
+    assert "source_groups" in parsed[0]
+    assert len(parsed[0]["source_groups"]) == 2
+    assert parsed[0]["source_groups"][0] == {"id": 10, "name": "Tech"}
+    assert parsed[0]["source_groups"][1] == {"id": 20, "name": "News"}
+
+
+def test_json_formatter_empty_source_groups():
+    """Test JSON formatter includes empty source_groups list when source has no groups."""
+    formatter = JsonFormatter()
+    
+    class SimpleSource:
+        def __init__(self):
+            self.id = 1
+            self.name = "Test Source"
+            self.groups = []
+    
+    class SimpleItem:
+        def __init__(self):
+            self.id = 1
+            self.title = "Test Title"
+            self.link = "https://example.com/article"
+            self.description = "Test"
+            self.source = SimpleSource()
+            self.published_at = datetime(2024, 1, 15, 10, 30, 0)
+    
+    item = SimpleItem()
+    result = formatter.format([item])
+    parsed = json.loads(result)
+    
+    assert parsed[0]["source_groups"] == []
+
+
+def test_json_formatter_no_source():
+    """Test JSON formatter handles item with no source."""
+    formatter = JsonFormatter()
+    
+    class SimpleItem:
+        def __init__(self):
+            self.id = 1
+            self.title = "Test Title"
+            self.link = "https://example.com/article"
+            self.description = "Test"
+            self.source = None
+            self.published_at = datetime(2024, 1, 15, 10, 30, 0)
+    
+    item = SimpleItem()
+    result = formatter.format([item])
+    parsed = json.loads(result)
+    
+    assert parsed[0]["source"] == ""
+    assert parsed[0]["source_groups"] == []

@@ -3,9 +3,12 @@ import type { HistoryResponse, HistoryBatchesResponse, HistoryBatch, UpdateBatch
 
 export async function getHistoryBatches(
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
+  groupId?: number
 ): Promise<HistoryBatchesResponse> {
-  return api.get<HistoryBatchesResponse>(`/history/batches?limit=${limit}&offset=${offset}`)
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+  if (groupId !== undefined) params.append('group_id', String(groupId))
+  return api.get<HistoryBatchesResponse>(`/history/batches?${params.toString()}`)
 }
 
 export async function getHistoryByBatch(

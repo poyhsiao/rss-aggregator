@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="RSS Aggregator",
     description="Aggregate multiple RSS feeds into a single, filterable output",
-    version="0.11.1",
+    version="0.14.0",
     lifespan=lifespan,
 )
 

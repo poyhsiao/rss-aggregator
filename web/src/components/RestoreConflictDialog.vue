@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AlertTriangle } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RestoreConflict } from '@/api/trash'
@@ -40,7 +41,7 @@ function handleClose() {
   <Dialog :open="open" @update:open="emit('update:open', $event)">
     <div class="p-6 space-y-4">
       <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-        ⚠️ {{ t('trash.conflict_title') }}
+        <AlertTriangle class="h-5 w-5 inline mr-2 text-amber-500" />{{ t('trash.conflict_title') }}
       </h2>
       
       <p class="text-sm text-neutral-600 dark:text-neutral-400">

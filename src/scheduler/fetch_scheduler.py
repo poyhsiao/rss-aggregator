@@ -129,3 +129,32 @@ class FetchScheduler:
         async with self.session_factory() as session:
             fetch_service = FetchService(session)
             await fetch_service.fetch_all()
+
+    async def refresh_group(self, group_id: int) -> None:
+        import json as json_module
+        from src.models import FetchBatch, Source, SourceGroup, SourceGroupMember
+        from src.services.fetch_service import FetchService
+
+        async with self.session_factory() as session:
+            result = await session.execute(
+                select(Source)
+                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
+                .where(SourceGroupMember.group_id == group_id, Source.is_active == True, Source.deleted_at.is_(None))
+            )
+            sources = list(result.scalars().all())
+
+            if not sources:
+                return
+
+            fetch_service = FetchService(session)
+            batch = FetchBatch(items_count=0, sources=json_module.dumps([s.name for s in sources]))
+            session.add(batch)
+            await session.flush()
+
+            total_items = 0
+            for source in sources:
+                items = await fetch_service.fetch_source(source, batch_id=batch.id)
+                total_items += len(items)
+
+            batch.items_count = total_items
+            await session.commit()

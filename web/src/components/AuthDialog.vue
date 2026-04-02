@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { ShieldCheck } from 'lucide-vue-next'
+import { ShieldCheck, Lock } from 'lucide-vue-next'
 import Dialog from '@/components/ui/Dialog.vue'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
@@ -36,7 +36,7 @@ async function handleVerify(): Promise<void> {
     <div class="p-6">
       <div class="mb-6">
         <h2 class="text-xl font-semibold flex items-center gap-2">
-          🔐 {{ t('auth.title') }}
+          <Lock class="h-5 w-5" /> {{ t('auth.title') }}
         </h2>
         <p class="text-neutral-500 dark:text-neutral-400 mt-1">
           {{ t('auth.description') }}

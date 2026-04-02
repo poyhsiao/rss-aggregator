@@ -21,7 +21,53 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 - `fetch_interval` field from Source model, API, and all UI components
-- Per-source automatic fetch scheduling
+
+## v0.14.0 - 2026-04-02
+
+### Added
+
+- Group-specific feed filtering: Feed page now filters by selected group via API `group_id` parameter
+- History page group filtering: History batches now filter by selected group via API `group_id` parameter
+- Source group refresh: Each group item has a refresh button that only updates sources in that group
+- Group preview feed: Each group item has a preview button that shows only that group's feed
+- Stdio router now supports all source-groups and trash API endpoints for desktop app
+- Group refresh fallback: When scheduler is disabled, group refresh uses direct fetch service
+- E2E tests for group-specific refresh, preview, and history filtering
+
+### Fixed
+
+- Feed page "Refresh" button respects selected group (only refreshes group sources)
+- Feed page "Preview Feed" respects selected group (only shows group's feed)
+- Source group preview now passes `group_id` to API (was showing all feeds)
+- Stdio router missing `group_id` parameter in feed, history, and refresh handlers
+- Stdio router silently failing group refresh when scheduler is disabled
+- All emoji replaced with Lucide icons across all Vue pages and components
+- Icon colors standardized: Edit=blue, Preview=purple, Refresh=green, Delete=red
+- Group name editing now uses inline editing (like History page) instead of dialog
+- Source page tab counts now preload on mount
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.14.0
+- Backup service version updated to 0.14.0
+- Desktop app version updated to 0.14.0
+
+## v0.13.0 - 2026-04-02
+
+### Fixed
+
+- Feed page "Refresh" button translation key fixed (now uses `feed.refresh` lowercase)
+- Source page tab counts now preload on mount (active/trash/groups all show correct counts)
+- Group expand now uses ChevronDown/ChevronUp arrow button instead of clicking entire name row
+- "Add source" dropdown option now disabled (label only, not selectable)
+- Removed duplicate "Add Group" button in groups tab
+- Added Refresh and Preview action buttons to each group item
+
+### Changed
+
+- Replaced ALL emoji with Lucide icons across all Vue pages and components
+- Updated e2e test selectors to use icon-based selectors instead of emoji
+- Group header action order: Refresh | Preview | Edit | Delete | Expand
 
 ## v0.12.1 - 2026-03-30
 

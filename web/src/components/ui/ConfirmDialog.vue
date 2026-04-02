@@ -8,6 +8,7 @@
  * const result = await confirm.show('Are you sure?', 'Delete item')
  */
 import { computed, watch } from 'vue'
+import { AlertTriangle, Zap, Info } from 'lucide-vue-next'
 import { cn } from '@/utils/cn'
 
 const props = withDefaults(defineProps<{
@@ -62,11 +63,11 @@ const variantClasses = computed(() => {
   return variants[props.variant]
 })
 
-const iconEmoji = computed(() => {
+const iconComponent = computed(() => {
   const icons = {
-    danger: '⚠️',
-    warning: '⚡',
-    info: 'ℹ️',
+    danger: AlertTriangle,
+    warning: Zap,
+    info: Info,
   }
   return icons[props.variant]
 })
@@ -92,7 +93,11 @@ const iconEmoji = computed(() => {
             <!-- Header -->
             <div class="p-6 pb-0">
               <div class="flex items-start gap-3">
-                <span class="text-2xl shrink-0">{{ iconEmoji }}</span>
+                <component :is="iconComponent" class="h-6 w-6 shrink-0" :class="{
+                  'text-red-500': variant === 'danger',
+                  'text-yellow-500': variant === 'warning',
+                  'text-blue-500': variant === 'info',
+                }" />
                 <div class="flex-1 min-w-0">
                   <h3 v-if="title" class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                     {{ title }}

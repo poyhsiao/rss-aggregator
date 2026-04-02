@@ -31,6 +31,7 @@ export async function refreshSource(id: number): Promise<void> {
   return api.post(`/sources/${id}/refresh`)
 }
 
-export async function refreshAllSources(): Promise<void> {
-  return api.post('/sources/refresh')
+export async function refreshAllSources(groupId?: number): Promise<void> {
+  const params = groupId ? `?group_id=${groupId}` : ''
+  return api.post(`/sources/refresh${params}`)
 }

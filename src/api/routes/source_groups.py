@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_source_group_service, require_api_key
+from src.api.deps import get_scheduler, get_source_group_service, require_api_key
 from src.services.source_group_service import SourceGroupService
 from src.utils.time import to_iso_string
 
@@ -160,3 +160,19 @@ async def remove_source_from_group(
         await service.remove_source_from_group(group_id, source_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/{group_id}/refresh")
+async def refresh_group_sources(
+    group_id: int,
+    scheduler=Depends(get_scheduler),
+    service: SourceGroupService = Depends(get_source_group_service),
+    _: str = Depends(require_api_key),
+) -> dict:
+    """Trigger refresh for all sources in a group."""
+    try:
+        await service.get_group_sources(group_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    await scheduler.refresh_group(group_id)
+    return {"message": "Group sources refresh triggered"}
