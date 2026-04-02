@@ -53,25 +53,9 @@ const conflictDialogOpen = ref(false)
 const currentConflict = ref<RestoreConflict | null>(null)
 const restoringId = ref<number | null>(null)
 
-const showEmptyState = computed(() => {
-  if (activeTab.value === 'active') {
-    return !sources.value.length
-  }
-  if (activeTab.value === 'groups') {
-    return !groups.value.length
-  }
-  return !trashItems.value.length
-})
-
-const emptyMessage = computed(() => {
-  if (activeTab.value === 'active') {
-    return t('sources.empty')
-  }
-  if (activeTab.value === 'groups') {
-    return t('groups.empty')
-  }
-  return t('trash.empty')
-})
+const isActiveTab = computed(() => activeTab.value === 'active')
+const isTrashTab = computed(() => activeTab.value === 'trash')
+const isGroupsTab = computed(() => activeTab.value === 'groups')
 
 function handleSaved(source: Source): void {
   const existingIndex = sources.value.findIndex(s => s.id === source.id)
@@ -416,7 +400,7 @@ onMounted(fetchSources)
         <h1 class="text-2xl font-semibold">{{ t('sources.title') }}</h1>
       </div>
       <div class="flex flex-wrap gap-2">
-        <template v-if="activeTab === 'active'">
+        <template v-if="isActiveTab">
           <Button
             variant="outline"
             :disabled="refreshing"
@@ -431,6 +415,14 @@ onMounted(fetchSources)
             :title="t('sources.add')"
           >
             ➕ {{ t('sources.add') }}
+          </Button>
+        </template>
+        <template v-else-if="isGroupsTab">
+          <Button
+            @click="openAddGroupDialog"
+            :title="t('groups.add')"
+          >
+            <FolderPlus class="h-4 w-4 mr-2" /> {{ t('groups.add') }}
           </Button>
         </template>
         <template v-else>
@@ -482,12 +474,12 @@ onMounted(fetchSources)
       {{ t('common.loading') }}
     </div>
     
-    <div v-else-if="showEmptyState" class="text-center py-12 text-neutral-500">
-      📭 {{ emptyMessage }}
-    </div>
-    
     <!-- Active Sources List -->
-    <div v-else-if="activeTab === 'active'" class="space-y-3">
+    <div v-else-if="activeTab === 'active'">
+      <div v-if="!sources.length" class="text-center py-12 text-neutral-500">
+        📭 {{ t('sources.empty') }}
+      </div>
+      <div v-else class="space-y-3">
       <div
         v-for="source in sources"
         :key="source.id"
@@ -566,10 +558,15 @@ onMounted(fetchSources)
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- Trash Items List -->
-    <div v-else-if="activeTab === 'trash'" class="space-y-3">
+    <div v-if="isTrashTab && !loading">
+      <div v-if="!trashItems.length" class="text-center py-12 text-neutral-500">
+        📭 {{ t('trash.empty') }}
+      </div>
+      <div v-else class="space-y-3">
       <div
         v-for="item in trashItems"
         :key="item.id"
@@ -620,50 +617,56 @@ onMounted(fetchSources)
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- Groups Tab -->
-    <div v-else class="space-y-4">
-      <div class="flex justify-end">
+    <div v-if="isGroupsTab && !loading">
+      <div class="flex justify-end mb-4">
         <Button @click="openAddGroupDialog" :title="t('groups.add')">
           <FolderPlus class="h-4 w-4 mr-2" /> {{ t('groups.add') }}
         </Button>
       </div>
-      <div v-for="group in groups" :key="group.id" class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
-        <div class="flex items-center justify-between">
-          <button class="flex items-center gap-2 flex-1 text-left" @click="handleToggleGroupExpand(group.id)">
-            <FolderOpen class="h-5 w-5 text-blue-500" />
-            <span class="font-medium">{{ group.name }}</span>
-            <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
-          </button>
-          <div class="flex gap-1">
-            <Button variant="ghost" size="sm" :title="t('common.edit')" @click="openEditGroupDialog(group)">
-              ✏️
-            </Button>
-            <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
-              🗑️
-            </Button>
-          </div>
-        </div>
-        <div v-if="expandedGroupId === group.id" class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-          <div v-if="groupSources[group.id]?.length" class="space-y-2 mb-4">
-            <div v-for="s in groupSources[group.id]" :key="s.id" class="flex items-center justify-between text-sm">
-              <span class="truncate">{{ s.name }}</span>
-              <Button variant="ghost" size="sm" :title="t('groups.remove_source')" @click="handleRemoveSourceFromGroup(group.id, s.id)">
-                <XCircle class="h-4 w-4 text-red-500" />
+      <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
+        📭 {{ t('groups.empty') }}
+      </div>
+      <div v-else class="space-y-4">
+        <div v-for="group in groups" :key="group.id" class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+          <div class="flex items-center justify-between">
+            <button class="flex items-center gap-2 flex-1 text-left" @click="handleToggleGroupExpand(group.id)">
+              <FolderOpen class="h-5 w-5 text-blue-500" />
+              <span class="font-medium">{{ group.name }}</span>
+              <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
+            </button>
+            <div class="flex gap-1">
+              <Button variant="ghost" size="sm" :title="t('common.edit')" @click="openEditGroupDialog(group)">
+                ✏️
+              </Button>
+              <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
+                🗑️
               </Button>
             </div>
           </div>
-          <div v-else class="text-sm text-neutral-500 mb-4">{{ t('groups.no_sources') }}</div>
-          <div v-if="availableSourcesForGroup.length" class="flex flex-wrap gap-2">
-            <select
-              :id="`add-source-${group.id}`"
-              class="text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1"
-              @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
-            >
-              <option value="">{{ t('groups.add_source') }}</option>
-              <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
+          <div v-if="expandedGroupId === group.id" class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+            <div v-if="groupSources[group.id]?.length" class="space-y-2 mb-4">
+              <div v-for="s in groupSources[group.id]" :key="s.id" class="flex items-center justify-between text-sm">
+                <span class="truncate">{{ s.name }}</span>
+                <Button variant="ghost" size="sm" :title="t('groups.remove_source')" @click="handleRemoveSourceFromGroup(group.id, s.id)">
+                  <XCircle class="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            </div>
+            <div v-else class="text-sm text-neutral-500 mb-4">{{ t('groups.no_sources') }}</div>
+            <div v-if="availableSourcesForGroup.length" class="flex flex-wrap gap-2">
+              <select
+                :id="`add-source-${group.id}`"
+                class="text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1"
+                @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
+              >
+                <option value="">{{ t('groups.add_source') }}</option>
+                <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
