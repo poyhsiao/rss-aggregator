@@ -20,6 +20,7 @@ dependencies = [
     "python-multipart",
     "sqlalchemy",
     "uvicorn[standard]",
+    "croniter>=6.2.2",
 ]
 
 [dependency-groups]
