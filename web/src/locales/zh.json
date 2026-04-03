@@ -142,7 +142,11 @@
     "add_source": "新增來源",
     "remove_source": "從群組移除",
     "no_sources": "此群組沒有來源",
-    "all": "全部"
+    "all": "全部",
+    "sources_section": "群組來源",
+    "sources_help": "新增或移除此群組的來源。來源決定要抓取哪些 RSS 訂閱。",
+    "sources_badge": "個來源",
+    "schedules_badge": "個排程"
   },
   "keys": {
     "title": "API 金鑰",
@@ -354,5 +358,45 @@
       "confirm_message": "確定要清除所有已儲存的預覽內容嗎？此操作無法復原。",
       "success": "已清除所有預覽內容"
     }
+  },
+  "schedule": {
+    "title": "定時更新",
+    "quick": "快捷設定",
+    "detailed": "詳細設定",
+    "quick_options": {
+      "every_15min": "每 15 分鐘",
+      "every_30min": "每 30 分鐘",
+      "every_1hour": "每 1 小時",
+      "every_3hours": "每 3 小時",
+      "every_6hours": "每 6 小時",
+      "every_12hours": "每 12 小時",
+      "daily": "每天 (08:30)"
+    },
+    "minutes": "分鐘",
+    "hours": "小時",
+    "weekdays": "星期",
+    "weekdays_options": {
+      "0": "週日",
+      "1": "週一",
+      "2": "週二",
+      "3": "週三",
+      "4": "週四",
+      "5": "週五",
+      "6": "週六"
+    },
+    "preview": "預覽",
+    "add": "新增排程",
+    "empty": "尚未設定排程",
+    "disabled": "已停用",
+    "max_reached": "每個群組最多 10 組排程",
+    "delete_title": "刪除排程",
+    "delete_confirm": "確定要刪除此排程嗎？",
+    "help_text": "設定此群組的自動抓取排程。排程獨立於全域排程器運作。",
+    "next_run": "下次執行",
+    "enable": "啟用排程",
+    "disable": "停用排程",
+    "delete": "刪除排程",
+    "minutes_hint": "以 5 分鐘為間隔選擇（0, 5, 10, ... 55）",
+    "multi_select_hint": "點擊可多選（桌面版按住 Ctrl/Cmd 點擊）"
   }
 }

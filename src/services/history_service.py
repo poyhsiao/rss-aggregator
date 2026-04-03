@@ -19,6 +19,15 @@ class HistoryService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    @staticmethod
+    def _parse_json_list(value: str | None) -> list:
+        if not value:
+            return []
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
     async def _get_source_groups(self, source_id: int) -> list[dict]:
         """Fetch groups for a given source_id."""
         groups_result = await self.session.execute(
@@ -51,37 +60,45 @@ class HistoryService:
         items_result = await self.session.execute(items_query)
         total_items = items_result.scalar() or 0
 
-        query = (
-            select(FetchBatch)
-            .order_by(FetchBatch.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-        )
+        query = select(FetchBatch).order_by(FetchBatch.created_at.desc()).limit(limit).offset(offset)
 
         if group_id is not None:
-            query = (
-                select(FetchBatch)
-                .join(FeedItem, FeedItem.batch_id == FetchBatch.id)
-                .join(Source, Source.id == FeedItem.source_id)
-                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
-                .where(SourceGroupMember.group_id == group_id)
-                .distinct()
-                .order_by(FetchBatch.created_at.desc())
-                .limit(limit)
-                .offset(offset)
+            all_batches_result = await self.session.execute(
+                select(FetchBatch).order_by(FetchBatch.created_at.desc())
             )
+            all_batches = list(all_batches_result.scalars().all())
+            filtered_batches = []
+            for batch in all_batches:
+                if batch.groups:
+                    try:
+                        batch_grps = json.loads(batch.groups)
+                        if any(g.get("id") == group_id for g in batch_grps):
+                            filtered_batches.append(batch)
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+                else:
+                    groups_result = await self.session.execute(
+                        select(SourceGroup)
+                        .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+                        .join(FeedItem, FeedItem.source_id == SourceGroupMember.source_id)
+                        .where(FeedItem.batch_id == batch.id, SourceGroupMember.group_id == group_id)
+                        .distinct()
+                    )
+                    if groups_result.scalars().first():
+                        filtered_batches.append(batch)
+            filtered_batches = filtered_batches[offset:offset + limit]
+            return await self._build_batches_response(filtered_batches, total_batches, total_items)
 
         result = await self.session.execute(query)
         batches = list(result.scalars().all())
+        return await self._build_batches_response(batches, total_batches, total_items)
 
+    async def _build_batches_response(
+        self, batches: list[FetchBatch], total_batches: int, total_items: int
+    ) -> HistoryBatchesResponse:
         batch_list = []
         for batch in batches:
-            sources: list[str] = []
-            if batch.sources:
-                try:
-                    sources = json.loads(batch.sources)
-                except (json.JSONDecodeError, TypeError):
-                    sources = []
+            sources = self._parse_json_list(batch.sources)
 
             latest_fetched_at = None
             latest_published_at = None
@@ -98,7 +115,9 @@ class HistoryService:
                     latest_published_at = row[1].isoformat() if row[1] else None
 
             batch_groups: list[dict] = []
-            if batch.id:
+            if batch.groups:
+                batch_groups = self._parse_json_list(batch.groups)
+            elif batch.id:
                 groups_result = await self.session.execute(
                     select(SourceGroup)
                     .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
@@ -193,7 +212,6 @@ class HistoryService:
             select(FeedItem)
             .options(joinedload(FeedItem.source))
             .where(
-                FeedItem.deleted_at.is_(None),
                 FeedItem.source.has(Source.is_active == True),
                 FeedItem.source.has(Source.deleted_at.is_(None)),
             )

@@ -35,7 +35,6 @@ class PreviewService:
         result = await self._session.execute(
             select(PreviewContent).where(
                 PreviewContent.url_hash == url_hash,
-                PreviewContent.deleted_at.is_(None),
             )
         )
         return result.scalar_one_or_none()
@@ -44,7 +43,6 @@ class PreviewService:
         result = await self._session.execute(
             select(PreviewContent).where(
                 PreviewContent.url == url,
-                PreviewContent.deleted_at.is_(None),
             )
         )
         return result.scalar_one_or_none()
@@ -133,9 +131,7 @@ class PreviewService:
         from sqlalchemy import func, select
 
         count_result = await self._session.execute(
-            select(func.count()).select_from(PreviewContent).where(
-                PreviewContent.deleted_at.is_(None)
-            )
+            select(func.count()).select_from(PreviewContent)
         )
         count = count_result.scalar() or 0
 
@@ -144,7 +140,7 @@ class PreviewService:
 
         from sqlalchemy import delete
 
-        stmt = delete(PreviewContent).where(PreviewContent.deleted_at.is_(None))
+        stmt = delete(PreviewContent)
         await self._session.execute(stmt)
         await self._session.commit()
         logger.info(f"Deleted {count} preview contents")

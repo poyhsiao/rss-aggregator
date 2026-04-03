@@ -625,7 +625,7 @@ class StdioRouter:
         from src.models import APIKey
 
         result = await session.execute(
-            select(APIKey).where(APIKey.deleted_at.is_(None))
+            select(APIKey)
         )
         keys = list(result.scalars().all())
 
@@ -678,14 +678,14 @@ class StdioRouter:
         key_id = self._extract_path_param(path, r"/api/v1/keys/(\d+)$")
 
         result = await session.execute(
-            select(APIKey).where(APIKey.id == key_id, APIKey.deleted_at.is_(None))
+            select(APIKey).where(APIKey.id == key_id)
         )
         api_key = result.scalar_one_or_none()
 
         if not api_key:
             raise HTTPException(status_code=404, detail="API key not found")
 
-        api_key.soft_delete()
+        await session.delete(api_key)
         await session.commit()
 
         return {"status": 204, "headers": {}, "body": None}
@@ -712,7 +712,7 @@ class StdioRouter:
 
         result = await session.execute(
             select(Stats)
-            .where(Stats.date >= start_date, Stats.deleted_at.is_(None))
+            .where(Stats.date >= start_date)
             .order_by(Stats.date.desc())
         )
         stats = list(result.scalars().all())
@@ -760,7 +760,7 @@ class StdioRouter:
         if status and status not in ("success", "error"):
             raise InvalidParams({"detail": "status must be 'success' or 'error'"})
 
-        db_query = select(FetchLog).where(FetchLog.deleted_at.is_(None))
+        db_query = select(FetchLog)
 
         if source_id is not None:
             db_query = db_query.where(FetchLog.source_id == source_id)

@@ -1,4 +1,4 @@
-"""SQLAlchemy base model with soft delete support."""
+"""SQLAlchemy base model."""
 
 from datetime import datetime
 
@@ -20,11 +20,7 @@ class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
 
 
 class TimestampMixin(MappedAsDataclass, kw_only=True):
-    """Mixin for created_at, updated_at, and deleted_at timestamps.
-
-    Note: Must inherit from MappedAsDataclass to avoid SQLAlchemy 2.1 deprecation warning
-    when used with dataclass models.
-    """
+    """Mixin for created_at and updated_at timestamps."""
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default_factory=now, nullable=False
@@ -32,10 +28,3 @@ class TimestampMixin(MappedAsDataclass, kw_only=True):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default_factory=now, nullable=False, onupdate=now
     )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, default=None
-    )
-
-    def soft_delete(self) -> None:
-        """Mark this record as deleted."""
-        self.deleted_at = now()

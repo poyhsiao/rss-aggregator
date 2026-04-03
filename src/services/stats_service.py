@@ -40,7 +40,7 @@ class StatsService:
 
         # Try to get existing stats for the date
         result = await self.session.execute(
-            select(Stats).where(Stats.date == stat_date, Stats.deleted_at.is_(None))
+            select(Stats).where(Stats.date == stat_date)
         )
         stats = result.scalar_one_or_none()
 

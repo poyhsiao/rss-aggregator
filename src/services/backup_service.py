@@ -480,7 +480,6 @@ class BackupService:
                     existing_item.description = item_data.get(
                         "description", existing_item.description
                     )
-                    existing_item.deleted_at = None
                     if item_data.get("published_at"):
                         existing_item.published_at = datetime.fromisoformat(
                             item_data["published_at"]
@@ -518,7 +517,6 @@ class BackupService:
                     existing_key = existing_api_keys_by_key[key]
                     existing_key.name = key_data.get("name", existing_key.name)
                     existing_key.is_active = key_data.get("is_active", existing_key.is_active)
-                    existing_key.deleted_at = None
                 else:
                     new_key = APIKey(
                         key=key,

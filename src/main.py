@@ -30,19 +30,19 @@ async def lifespan(app: FastAPI):
 
     if settings.scheduler_enabled:
         await scheduler.start()
-        await schedule_scheduler.start()
+    await schedule_scheduler.start()
 
     yield
 
+    await schedule_scheduler.stop()
     if settings.scheduler_enabled:
-        await schedule_scheduler.stop()
         await scheduler.stop()
 
 
 app = FastAPI(
     title="RSS Aggregator",
     description="Aggregate multiple RSS feeds into a single, filterable output",
-    version="0.14.0",
+    version="0.16.0",
     lifespan=lifespan,
 )
 

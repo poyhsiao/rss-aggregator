@@ -28,6 +28,7 @@ def upgrade() -> None:
         sa.Column('next_run_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('deleted_at', sa.DateTime(), nullable=True, default=None),
         sa.ForeignKeyConstraint(['group_id'], ['source_groups.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
     )

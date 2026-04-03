@@ -2,25 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v0.16.0] - 2026-04-03
 
 ### Breaking Changes
 
-- Removed `fetch_interval` field from Source model and API
-- Sources are now refreshed manually only (via `/sources/{id}/refresh` or `/sources/refresh`)
+- Removed `deleted_at` and `soft_delete()` from APIKey, FetchLog, Stats, FetchBatch, PreviewContent, SourceGroup, SourceGroupSchedule models — these are now hard-deleted
+- `TimestampMixin` no longer includes `deleted_at` or `soft_delete()` method
+- API key deletion is now permanent (was previously soft-deleted)
+- `fetch_interval` field removed from Source model and API
 - Scheduler is disabled by default (`scheduler_enabled: False`)
 
 ### Features
 
-- Added Source Groups: organize sources into many-to-many groups
-- New API: `/api/v1/source-groups` for group CRUD and membership management
-- Feed and History pages now display and filter by source groups
-- Groups tab in Sources page for group management
-- Backup/restore now includes source group data
+- Source Group Scheduled Updates: cron-based automatic fetching per group
+- New API: `/api/v1/schedules` for schedule CRUD and toggle operations
+- Schedule quick options: Every 15min, 30min, 1hr, 3hr, 6hr, 12hr, daily at 08:30
+- Schedule detailed mode: Custom minutes, hours, and weekdays via MultiSelect dropdown
+- Maximum 10 schedules per group with duplicate schedule detection
+- Enable/disable schedule toggle with next run time display
+- ScheduleConfigPanel component with modern MultiSelect UI (radix-vue Popover)
+- Human-readable cron expression display using cronstrue (zh-TW and en)
+- Schedule count badge displayed on group items
+- FeedItem soft-delete preserved: old feed items retained for history preservation
+- FetchBatch stores groups JSON for persistent group tagging in history
+- History page shows all batches with correct group tags and timestamps
+- Group filter in history uses batch.groups JSON for accurate filtering
+- TooltipButton component for tap-friendly help tooltips (mobile-friendly)
+- Mobile RWD improvements: group names wrap, action buttons always visible, 40px+ touch targets
+- `mobile-web-app-capable` meta tag added for PWA support
+
+### Fixed
+
+- Schedule scheduler now starts regardless of `scheduler_enabled` setting
+- `deleted_at` column missing in `source_group_schedules` migration
+- `updated_at` column missing in `fetch_batches` model
+- `deleted_at` column missing in `feed_items` migration
+- History page group filter now shows all matching batches (not just latest)
+- History batch items now include soft-deleted FeedItems for full history
+- Weekday labels in schedule MultiSelect now update on language switch
+- Duplicate JSON parsing code consolidated into `_parse_json_list` helper
+- Group name overflow on mobile now wraps instead of breaking layout
 
 ### Removed
 
 - `fetch_interval` field from Source model, API, and all UI components
+- `deleted_at` and `soft_delete()` from non-Source models (APIKey, FetchLog, Stats, FetchBatch, PreviewContent, SourceGroup, SourceGroupSchedule)
 
 ## v0.14.0 - 2026-04-02
 

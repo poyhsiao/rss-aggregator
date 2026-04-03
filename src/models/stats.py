@@ -1,14 +1,15 @@
 """Stats model for daily statistics."""
 
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import Date, Integer, UniqueConstraint
+from sqlalchemy import Date, DateTime, Integer, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base
+from src.utils.time import now
 
 
-class Stats(Base, TimestampMixin):
+class Stats(Base):
     """Daily statistics for monitoring."""
 
     __tablename__ = "stats"
@@ -19,6 +20,8 @@ class Stats(Base, TimestampMixin):
     total_requests: Mapped[int] = mapped_column(Integer, default=0)
     successful_fetches: Mapped[int] = mapped_column(Integer, default=0)
     failed_fetches: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False, onupdate=func.now())
 
     def __repr__(self) -> str:
         return f"<Stats(date={self.date}, requests={self.total_requests})>"

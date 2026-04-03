@@ -1,16 +1,19 @@
+"""Source group schedule model for automated fetching."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base
+from src.utils.time import now
 
 if TYPE_CHECKING:
     pass
 
 
-class SourceGroupSchedule(Base, TimestampMixin):
+class SourceGroupSchedule(Base):
     __tablename__ = "source_group_schedules"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
@@ -22,6 +25,8 @@ class SourceGroupSchedule(Base, TimestampMixin):
     next_run_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True, default=None
     )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False, onupdate=func.now())
 
     def __repr__(self) -> str:
         return f"<SourceGroupSchedule(id={self.id}, group_id={self.group_id}, cron={self.cron_expression})>"

@@ -142,7 +142,11 @@
     "add_source": "Add Source",
     "remove_source": "Remove from Group",
     "no_sources": "No sources in this group",
-    "all": "All"
+    "all": "All",
+    "sources_section": "Sources",
+    "sources_help": "Add or remove sources from this group. Sources determine which RSS feeds will be fetched.",
+    "sources_badge": "sources",
+    "schedules_badge": "schedules"
   },
   "keys": {
     "title": "API Keys",
@@ -354,5 +358,45 @@
       "confirm_message": "Are you sure you want to clear all cached preview contents? This action cannot be undone.",
       "success": "All preview contents cleared"
     }
+  },
+  "schedule": {
+    "title": "Scheduled Update",
+    "quick": "Quick Settings",
+    "detailed": "Detailed Settings",
+    "quick_options": {
+      "every_15min": "Every 15 minutes",
+      "every_30min": "Every 30 minutes",
+      "every_1hour": "Every 1 hour",
+      "every_3hours": "Every 3 hours",
+      "every_6hours": "Every 6 hours",
+      "every_12hours": "Every 12 hours",
+      "daily": "Daily (08:30)"
+    },
+    "minutes": "Minutes",
+    "hours": "Hours",
+    "weekdays": "Weekdays",
+    "weekdays_options": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "preview": "Preview",
+    "add": "Add Schedule",
+    "empty": "No schedules configured",
+    "disabled": "Disabled",
+    "max_reached": "Maximum 10 schedules per group",
+    "delete_title": "Delete Schedule",
+    "delete_confirm": "Are you sure you want to delete this schedule?",
+    "help_text": "Set up automatic feed fetching for this group. Schedules run independently of the global scheduler.",
+    "next_run": "Next run",
+    "enable": "Enable schedule",
+    "disable": "Disable schedule",
+    "delete": "Delete schedule",
+    "minutes_hint": "Select in 5-minute intervals (0, 5, 10, ... 55)",
+    "multi_select_hint": "Tap to select multiple (Ctrl/Cmd+click on desktop)"
   }
 }

@@ -56,7 +56,8 @@ class FetchScheduler:
             await asyncio.sleep(self.check_interval)
 
     async def _check_and_fetch(self) -> None:
-        from src.models import FetchBatch, Source
+        import json
+        from src.models import FetchBatch, Source, SourceGroup, SourceGroupMember
         from src.services.fetch_service import FetchService
 
         async with self.session_factory() as session:
@@ -76,7 +77,15 @@ class FetchScheduler:
             if not sources_to_fetch:
                 return
 
-            batch = FetchBatch(items_count=0, sources="")
+            group_result = await session.execute(
+                select(SourceGroup)
+                .join(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+                .where(SourceGroupMember.source_id.in_([s.id for s in sources_to_fetch]))
+                .distinct()
+            )
+            groups = [{"id": g.id, "name": g.name} for g in group_result.scalars().all()]
+
+            batch = FetchBatch(items_count=0, sources="", groups=json.dumps(groups, ensure_ascii=False))
             session.add(batch)
             await session.flush()
 
@@ -146,8 +155,18 @@ class FetchScheduler:
             if not sources:
                 return
 
+            group_result = await session.execute(
+                select(SourceGroup).where(SourceGroup.id == group_id)
+            )
+            group = group_result.scalar_one_or_none()
+            group_info = [{"id": group.id, "name": group.name}] if group else []
+
             fetch_service = FetchService(session)
-            batch = FetchBatch(items_count=0, sources=json_module.dumps([s.name for s in sources]))
+            batch = FetchBatch(
+                items_count=0,
+                sources=json_module.dumps([s.name for s in sources]),
+                groups=json_module.dumps(group_info),
+            )
             session.add(batch)
             await session.flush()
 

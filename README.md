@@ -13,6 +13,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - **Trash management** - Soft-delete sources with restore functionality and conflict resolution
 - **Backup and restore** - Export/import encrypted ZIP backups with merge support
 - Scheduled background fetching
+- **Source Group Scheduled Updates** - Cron-based automatic fetching per group (15min, 30min, 1hr, 3hr, 6hr, 12hr, daily, or custom)
 - Daily statistics tracking
 - API key authentication and rate limiting
 - **Article Quick Preview** - Preview article content with markdown rendering and caching
@@ -165,6 +166,12 @@ cd src-tauri && cargo tauri dev
 | `/api/v1/history/batches/{id}` | DELETE | Delete a fetch batch |
 | `/api/v1/previews` | GET, POST | Get/create cached article previews |
 | `/api/v1/previews/{url_hash}` | GET | Get cached preview by URL hash |
+| `/api/v1/source-groups` | GET, POST | List/create source groups |
+| `/api/v1/source-groups/{id}` | GET, PUT, DELETE | Manage source group |
+| `/api/v1/source-groups/{id}/sources` | GET, POST, DELETE | Manage group membership |
+| `/api/v1/source-groups/{id}/schedules` | GET, POST | List/create schedules |
+| `/api/v1/source-groups/{id}/schedules/{schedule_id}` | GET, PUT, DELETE | Manage schedule |
+| `/api/v1/source-groups/{id}/schedules/{schedule_id}/toggle` | PATCH | Enable/disable schedule |
 
 ### Feed Endpoint Parameters
 

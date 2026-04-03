@@ -96,7 +96,6 @@ class FeedService:
                 joinedload(FeedItem.source).joinedload(Source.groups)
             )
             .where(
-                FeedItem.deleted_at.is_(None),
                 FeedItem.source.has(Source.is_active == True),  # noqa: E712
                 FeedItem.source.has(Source.deleted_at.is_(None)),
             )

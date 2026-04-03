@@ -24,6 +24,7 @@ class GroupResponse(BaseModel):
     id: int
     name: str
     member_count: int = 0
+    schedule_count: int = 0
     created_at: str
     updated_at: str
 
@@ -43,6 +44,7 @@ async def list_groups(
             id=g["id"],
             name=g["name"],
             member_count=g["member_count"],
+            schedule_count=g.get("schedule_count", 0),
             created_at=g["created_at"].isoformat(),
             updated_at=g["updated_at"].isoformat(),
         )
@@ -65,6 +67,7 @@ async def create_group(
         id=group.id,
         name=group.name,
         member_count=0,
+        schedule_count=0,
         created_at=group.created_at.isoformat(),
         updated_at=group.updated_at.isoformat(),
     )
@@ -89,11 +92,15 @@ async def update_group(
     member_count = next(
         (g["member_count"] for g in count_result if g["id"] == group.id), 0
     )
+    schedule_count = next(
+        (g.get("schedule_count", 0) for g in count_result if g["id"] == group.id), 0
+    )
 
     return GroupResponse(
         id=group.id,
         name=group.name,
         member_count=member_count,
+        schedule_count=schedule_count,
         created_at=group.created_at.isoformat(),
         updated_at=group.updated_at.isoformat(),
     )

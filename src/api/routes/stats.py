@@ -33,7 +33,7 @@ async def get_stats(
 
     result = await session.execute(
         select(Stats)
-        .where(Stats.date >= start_date, Stats.deleted_at.is_(None))
+        .where(Stats.date >= start_date)
         .order_by(Stats.date.desc())
     )
     stats = list(result.scalars().all())

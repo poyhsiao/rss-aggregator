@@ -25,7 +25,6 @@ class AuthService:
             select(APIKey).where(
                 APIKey.key == api_key,
                 APIKey.is_active == True,
-                APIKey.deleted_at.is_(None),
             )
         )
         return result.scalar_one_or_none() is not None

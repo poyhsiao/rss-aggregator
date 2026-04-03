@@ -46,7 +46,7 @@ async def test_validate_key_returns_false_for_deleted_key(
     auth_service: AuthService, db_session: AsyncSession, test_api_key: APIKey
 ):
     """Test that validate_key returns False for deleted key."""
-    test_api_key.soft_delete()
+    await db_session.delete(test_api_key)
     await db_session.commit()
 
     result = await auth_service.validate_key("test-key-12345")

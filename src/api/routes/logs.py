@@ -39,7 +39,7 @@ async def get_logs(
         source_id: Filter by source ID (optional, returns all if not specified).
         status: Filter by status - 'success' or 'error' (optional, returns all if not specified).
     """
-    query = select(FetchLog).where(FetchLog.deleted_at.is_(None))
+    query = select(FetchLog)
 
     if source_id is not None:
         query = query.where(FetchLog.source_id == source_id)

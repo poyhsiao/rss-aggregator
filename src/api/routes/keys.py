@@ -58,7 +58,7 @@ async def list_keys(
 ) -> list[APIKeyResponse]:
     """List all API keys."""
     result = await session.execute(
-        select(APIKey).where(APIKey.deleted_at.is_(None))
+        select(APIKey)
     )
     keys = list(result.scalars().all())
     return [APIKeyResponse(id=k.id, key=k.key, name=k.name, is_active=k.is_active) for k in keys]
@@ -102,12 +102,12 @@ async def delete_key(
 ) -> None:
     """Delete an API key."""
     result = await session.execute(
-        select(APIKey).where(APIKey.id == key_id, APIKey.deleted_at.is_(None))
+        select(APIKey).where(APIKey.id == key_id)
     )
     api_key = result.scalar_one_or_none()
 
     if not api_key:
         raise HTTPException(status_code=404, detail="API key not found")
 
-    api_key.soft_delete()
+    await session.delete(api_key)
     await session.commit()

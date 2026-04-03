@@ -3,7 +3,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import Source, SourceGroup, SourceGroupMember
+from src.models import Source, SourceGroup, SourceGroupMember, SourceGroupSchedule
 
 
 class SourceGroupService:
@@ -36,16 +36,18 @@ class SourceGroupService:
         return list(result.scalars().all())
 
     async def list_groups_with_count(self) -> list[dict]:
-        """List all groups with member counts using a single JOIN query."""
+        """List all groups with member and schedule counts using a single query."""
         result = await self.session.execute(
             select(
                 SourceGroup.id,
                 SourceGroup.name,
                 SourceGroup.created_at,
                 SourceGroup.updated_at,
-                func.count(SourceGroupMember.source_id).label("member_count"),
+                func.count(func.distinct(SourceGroupMember.source_id)).label("member_count"),
+                func.count(func.distinct(SourceGroupSchedule.id)).label("schedule_count"),
             )
             .outerjoin(SourceGroupMember, SourceGroup.id == SourceGroupMember.group_id)
+            .outerjoin(SourceGroupSchedule, SourceGroup.id == SourceGroupSchedule.group_id)
             .group_by(SourceGroup.id)
         )
         return [
@@ -53,6 +55,7 @@ class SourceGroupService:
                 "id": row.id,
                 "name": row.name,
                 "member_count": row.member_count,
+                "schedule_count": row.schedule_count,
                 "created_at": row.created_at,
                 "updated_at": row.updated_at,
             }

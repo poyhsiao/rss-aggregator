@@ -26,7 +26,10 @@ import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
+import TooltipButton from '@/components/ui/TooltipButton.vue'
 import { formatDate } from '@/utils/format'
+import { isTauri } from '@/utils/environment'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -438,7 +441,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 overflow-x-hidden">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex items-center gap-2">
         <Radio class="h-6 w-6" />
@@ -484,8 +487,8 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="flex border-b border-neutral-200 dark:border-neutral-700">
+    <!-- Tab Navigation (sticky on mobile) -->
+    <div class="flex border-b border-neutral-200 dark:border-neutral-700 sticky top-16 md:top-0 z-30 bg-white dark:bg-neutral-900 -mx-4 px-4 md:-mx-0 md:px-0">
       <button
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
         :class="activeTab === 'active' 
@@ -674,81 +677,113 @@ onMounted(async () => {
         {{ t('groups.empty') }}
       </div>
       <div v-else class="space-y-4">
-        <div v-for="group in groups" :key="group.id" class="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <FolderOpen class="h-5 w-5 text-blue-500 shrink-0" />
-              <template v-if="editingGroupId === group.id">
-                <input
-                  v-model="editingGroupName"
-                  type="text"
-                  class="flex-1 px-2 py-1 text-sm font-medium bg-white dark:bg-neutral-900 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-neutral-100"
-                  :placeholder="t('groups.name_placeholder')"
-                  @keydown.enter="saveGroupName(group.id)"
-                  @keydown.escape="cancelEditGroupName"
-                />
-                <button
-                  type="button"
-                  :disabled="savingGroupName"
-                  class="p-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 text-green-600 dark:text-green-400 disabled:opacity-50"
-                  :title="t('common.save')"
-                  @click="saveGroupName(group.id)"
-                >
-                  <Check v-if="!savingGroupName" class="h-4 w-4" />
-                  <RefreshCw v-else class="h-4 w-4 animate-spin" />
-                </button>
-                <button
-                  type="button"
-                  class="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400"
-                  :title="t('common.cancel')"
-                  @click="cancelEditGroupName"
-                >
-                  <X class="h-4 w-4" />
-                </button>
-              </template>
-              <template v-else>
-                <span class="font-medium">{{ group.name }}</span>
-                <Badge variant="secondary">{{ group.member_count }} {{ t('groups.members') }}</Badge>
-              </template>
-            </div>
-            <div class="flex items-center gap-1">
-              <Button variant="ghost" size="sm" :title="t('common.refresh')" @click="handleRefreshGroup(group.id)">
-                <RefreshCw class="h-4 w-4 text-green-500" />
-              </Button>
-              <Button variant="ghost" size="sm" :title="t('sources.view_data')" @click="openPreviewGroupDialog(group)">
-                <FileText class="h-4 w-4 text-purple-500" />
-              </Button>
-              <Button variant="ghost" size="sm" :title="t('common.edit')" @click="startEditGroupName(group)">
-                <Pencil class="h-4 w-4 text-blue-500" />
-              </Button>
-              <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
-                <Trash2 class="h-4 w-4 text-red-500" />
-              </Button>
-              <Button variant="ghost" size="sm" :title="expandedGroupId === group.id ? t('common.collapse') : t('common.expand')" @click="handleToggleGroupExpand(group.id)">
-                <ChevronUp v-if="expandedGroupId === group.id" class="h-4 w-4" />
-                <ChevronDown v-else class="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div v-if="expandedGroupId === group.id" class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-            <div v-if="groupSources[group.id]?.length" class="space-y-2 mb-4">
-              <div v-for="s in groupSources[group.id]" :key="s.id" class="flex items-center justify-between text-sm">
-                <span class="truncate">{{ s.name }}</span>
-                <Button variant="ghost" size="sm" :title="t('groups.remove_source')" @click="handleRemoveSourceFromGroup(group.id, s.id)">
-                  <XCircle class="h-4 w-4 text-red-500" />
+        <div v-for="group in groups" :key="group.id" class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+          <!-- Group Header -->
+          <div class="p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <!-- Name and Badges -->
+              <div class="flex items-center gap-2 min-w-0">
+                <FolderOpen class="h-5 w-5 text-blue-500 shrink-0" />
+                <template v-if="editingGroupId === group.id">
+                  <input
+                    v-model="editingGroupName"
+                    type="text"
+                    class="flex-1 px-2 py-1.5 text-base font-semibold bg-white dark:bg-neutral-900 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-neutral-100"
+                    :placeholder="t('groups.name_placeholder')"
+                    @keydown.enter="saveGroupName(group.id)"
+                    @keydown.escape="cancelEditGroupName"
+                  />
+                  <button
+                    type="button"
+                    :disabled="savingGroupName"
+                    class="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 text-green-600 dark:text-green-400 disabled:opacity-50"
+                    :title="t('common.save')"
+                    @click="saveGroupName(group.id)"
+                  >
+                    <Check v-if="!savingGroupName" class="h-4 w-4" />
+                    <RefreshCw v-else class="h-4 w-4 animate-spin" />
+                  </button>
+                  <button
+                    type="button"
+                    class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400"
+                    :title="t('common.cancel')"
+                    @click="cancelEditGroupName"
+                  >
+                    <X class="h-4 w-4" />
+                  </button>
+                </template>
+                <template v-else>
+                  <button
+                    class="text-lg font-semibold break-words text-left hover:text-blue-600 dark:hover:text-blue-400 transition-colors min-w-0"
+                    @click="handleToggleGroupExpand(group.id)"
+                  >
+                    {{ group.name }}
+                  </button>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="secondary">{{ group.member_count }} {{ t('groups.sources_badge') }}</Badge>
+                    <Badge v-if="group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
+                      <Clock class="h-3 w-3 mr-0.5" /> {{ group.schedule_count }} {{ t('groups.schedules_badge') }}
+                    </Badge>
+                  </div>
+                </template>
+              </div>
+              <!-- Action Buttons - Always visible on all screen sizes -->
+              <div v-if="editingGroupId !== group.id" class="flex items-center gap-1 shrink-0">
+                <Button variant="ghost" size="sm" :title="t('common.refresh')" @click="handleRefreshGroup(group.id)">
+                  <RefreshCw class="h-4 w-4 text-green-500" />
+                </Button>
+                <Button variant="ghost" size="sm" :title="t('sources.view_data')" @click="openPreviewGroupDialog(group)">
+                  <FileText class="h-4 w-4 text-purple-500" />
+                </Button>
+                <Button variant="ghost" size="sm" :title="t('common.edit')" @click="startEditGroupName(group)">
+                  <Pencil class="h-4 w-4 text-blue-500" />
+                </Button>
+                <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
+                  <Trash2 class="h-4 w-4 text-red-500" />
+                </Button>
+                <Button variant="ghost" size="sm" :title="expandedGroupId === group.id ? t('common.collapse') : t('common.expand')" @click="handleToggleGroupExpand(group.id)">
+                  <ChevronUp v-if="expandedGroupId === group.id" class="h-4 w-4" />
+                  <ChevronDown v-else class="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <div v-else class="text-sm text-neutral-500 mb-4">{{ t('groups.no_sources') }}</div>
-            <div v-if="availableSourcesForGroup.length" class="flex flex-wrap gap-2">
-              <select
-                :id="`add-source-${group.id}`"
-                class="text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1"
-                @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
-              >
-                <option value="" disabled>{{ t('groups.add_source') }}</option>
-                <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
-              </select>
+          </div>
+
+          <!-- Expanded Content -->
+          <div v-if="expandedGroupId === group.id" class="border-t border-neutral-100 dark:border-neutral-700">
+            <div class="p-4 space-y-6">
+              <!-- Sources Section -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <Radio class="h-4 w-4 text-green-500" />
+                    <span class="font-medium text-sm">{{ t('groups.sources_section') }}</span>
+                  </div>
+                  <TooltipButton :text="t('groups.sources_help')" />
+                </div>
+                <div v-if="groupSources[group.id]?.length" class="space-y-2 mb-3">
+                  <div v-for="s in groupSources[group.id]" :key="s.id" class="flex items-center justify-between text-sm">
+                    <span class="truncate flex-1 mr-2">{{ s.name }}</span>
+                    <Button variant="ghost" size="sm" :title="t('groups.remove_source')" @click="handleRemoveSourceFromGroup(group.id, s.id)">
+                      <XCircle class="h-4 w-4 text-red-500 shrink-0" />
+                    </Button>
+                  </div>
+                </div>
+                <div v-else class="text-sm text-neutral-500 mb-3">{{ t('groups.no_sources') }}</div>
+                <div v-if="availableSourcesForGroup.length">
+                  <select
+                    :id="`add-source-${group.id}`"
+                    class="w-full text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2.5 min-h-[44px]"
+                    @change="handleAddSourceToGroup(group.id, Number(($event.target as HTMLSelectElement).value)); ($event.target as HTMLSelectElement).value = ''"
+                  >
+                    <option value="" disabled>{{ t('groups.add_source') }}</option>
+                    <option v-for="s in availableSourcesForGroup" :key="s.id" :value="s.id">{{ s.name }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Schedule Section (Web only) -->
+              <ScheduleConfigPanel v-if="!isTauri()" :group-id="group.id" @saved="() => {}" />
             </div>
           </div>
         </div>

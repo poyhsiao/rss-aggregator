@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Clock, Plus, Pencil, Trash2, Power, PowerOff } from 'lucide-vue-next'
+import { Clock, Plus, Trash2, Power, PowerOff } from 'lucide-vue-next'
+import cronstrue from 'cronstrue/i18n'
 import { getSchedules, createSchedule, deleteSchedule, toggleSchedule } from '@/api/schedules'
 import type { Schedule } from '@/types/schedule'
 import Button from '@/components/ui/Button.vue'
+import MultiSelect from '@/components/ui/MultiSelect.vue'
+import TooltipButton from '@/components/ui/TooltipButton.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -43,17 +46,18 @@ const quickOptions = [
   { label: 'schedule.quick_options.daily', value: '30 8 * * *' },
 ]
 
-const minuteOptions = Array.from({ length: 60 }, (_, i) => i)
-const hourOptions = Array.from({ length: 24 }, (_, i) => i)
-const weekdayOptions = [
-  { value: 0, label: 'schedule.weekdays_options.0' },
-  { value: 1, label: 'schedule.weekdays_options.1' },
-  { value: 2, label: 'schedule.weekdays_options.2' },
-  { value: 3, label: 'schedule.weekdays_options.3' },
-  { value: 4, label: 'schedule.weekdays_options.4' },
-  { value: 5, label: 'schedule.weekdays_options.5' },
-  { value: 6, label: 'schedule.weekdays_options.6' },
-]
+const weekdayOptions = computed(() => [
+  { value: 0, label: t('schedule.weekdays_options.0') },
+  { value: 1, label: t('schedule.weekdays_options.1') },
+  { value: 2, label: t('schedule.weekdays_options.2') },
+  { value: 3, label: t('schedule.weekdays_options.3') },
+  { value: 4, label: t('schedule.weekdays_options.4') },
+  { value: 5, label: t('schedule.weekdays_options.5') },
+  { value: 6, label: t('schedule.weekdays_options.6') },
+])
+
+const minuteOptions = Array.from({ length: 60 }, (_, i) => ({ value: i, label: i.toString().padStart(2, '0') }))
+const hourOptions = Array.from({ length: 24 }, (_, i) => ({ value: i, label: `${i.toString().padStart(2, '0')}:00` }))
 
 const cronPreview = computed(() => {
   if (mode.value === 'quick') {
@@ -76,11 +80,19 @@ const cronPreview = computed(() => {
 
   if (mins.length && hours.length) {
     const timeParts = hours.flatMap(h => mins.map(m => `${h}:${m.toString().padStart(2, '0')}`))
-    parts.push(timeParts.join(', '))
+    if (timeParts.length > 8) {
+      parts.push(`${timeParts.slice(0, 8).join(', ')}... (+${timeParts.length - 8})`)
+    } else {
+      parts.push(timeParts.join(', '))
+    }
   } else if (hours.length) {
     parts.push(hours.map(h => `${h}:00`).join(', '))
   } else if (mins.length) {
-    parts.push(`:${mins.join(', ')}`)
+    if (mins.length > 12) {
+      parts.push(`:${mins.slice(0, 12).join(', ')}... (+${mins.length - 12})`)
+    } else {
+      parts.push(`:${mins.join(', ')}`)
+    }
   }
 
   return parts.join(' ')
@@ -91,6 +103,15 @@ function buildDetailedCron(): string {
   const hours = selectedHours.value.join(',') || '*'
   const days = selectedWeekdays.value.join(',') || '*'
   return `${mins} ${hours} * * ${days}`
+}
+
+function formatCronHumanReadable(cronExpression: string): string {
+  try {
+    const lang = locale.value.startsWith('zh') ? 'zh_TW' : 'en'
+    return cronstrue.toString(cronExpression, { locale: lang })
+  } catch {
+    return cronExpression
+  }
 }
 
 async function fetchSchedules() {
@@ -154,7 +175,7 @@ async function handleDelete(id: number) {
 }
 
 function formatNextRun(at: string | null): string {
-  if (!at) return '—'
+  if (!at) return t('schedule.disabled')
   const date = new Date(at)
   return date.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
@@ -163,114 +184,126 @@ onMounted(fetchSchedules)
 </script>
 
 <template>
-  <div class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-    <div class="flex items-center gap-2 mb-4">
-      <Clock class="h-4 w-4 text-blue-500" />
-      <span class="font-medium">{{ t('schedule.title') }}</span>
+  <div>
+    <!-- Section Header -->
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <Clock class="h-4 w-4 text-blue-500" />
+        <span class="font-medium text-sm">{{ t('schedule.title') }}</span>
+      </div>
+      <TooltipButton :text="t('schedule.help_text')" />
     </div>
 
-    <div class="mb-4">
-      <label class="flex items-center gap-4 text-sm">
-        <input type="radio" v-model="mode" value="quick" :checked="mode === 'quick'" />
+    <!-- Mode Selection -->
+    <div class="flex gap-3 mb-3">
+      <label class="flex items-center gap-1.5 cursor-pointer text-sm">
+        <input type="radio" v-model="mode" value="quick" class="accent-blue-500" />
         {{ t('schedule.quick') }}
-        <input type="radio" v-model="mode" value="detailed" :checked="mode === 'detailed'" />
+      </label>
+      <label class="flex items-center gap-1.5 cursor-pointer text-sm">
+        <input type="radio" v-model="mode" value="detailed" class="accent-blue-500" />
         {{ t('schedule.detailed') }}
       </label>
     </div>
 
-    <div v-if="mode === 'quick'" class="mb-4">
-      <select v-model="quickCron" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800">
+    <!-- Quick Mode -->
+    <div v-if="mode === 'quick'" class="mb-3">
+      <select v-model="quickCron" class="w-full px-3 py-2.5 text-sm rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary-500">
         <option v-for="opt in quickOptions" :key="opt.value" :value="opt.value">
           {{ t(opt.label) }}
         </option>
       </select>
     </div>
 
-    <div v-else class="space-y-3 mb-4">
+    <!-- Detailed Mode - MultiSelect Dropdowns -->
+    <div v-else class="space-y-3 mb-3">
+      <!-- Weekday Multi-Select -->
       <div>
-        <div class="text-sm font-medium mb-1">{{ t('schedule.minutes') }}</div>
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="m in minuteOptions"
-            :key="m"
-            type="button"
-            :class="selectedMinutes.includes(m) ? 'bg-blue-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700'"
-            class="w-8 h-6 text-xs rounded"
-            @click="selectedMinutes.includes(m) ? selectedMinutes = selectedMinutes.filter(x => x !== m) : selectedMinutes.push(m)"
-          >
-            {{ m }}
-          </button>
-        </div>
+        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">{{ t('schedule.weekdays') }}</label>
+        <MultiSelect
+          v-model="selectedWeekdays"
+          :options="weekdayOptions"
+          :placeholder="t('schedule.weekdays')"
+          :max-display="4"
+        />
       </div>
+
+      <!-- Hour Multi-Select -->
       <div>
-        <div class="text-sm font-medium mb-1">{{ t('schedule.hours') }}</div>
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="h in hourOptions"
-            :key="h"
-            type="button"
-            :class="selectedHours.includes(h) ? 'bg-blue-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700'"
-            class="w-8 h-6 text-xs rounded"
-            @click="selectedHours.includes(h) ? selectedHours = selectedHours.filter(x => x !== h) : selectedHours.push(h)"
-          >
-            {{ h }}
-          </button>
-        </div>
+        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">{{ t('schedule.hours') }}</label>
+        <MultiSelect
+          v-model="selectedHours"
+          :options="hourOptions"
+          :placeholder="t('schedule.hours')"
+          :max-display="4"
+        />
       </div>
+
+      <!-- Minute Multi-Select -->
       <div>
-        <div class="text-sm font-medium mb-1">{{ t('schedule.weekdays') }}</div>
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="d in weekdayOptions"
-            :key="d.value"
-            type="button"
-            :class="selectedWeekdays.includes(d.value) ? 'bg-blue-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700'"
-            class="w-10 h-6 text-xs rounded"
-            @click="selectedWeekdays.includes(d.value) ? selectedWeekdays = selectedWeekdays.filter(x => x !== d.value) : selectedWeekdays.push(d.value)"
-          >
-            {{ t(d.label) }}
-          </button>
-        </div>
+        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">{{ t('schedule.minutes') }}</label>
+        <MultiSelect
+          v-model="selectedMinutes"
+          :options="minuteOptions"
+          :placeholder="t('schedule.minutes')"
+          :max-display="6"
+        />
       </div>
     </div>
 
-    <div v-if="cronPreview" class="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
-      {{ t('schedule.preview') }}: {{ cronPreview }}
+    <!-- Cron Preview -->
+    <div v-if="cronPreview" class="mb-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+      <div class="text-xs text-blue-600 dark:text-blue-400 font-medium">{{ t('schedule.preview') }}</div>
+      <div class="text-sm text-blue-800 dark:text-blue-300">{{ cronPreview }}</div>
     </div>
 
-    <div class="flex gap-2 mb-4">
-      <Button @click="handleSave" :disabled="saving">
-        <Plus class="h-4 w-4 mr-1" /> {{ t('schedule.add') }}
-      </Button>
-    </div>
+    <!-- Add Button -->
+    <Button @click="handleSave" :disabled="saving" class="w-full text-sm min-h-[44px]">
+      <Plus class="h-4 w-4 mr-1" /> {{ t('schedule.add') }}
+    </Button>
 
-    <div v-if="loading" class="text-center py-4 text-neutral-500">
+    <!-- Schedule List -->
+    <div v-if="loading" class="text-center py-4 text-neutral-500 text-sm">
       {{ t('common.loading') }}
     </div>
 
-    <div v-else-if="!schedules.length" class="text-center py-4 text-neutral-500">
+    <div v-else-if="!schedules.length" class="text-center py-4 text-neutral-500 text-sm">
       {{ t('schedule.empty') }}
     </div>
 
-    <div v-else class="space-y-2">
+    <div v-else class="space-y-2 mt-3">
       <div
         v-for="s in schedules"
         :key="s.id"
-        class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg"
+        class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg gap-2"
       >
-        <div class="flex items-center gap-2">
-          <Clock class="h-4 w-4" :class="s.is_enabled ? 'text-green-500' : 'text-neutral-400'" />
-          <span class="text-sm">{{ s.cron_expression }}</span>
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <Clock class="h-4 w-4 shrink-0" :class="s.is_enabled ? 'text-green-500' : 'text-neutral-400'" />
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-medium truncate">{{ formatCronHumanReadable(s.cron_expression) }}</div>
+            <div class="text-xs text-neutral-500 dark:text-neutral-400 font-mono">{{ s.cron_expression }}</div>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-neutral-500">{{ s.next_run_at ? formatNextRun(s.next_run_at) : t('schedule.disabled') }}</span>
-          <Button variant="ghost" size="sm" @click="handleToggle(s.id)">
-            <Power v-if="s.is_enabled" class="h-4 w-4 text-green-500" />
-            <PowerOff v-else class="h-4 w-4 text-neutral-400" />
-          </Button>
-          <Button variant="ghost" size="sm" @click="handleDelete(s.id)">
-            <Trash2 class="h-4 w-4 text-red-500" />
-          </Button>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-xs text-neutral-500">{{ t('schedule.next_run') }}: {{ formatNextRun(s.next_run_at) }}</span>
+          <button
+            type="button"
+            :class="s.is_enabled ? 'text-green-500 hover:text-green-600' : 'text-neutral-400 hover:text-neutral-500'"
+            :title="s.is_enabled ? t('schedule.disable') : t('schedule.enable')"
+            class="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700"
+            @click="handleToggle(s.id)"
+          >
+            <Power v-if="s.is_enabled" class="h-4 w-4" />
+            <PowerOff v-else class="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            :title="t('schedule.delete')"
+            class="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-red-500 hover:text-red-600"
+            @click="handleDelete(s.id)"
+          >
+            <Trash2 class="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>

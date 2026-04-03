@@ -28,7 +28,7 @@ describe('source groups API', () => {
   describe('getGroups', () => {
     it('should call GET /source-groups', async () => {
       const mockGroups: SourceGroup[] = [
-        { id: 1, name: 'Tech', member_count: 2, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00' },
+        { id: 1, name: 'Tech', member_count: 2, schedule_count: 0, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00' },
       ]
       vi.mocked(api.get).mockResolvedValue(mockGroups)
 
@@ -42,7 +42,7 @@ describe('source groups API', () => {
   describe('createGroup', () => {
     it('should call POST /source-groups with name', async () => {
       const mockGroup: SourceGroup = {
-        id: 1, name: 'News', member_count: 0, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00',
+        id: 1, name: 'News', member_count: 0, schedule_count: 0, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00',
       }
       vi.mocked(api.post).mockResolvedValue(mockGroup)
 
@@ -56,7 +56,7 @@ describe('source groups API', () => {
   describe('updateGroup', () => {
     it('should call PUT /source-groups/{id} with name', async () => {
       const mockGroup: SourceGroup = {
-        id: 1, name: 'Updated', member_count: 0, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00',
+        id: 1, name: 'Updated', member_count: 0, schedule_count: 0, created_at: '2024-01-01T00:00:00', updated_at: '2024-01-01T00:00:00',
       }
       vi.mocked(api.put).mockResolvedValue(mockGroup)
 
