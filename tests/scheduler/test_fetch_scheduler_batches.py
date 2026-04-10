@@ -13,7 +13,7 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import FeedItem, FetchBatch, Source
+from src.models import FeedItem, FetchBatch, Source, SourceGroup, SourceGroupMember, SourceGroupSchedule
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.db.database import async_session_factory
 
@@ -77,7 +77,7 @@ class TestFetchSchedulerBatchCreation:
 
     @pytest.mark.asyncio
     async def test_check_and_fetch_creates_fetch_batch(
-        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_never_fetched: Source
+        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_with_schedule: Source
     ):
         """Test that _check_and_fetch creates a FetchBatch record.
 
@@ -105,7 +105,7 @@ class TestFetchSchedulerBatchCreation:
 
     @pytest.mark.asyncio
     async def test_check_and_fetch_associates_feed_items_with_batch(
-        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_never_fetched: Source
+        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_with_schedule: Source
     ):
         """Test that FeedItems are associated with FetchBatch during scheduled fetch.
 
@@ -124,7 +124,7 @@ class TestFetchSchedulerBatchCreation:
 
         # Verify FeedItems are associated with batch
         result = await db_session.execute(
-            select(FeedItem).where(FeedItem.source_id == test_source_never_fetched.id)
+            select(FeedItem).where(FeedItem.source_id == test_source_with_schedule.id)
         )
         items = list(result.scalars().all())
 
@@ -139,7 +139,7 @@ class TestFetchSchedulerBatchCreation:
 
     @pytest.mark.asyncio
     async def test_check_and_fetch_updates_batch_items_count(
-        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_never_fetched: Source
+        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_with_schedule: Source
     ):
         """Test that FetchBatch.items_count is updated correctly."""
         # Mock HTTP response
@@ -162,7 +162,7 @@ class TestFetchSchedulerBatchCreation:
 
     @pytest.mark.asyncio
     async def test_check_and_fetch_updates_batch_sources(
-        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_never_fetched: Source
+        self, db_session: AsyncSession, scheduler: FetchScheduler, test_source_with_schedule: Source
     ):
         """Test that FetchBatch.sources is updated with source names."""
         # Mock HTTP response
@@ -184,7 +184,7 @@ class TestFetchSchedulerBatchCreation:
 
         # sources should be a JSON array of source names
         sources_list = json.loads(batch.sources)
-        assert test_source_never_fetched.name in sources_list
+        assert test_source_with_schedule.name in sources_list
 
     @pytest.mark.asyncio
     async def test_refresh_all_creates_fetch_batch(
@@ -243,3 +243,85 @@ class TestFetchSchedulerBatchCreation:
         # Verify sources contains the source name
         sources_list = json.loads(batch.sources)
         assert test_source.name in sources_list
+
+
+@pytest_asyncio.fixture
+async def test_source_with_schedule(db_session: AsyncSession) -> Source:
+    """Create a test source that belongs to a group with an enabled schedule."""
+    source = Source(
+        name="Scheduled Feed",
+        url="https://example.com/scheduled-feed.xml",
+        is_active=True,
+        last_fetched_at=None,
+    )
+    db_session.add(source)
+    await db_session.flush()
+
+    group = SourceGroup(name="Test Group")
+    db_session.add(group)
+    await db_session.flush()
+
+    member = SourceGroupMember(source_id=source.id, group_id=group.id)
+    db_session.add(member)
+
+    schedule = SourceGroupSchedule(
+        group_id=group.id,
+        cron_expression="*/30 * * * *",
+        is_enabled=True,
+    )
+    db_session.add(schedule)
+    await db_session.commit()
+    await db_session.refresh(source)
+    return source
+
+
+class TestFetchSchedulerGroupScheduleFilter:
+    """Tests verifying _check_and_fetch respects SourceGroupSchedule filtering."""
+
+    @pytest.mark.asyncio
+    async def test_check_and_fetch_respects_group_schedule_filter(
+        self,
+        db_session: AsyncSession,
+        scheduler: FetchScheduler,
+        test_source_with_schedule: Source,
+    ):
+        """Test that _check_and_fetch fetches sources whose group has an enabled schedule."""
+        with patch("httpx.AsyncClient.get") as mock_get:
+            mock_response = AsyncMock()
+            mock_response.text = MOCK_RSS_CONTENT
+            mock_response.raise_for_status = AsyncMock()
+            mock_get.return_value = mock_response
+
+            await scheduler._check_and_fetch()
+
+        result = await db_session.execute(select(FetchBatch))
+        batches = list(result.scalars().all())
+
+        assert len(batches) >= 1, (
+            "FetchBatch should be created when source belongs to a group with enabled schedule."
+        )
+        batch = batches[0]
+        assert batch.items_count >= 1, "FetchBatch should have items_count > 0"
+
+    @pytest.mark.asyncio
+    async def test_check_and_fetch_skips_source_without_group_schedule(
+        self,
+        db_session: AsyncSession,
+        scheduler: FetchScheduler,
+        test_source_never_fetched: Source,
+    ):
+        """Test that _check_and_fetch does NOT fetch sources with no group schedule."""
+        with patch("httpx.AsyncClient.get") as mock_get:
+            mock_response = AsyncMock()
+            mock_response.text = MOCK_RSS_CONTENT
+            mock_response.raise_for_status = AsyncMock()
+            mock_get.return_value = mock_response
+
+            await scheduler._check_and_fetch()
+
+        result = await db_session.execute(select(FetchBatch))
+        batches = list(result.scalars().all())
+
+        assert len(batches) == 0, (
+            "FetchBatch should NOT be created when source has no group schedule."
+        )

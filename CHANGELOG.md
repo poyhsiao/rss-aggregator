@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.17.0] - 2026-04-10
+
+### Fixed
+
+- Sources are now only auto-fetched if their group has an enabled SourceGroupSchedule (was fetching all active sources unconditionally)
+- ScheduleScheduler now only starts/stops when `SCHEDULER_ENABLED=true` (was starting unconditionally)
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.17.0
+
 ## [v0.16.0] - 2026-04-03
 
 ### Breaking Changes

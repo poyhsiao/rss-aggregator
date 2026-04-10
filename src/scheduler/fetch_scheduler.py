@@ -57,18 +57,32 @@ class FetchScheduler:
 
     async def _check_and_fetch(self) -> None:
         import json
-        from src.models import FetchBatch, Source, SourceGroup, SourceGroupMember
+        from src.models import FetchBatch, Source, SourceGroup, SourceGroupMember, SourceGroupSchedule
         from src.services.fetch_service import FetchService
 
         async with self.session_factory() as session:
             fetch_service = FetchService(session)
 
-            now = get_now()
+            # Only fetch sources that belong to groups with an enabled schedule
+            scheduled_group_result = await session.execute(
+                select(SourceGroupSchedule.group_id).where(
+                    SourceGroupSchedule.is_enabled == True,  # noqa: E712
+                )
+            )
+            scheduled_group_ids = list(scheduled_group_result.scalars().all())
+
+            if not scheduled_group_ids:
+                return
+
             result = await session.execute(
-                select(Source).where(
+                select(Source)
+                .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
+                .where(
+                    SourceGroupMember.group_id.in_(scheduled_group_ids),
                     Source.is_active == True,  # noqa: E712
                     Source.deleted_at.is_(None),
                 )
+                .distinct()
             )
             sources = list(result.scalars().all())
 
