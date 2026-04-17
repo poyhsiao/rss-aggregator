@@ -52,71 +52,35 @@ class StdioServer:
     async def _init_database(self) -> None:
         """Initialize database tables and run migrations."""
         print("[DEBUG] Initializing database...", file=sys.stderr, flush=True)
-        from src.db.database import engine
-        from src.models import Base
-
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-            await self._run_migrations(conn)
-        print("[DEBUG] Database tables created", file=sys.stderr, flush=True)
-
+        
+        await self._run_alembic_migrations()
+        
         await self._init_default_sources()
 
-    async def _run_migrations(self, conn) -> None:
-        """Run manual migrations for existing databases."""
-        from sqlalchemy import text
+    async def _run_alembic_migrations(self) -> None:
+        """Run Alembic migrations."""
+        from alembic.config import Config
+        from alembic import command
+        from pathlib import Path
+        import os
 
-        result = await conn.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name='fetch_batches'")
-        )
-        if result.fetchone() is None:
-            print("[DEBUG] Creating fetch_batches table...", file=sys.stderr, flush=True)
-            await conn.execute(
-                text("""
-                    CREATE TABLE fetch_batches (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        items_count INTEGER NOT NULL,
-                        sources TEXT NOT NULL,
-                        notes VARCHAR(500),
-                        created_at DATETIME NOT NULL,
-                        updated_at DATETIME NOT NULL,
-                        deleted_at DATETIME
-                    )
-                """)
-            )
-
-        result = await conn.execute(
-            text("PRAGMA table_info(feed_items)")
-        )
-        columns = {row[1] for row in result.fetchall()}
-        if "batch_id" not in columns:
-            print("[DEBUG] Adding batch_id column to feed_items...", file=sys.stderr, flush=True)
-            await conn.execute(
-                text("ALTER TABLE feed_items ADD COLUMN batch_id INTEGER")
-            )
-
-        result = await conn.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name='preview_contents'")
-        )
-        if result.fetchone() is None:
-            print("[DEBUG] Creating preview_contents table...", file=sys.stderr, flush=True)
-            await conn.execute(
-                text("""
-                    CREATE TABLE preview_contents (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        url VARCHAR(2048) NOT NULL,
-                        url_hash VARCHAR(64) NOT NULL UNIQUE,
-                        markdown_content TEXT NOT NULL,
-                        title VARCHAR(500),
-                        created_at DATETIME NOT NULL,
-                        updated_at DATETIME NOT NULL,
-                        deleted_at DATETIME
-                    )
-                """)
-            )
-            await conn.execute(
-                text("CREATE INDEX ix_preview_contents_url_hash ON preview_contents(url_hash)")
-            )
+        print("[DEBUG] Running Alembic migrations...", file=sys.stderr, flush=True)
+        try:
+            project_root = Path(__file__).parent.parent.parent
+            alembic_cfg = project_root / "alembic.ini"
+            
+            if not alembic_cfg.exists():
+                print("[DEBUG] alembic.ini not found", file=sys.stderr, flush=True)
+                return
+                
+            config = Config(str(alembic_cfg))
+            
+            os.makedirs(project_root / "data", exist_ok=True)
+            
+            command.upgrade(config, "head")
+            print("[DEBUG] Alembic migrations completed", file=sys.stderr, flush=True)
+        except Exception as e:
+            print(f"[DEBUG] Alembic migration error: {e}", file=sys.stderr, flush=True)
 
     async def _init_default_sources(self) -> None:
         from src.db.database import async_session_factory

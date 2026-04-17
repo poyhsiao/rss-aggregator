@@ -61,8 +61,15 @@ class ScheduleScheduler:
             )
             schedules = list(result.scalars().all())
 
+            schedules_by_group: dict[int, list[SourceGroupSchedule]] = {}
             for schedule in schedules:
-                await self._execute_schedule(schedule, session)
+                schedules_by_group.setdefault(schedule.group_id, []).append(schedule)
+
+            for group_schedules in schedules_by_group.values():
+                await self._execute_schedule(group_schedules[0], session)
+                for s in group_schedules[1:]:
+                    s.next_run_at = self._calculate_next_run(s.cron_expression)
+                await session.commit()
 
     async def _execute_schedule(self, schedule: SourceGroupSchedule, session: AsyncSession) -> None:
         try:
@@ -72,7 +79,6 @@ class ScheduleScheduler:
             logger.error(f"Failed to execute schedule {schedule.id}: {e}")
 
         schedule.next_run_at = self._calculate_next_run(schedule.cron_expression)
-        await session.commit()
 
     def _calculate_next_run(self, cron_expression: str) -> datetime:
         cron = croniter(cron_expression, get_now())

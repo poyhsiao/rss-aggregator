@@ -15,6 +15,24 @@ from src.scheduler.schedule_scheduler import ScheduleScheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
+    from alembic.config import Config
+    from alembic import command
+    from pathlib import Path
+    import asyncio
+
+    print("[INFO] Running database migrations...", flush=True)
+    try:
+        alembic_cfg = Path(__file__).parent.parent / "alembic.ini"
+        if alembic_cfg.exists():
+            config = Config(str(alembic_cfg))
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, lambda: command.upgrade(config, "head"))
+            print("[INFO] Database migrations completed", flush=True)
+        else:
+            print("[WARN] alembic.ini not found, skipping migrations", flush=True)
+    except Exception as e:
+        print(f"[ERROR] Failed to run migrations: {e}", flush=True)
+
     from src.db.database import async_session_factory
 
     scheduler = FetchScheduler(
@@ -42,7 +60,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="RSS Aggregator",
     description="Aggregate multiple RSS feeds into a single, filterable output",
-    version="0.18.0",
+    version="0.18.1",
     lifespan=lifespan,
 )
 

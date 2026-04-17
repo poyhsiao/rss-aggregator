@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.18.1] - 2026-04-17
+
+### Fixed
+
+- Unified database migration: All deployment environments now automatically update database schema on startup using Alembic
+- Docker: Entry point runs `alembic upgrade head` automatically
+- Local Dev: Added Alembic migration to application lifespan (main.py)
+- Desktop App: Now uses Alembic instead of duplicate migration logic
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.18.1
+
 ## [v0.18.0] - 2026-04-17
 
 ### Fixed

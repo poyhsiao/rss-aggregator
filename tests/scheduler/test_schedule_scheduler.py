@@ -209,3 +209,36 @@ class TestScheduleExecution:
             mock_fetch_scheduler.refresh_group.assert_any_call(2)
 
         asyncio.run(run())
+
+    def test_same_group_multiple_schedules_fetches_once(self, mock_session_factory, mock_fetch_scheduler):
+        factory, session = mock_session_factory
+        past_time = get_now() - timedelta(minutes=5)
+        schedule1 = create_schedule(group_id=1, cron="*/15 * * * *", next_run_at=past_time)
+        schedule2 = create_schedule(group_id=1, cron="0 * * * *", next_run_at=past_time)
+        schedule3 = create_schedule(group_id=1, cron="30 * * * *", next_run_at=past_time)
+
+        async def mock_execute(stmt):
+            text = str(stmt)
+            if "is_enabled" in text and "next_run_at" in text:
+                mock_result = MagicMock()
+                mock_result.scalars.return_value.all.return_value = [schedule1, schedule2, schedule3]
+                return mock_result
+            mock_result = MagicMock()
+            mock_result.scalars.return_value.all.return_value = []
+            return mock_result
+
+        session.execute = AsyncMock(side_effect=mock_execute)
+
+        scheduler = ScheduleScheduler(session_factory=factory, fetch_scheduler=mock_fetch_scheduler)
+
+        async def run():
+            await scheduler._check_and_execute()
+            mock_fetch_scheduler.refresh_group.assert_called_once_with(1)
+            assert schedule1.next_run_at is not None
+            assert schedule2.next_run_at is not None
+            assert schedule3.next_run_at is not None
+            assert schedule1.next_run_at > get_now()
+            assert schedule2.next_run_at > get_now()
+            assert schedule3.next_run_at > get_now()
+
+        asyncio.run(run())

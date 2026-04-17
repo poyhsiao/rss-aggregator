@@ -1,6 +1,6 @@
 [project]
 name = "rss-aggregator"
-version = "0.18.0"
+version = "0.18.1"
 description = "FastAPI-based RSS feed aggregator with source management, scheduled fetching, and filtering"
 readme = "README.md"
 license = { text = "Apache-2.0" }
