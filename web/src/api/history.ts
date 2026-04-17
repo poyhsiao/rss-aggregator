@@ -1,5 +1,5 @@
 import api from "."
-import type { HistoryResponse, HistoryBatchesResponse, HistoryBatch, UpdateBatchNameRequest } from "@/types/history"
+import type { HistoryResponse, HistoryBatchesResponse, HistoryBatch, UpdateBatchNameRequest, DeleteHistoryResponse } from "@/types/history"
 
 export async function getHistoryBatches(
   limit: number = 50,
@@ -30,4 +30,12 @@ export async function updateBatchName(
 
 export async function deleteBatch(batchId: number): Promise<{ success: boolean }> {
   return api.delete<{ success: boolean }>(`/history/batches/${batchId}`)
+}
+
+export async function deleteAllHistory(): Promise<DeleteHistoryResponse> {
+  return api.delete<DeleteHistoryResponse>("/history/")
+}
+
+export async function deleteHistoryByGroup(groupId: number): Promise<DeleteHistoryResponse> {
+  return api.delete<DeleteHistoryResponse>(`/history/by-group/${groupId}`)
 }

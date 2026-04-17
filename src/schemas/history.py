@@ -44,6 +44,11 @@ class DeleteBatchResponse(BaseModel):
     success: bool = Field(..., description="Whether the deletion was successful")
 
 
+class DeleteHistoryResponse(BaseModel):
+    success: bool = Field(..., description="Whether the deletion was successful")
+    deleted_count: int = Field(..., ge=0, description="Number of items deleted")
+
+
 class HistoryBatchesResponse(BaseModel):
     batches: list[HistoryBatch]
     total_batches: int

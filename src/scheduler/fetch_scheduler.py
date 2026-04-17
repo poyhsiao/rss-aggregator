@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class FetchScheduler:
-    """Scheduler for periodic RSS feed fetching."""
-
     def __init__(
         self,
         session_factory: async_sessionmaker[AsyncSession],
@@ -25,35 +23,12 @@ class FetchScheduler:
         self.session_factory = session_factory
         self.check_interval = check_interval
         self.max_concurrent = max_concurrent
-        self._running = False
-        self._task: asyncio.Task | None = None
 
     async def start(self) -> None:
-        if self._running:
-            return
-
-        self._running = True
-        self._task = asyncio.create_task(self._run_loop())
-        logger.info("Fetch scheduler started")
+        logger.info("Fetch scheduler initialized (triggered by ScheduleScheduler or manual calls)")
 
     async def stop(self) -> None:
-        self._running = False
-        if self._task:
-            self._task.cancel()
-            try:
-                await self._task
-            except asyncio.CancelledError:
-                pass
         logger.info("Fetch scheduler stopped")
-
-    async def _run_loop(self) -> None:
-        while self._running:
-            try:
-                await self._check_and_fetch()
-            except Exception as e:
-                logger.error(f"Scheduler error: {e}")
-
-            await asyncio.sleep(self.check_interval)
 
     async def _check_and_fetch(self) -> None:
         import json

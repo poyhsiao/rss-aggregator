@@ -3,6 +3,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from src.api.deps import get_history_service, require_api_key
 from src.schemas.history import (
     DeleteBatchResponse,
+    DeleteHistoryResponse,
     HistoryBatch,
     HistoryBatchesResponse,
     HistoryResponse,
@@ -63,3 +64,26 @@ async def delete_batch(
     if not success:
         raise HTTPException(status_code=404, detail="Batch not found")
     return DeleteBatchResponse(success=True)
+
+
+@router.delete("/", response_model=DeleteHistoryResponse)
+async def delete_all_history(
+    history_service: HistoryService = Depends(get_history_service),
+    _: str = Depends(require_api_key),
+) -> DeleteHistoryResponse:
+    deleted_count = await history_service.delete_all_history()
+    return DeleteHistoryResponse(success=True, deleted_count=deleted_count)
+
+
+@router.delete("/by-group/{group_id}", response_model=DeleteHistoryResponse)
+async def delete_history_by_group(
+    group_id: int = Path(..., description="The group ID to delete history for"),
+    history_service: HistoryService = Depends(get_history_service),
+    _: str = Depends(require_api_key),
+) -> DeleteHistoryResponse:
+    deleted_count = await history_service.delete_history_by_group(group_id)
+    if deleted_count < 0:
+        raise HTTPException(status_code=404, detail="Group not found")
+    if deleted_count == 0:
+        raise HTTPException(status_code=404, detail="No history found for this group")
+    return DeleteHistoryResponse(success=True, deleted_count=deleted_count)

@@ -168,7 +168,7 @@ class HistoryService:
         total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 0
         offset = (page - 1) * page_size
 
-        query = query.order_by(FeedItem.fetched_at.desc()).offset(offset).limit(page_size)
+        query = query.order_by(FeedItem.published_at.desc()).offset(offset).limit(page_size)
 
         result = await self.session.execute(query)
         items = list(result.unique().scalars().all())
@@ -203,7 +203,7 @@ class HistoryService:
         end_date: date | None = None,
         source_ids: list[int] | None = None,
         keywords: str | None = None,
-        sort_by: str = "fetched_at",
+        sort_by: str = "published_at",
         sort_order: str = "desc",
         page: int = 1,
         page_size: int = 20,
@@ -362,6 +362,89 @@ class HistoryService:
 
         return True
 
+    async def delete_all_history(self) -> int:
+        """Delete all history records (FeedItems with batch_id and their FetchBatches)."""
+        # Count items to be deleted
+        count_query = select(func.count()).select_from(FeedItem).where(FeedItem.batch_id.isnot(None))
+        count_result = await self.session.execute(count_query)
+        deleted_count = count_result.scalar() or 0
+
+        # Delete all FeedItems with batch_id
+        delete_items_stmt = delete(FeedItem).where(FeedItem.batch_id.isnot(None))
+        await self.session.execute(delete_items_stmt)
+
+        # Delete all FetchBatches
+        delete_batches_stmt = delete(FetchBatch)
+        await self.session.execute(delete_batches_stmt)
+
+        await self.session.commit()
+
+        return deleted_count
+
+    async def delete_history_by_group(self, group_id: int) -> int:
+        """Delete history records for a specific group.
+        
+        Only deletes FeedItems that belong to sources in this group.
+        Deletes FetchBatches only if they become empty after deletion.
+        """
+        # First verify the group exists
+        group_query = select(SourceGroup).where(SourceGroup.id == group_id)
+        group_result = await self.session.execute(group_query)
+        group = group_result.scalar_one_or_none()
+
+        if not group:
+            return -1  # Group not found
+
+        # Get all source IDs in this group
+        source_query = select(SourceGroupMember.source_id).where(SourceGroupMember.group_id == group_id)
+        source_result = await self.session.execute(source_query)
+        source_ids = list(source_result.scalars().all())
+
+        if not source_ids:
+            return 0  # No sources in group
+
+        # Count items to be deleted (only FeedItems from sources in this group)
+        count_query = (
+            select(func.count())
+            .select_from(FeedItem)
+            .where(
+                FeedItem.source_id.in_(source_ids),
+                FeedItem.batch_id.isnot(None)
+            )
+        )
+        count_result = await self.session.execute(count_query)
+        deleted_count = count_result.scalar() or 0
+
+        if deleted_count == 0:
+            return 0
+
+        # Delete only FeedItems from sources in this group (not entire batches!)
+        delete_items_stmt = delete(FeedItem).where(
+            FeedItem.source_id.in_(source_ids),
+            FeedItem.batch_id.isnot(None)
+        )
+        await self.session.execute(delete_items_stmt)
+
+        # Delete FetchBatches that have no remaining items
+        # First find batches that are now empty
+        empty_batches_query = (
+            select(FetchBatch.id)
+            .outerjoin(FeedItem, FeedItem.batch_id == FetchBatch.id)
+            .group_by(FetchBatch.id)
+            .having(func.count(FeedItem.id) == 0)
+        )
+        empty_result = await self.session.execute(empty_batches_query)
+        empty_batch_ids = list(empty_result.scalars().all())
+
+        if empty_batch_ids:
+            # Delete empty batches
+            delete_empty_batches_stmt = delete(FetchBatch).where(FetchBatch.id.in_(empty_batch_ids))
+            await self.session.execute(delete_empty_batches_stmt)
+
+        await self.session.commit()
+
+        return deleted_count
+
     async def get_batch_feed_items(
         self,
         batch_id: int,
@@ -370,7 +453,7 @@ class HistoryService:
             select(FeedItem)
             .options(joinedload(FeedItem.source))
             .where(FeedItem.batch_id == batch_id)
-            .order_by(FeedItem.fetched_at.desc())
+            .order_by(FeedItem.published_at.desc())
         )
 
         result = await self.session.execute(query)

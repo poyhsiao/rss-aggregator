@@ -42,3 +42,12 @@ export interface HistoryBatchesResponse {
 export interface UpdateBatchNameRequest {
   name: string
 }
+
+export interface DeleteBatchResponse {
+  success: boolean
+}
+
+export interface DeleteHistoryResponse {
+  success: boolean
+  deleted_count: number
+}

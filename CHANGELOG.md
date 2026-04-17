@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.18.0] - 2026-04-17
+
+### Fixed
+
+- FetchScheduler no longer auto-fetches every minute - only manual trigger and cron-based schedule triggering work now
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.18.0
+
 ## [v0.17.0] - 2026-04-10
 
 ### Fixed

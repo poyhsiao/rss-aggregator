@@ -3,6 +3,7 @@
 import pytest
 from datetime import date, datetime
 
+from sqlalchemy import select
 from src.models import FeedItem, FetchBatch, Source
 from src.schemas.history import UpdateBatchNameRequest
 from src.services.history_service import HistoryService
@@ -448,3 +449,171 @@ class TestSourceGroupsInHistory:
         batches_response = await history_svc.get_history_batches(group_id=group.id)
 
         assert len(batches_response.batches) == 0
+
+
+class TestDeleteAllHistory:
+    @pytest.mark.asyncio
+    async def test_delete_all_history_removes_all_feed_items(self, db_session):
+        """Delete all history should remove all FeedItems with batch_id."""
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=2, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        items = [
+            FeedItem(source_id=source.id, batch_id=batch.id, title=f"Item {i}", link=f"https://example.com/{i}")
+            for i in range(2)
+        ]
+        db_session.add_all(items)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        deleted_count = await service.delete_all_history()
+
+        assert deleted_count == 2
+
+        # Verify all FeedItems with batch_id are deleted
+        items_query = await db_session.execute(
+            select(FeedItem).where(FeedItem.batch_id.isnot(None))
+        )
+        remaining = list(items_query.scalars().all())
+        assert len(remaining) == 0
+
+    @pytest.mark.asyncio
+    async def test_delete_all_history_removes_all_batches(self, db_session):
+        """Delete all history should remove all FetchBatches."""
+        source = Source(name="Test Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        batch = FetchBatch(items_count=1, sources='["Test Source"]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        db_session.add(FeedItem(source_id=source.id, batch_id=batch.id, title="Item", link="https://example.com/1"))
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        await service.delete_all_history()
+
+        # Verify all FetchBatches are deleted
+        batches_query = await db_session.execute(select(FetchBatch))
+        batches = list(batches_query.scalars().all())
+        assert len(batches) == 0
+
+    @pytest.mark.asyncio
+    async def test_delete_all_history_returns_zero_when_empty(self, db_session):
+        """Delete all history on empty database returns 0."""
+        service = HistoryService(db_session)
+        deleted_count = await service.delete_all_history()
+
+        assert deleted_count == 0
+
+
+class TestDeleteHistoryByGroup:
+    @pytest.mark.asyncio
+    async def test_delete_history_by_group_removes_only_group_items(self, db_session):
+        """Delete by group should only remove FeedItems from sources in that group."""
+        from src.models import SourceGroup, SourceGroupMember
+
+        # Create two groups
+        group1 = SourceGroup(name="Group 1")
+        group2 = SourceGroup(name="Group 2")
+        db_session.add_all([group1, group2])
+        await db_session.flush()
+
+        # Create two sources, each in different group
+        source1 = Source(name="Source 1", url="https://example.com/feed1.xml")
+        source2 = Source(name="Source 2", url="https://example.com/feed2.xml")
+        db_session.add_all([source1, source2])
+        await db_session.flush()
+
+        # Link source1 to group1, source2 to group2
+        db_session.add(SourceGroupMember(source_id=source1.id, group_id=group1.id))
+        db_session.add(SourceGroupMember(source_id=source2.id, group_id=group2.id))
+        await db_session.commit()
+
+        # Create batch with items from both sources
+        batch = FetchBatch(items_count=2, sources='["Source 1", "Source 2"]', groups='[{"id": 1, "name": "Group 1"}, {"id": 2, "name": "Group 2"}]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        item1 = FeedItem(source_id=source1.id, batch_id=batch.id, title="Item from Source 1", link="https://example.com/s1")
+        item2 = FeedItem(source_id=source2.id, batch_id=batch.id, title="Item from Source 2", link="https://example.com/s2")
+        db_session.add_all([item1, item2])
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        deleted_count = await service.delete_history_by_group(group1.id)
+
+        assert deleted_count == 1
+
+        # Verify only source1's item is deleted
+        item1_query = await db_session.execute(select(FeedItem).where(FeedItem.id == item1.id))
+        item1_remaining = item1_query.scalar_one_or_none()
+        assert item1_remaining is None
+
+        # Verify source2's item remains
+        item2_query = await db_session.execute(select(FeedItem).where(FeedItem.id == item2.id))
+        item2_remaining = item2_query.scalar_one_or_none()
+        assert item2_remaining is not None
+
+    @pytest.mark.asyncio
+    async def test_delete_history_by_group_returns_minus_one_for_nonexistent_group(self, db_session):
+        """Delete by group should return -1 for non-existent group."""
+        service = HistoryService(db_session)
+        result = await service.delete_history_by_group(99999)
+
+        assert result == -1
+
+    @pytest.mark.asyncio
+    async def test_delete_history_by_group_returns_zero_for_empty_group(self, db_session):
+        """Delete by group should return 0 for group with no sources."""
+        from src.models import SourceGroup
+
+        group = SourceGroup(name="Empty Group")
+        db_session.add(group)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        result = await service.delete_history_by_group(group.id)
+
+        assert result == 0
+
+    @pytest.mark.asyncio
+    async def test_delete_history_by_group_deletes_empty_batches(self, db_session):
+        """Delete by group should delete FetchBatches that become empty."""
+        from src.models import SourceGroup, SourceGroupMember
+
+        # Create group
+        group = SourceGroup(name="Group Only")
+        db_session.add(group)
+        await db_session.flush()
+
+        # Create source in this group only
+        source = Source(name="Solo Source", url="https://example.com/feed.xml")
+        db_session.add(source)
+        await db_session.flush()
+
+        db_session.add(SourceGroupMember(source_id=source.id, group_id=group.id))
+        await db_session.flush()
+
+        # Create batch with one item from this source
+        batch = FetchBatch(items_count=1, sources='["Solo Source"]', groups='[{"id": 1, "name": "Group Only"}]')
+        db_session.add(batch)
+        await db_session.flush()
+
+        item = FeedItem(source_id=source.id, batch_id=batch.id, title="Solo Item", link="https://example.com/solo")
+        db_session.add(item)
+        await db_session.commit()
+
+        service = HistoryService(db_session)
+        await service.delete_history_by_group(group.id)
+
+        # Verify the batch is deleted because it became empty
+        batch_query = await db_session.execute(select(FetchBatch).where(FetchBatch.id == batch.id))
+        batch_remaining = batch_query.scalar_one_or_none()
+        assert batch_remaining is None

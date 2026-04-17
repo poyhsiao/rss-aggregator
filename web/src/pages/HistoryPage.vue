@@ -2,7 +2,7 @@
 import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X, ScrollText, Inbox, Newspaper } from "lucide-vue-next"
 import { computed, onMounted, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
-import { deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
+import { deleteAllHistory, deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
 import { getGroups } from "@/api/source-groups"
 import Button from "@/components/ui/Button.vue"
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
@@ -46,6 +46,7 @@ const savingName = ref(false)
 // Delete state
 const deletingBatchId = ref<number | null>(null)
 const deleting = ref(false)
+const deletingAll = ref(false)
 
 // Preview state
 const previewOpen = ref(false)
@@ -165,6 +166,30 @@ async function confirmDeleteBatch(batchId: number): Promise<void> {
   } finally {
     deleting.value = false
     deletingBatchId.value = null
+  }
+}
+
+async function confirmDeleteAll(): Promise<void> {
+  const result = await confirm.show({
+    title: t("history.delete_all_title"),
+    message: t("history.delete_all_confirm"),
+    confirmText: t("common.delete"),
+    cancelText: t("common.cancel"),
+    variant: "danger",
+  })
+  if (!result) return
+
+  deletingAll.value = true
+  try {
+    await deleteAllHistory()
+    batches.value = []
+    totalBatches.value = 0
+    totalItems.value = 0
+    toast.success(t("history.deleted_all"))
+  } catch {
+    toast.error(t("common.error"))
+  } finally {
+    deletingAll.value = false
   }
 }
 
@@ -316,10 +341,22 @@ const previewSourceName = computed(() => {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold"><ScrollText class="h-6 w-6 inline mr-2" />{{ t("history.title") }}</h1>
-      <Button @click="fetchBatches">
-        <RefreshCw class="h-4 w-4 text-green-500" />
-        <span class="ml-1.5">{{ t("common.refresh") }}</span>
-      </Button>
+      <div class="flex items-center gap-2">
+        <Button
+          v-if="selectedGroupId === null && batches.length > 0"
+          variant="outline"
+          size="sm"
+          :disabled="deletingAll"
+          @click="confirmDeleteAll"
+        >
+          <Trash2 class="h-4 w-4 text-red-500" />
+          <span class="ml-1.5">{{ t("history.delete_all") }}</span>
+        </Button>
+        <Button @click="fetchBatches">
+          <RefreshCw class="h-4 w-4 text-green-500" />
+          <span class="ml-1.5">{{ t("common.refresh") }}</span>
+        </Button>
+      </div>
     </div>
 
     <!-- Group Filter Chips -->

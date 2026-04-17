@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, FolderOpen, X, Check, ChevronDown, ChevronUp, Plus, Inbox, Pencil, Circle, Calendar, RotateCw, Clock, AlertTriangle } from 'lucide-vue-next'
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
 import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources, refreshGroupSources } from '@/api/source-groups'
+import { deleteHistoryByGroup } from '@/api/history'
 import { 
   getTrashItems, 
   restoreSource, 
@@ -363,6 +364,23 @@ async function handleDeleteGroup(id: number): Promise<void> {
     toast.success(t('groups.deleted'))
     delete groupSources.value[id]
     await fetchGroups()
+  } catch {
+    toast.error(t('common.error'))
+  }
+}
+
+async function handleDeleteHistoryByGroup(groupId: number, groupName: string): Promise<void> {
+  const confirmed = await confirm.show({
+    title: t('history.delete_by_group_title'),
+    message: t('history.delete_by_group_confirm', { name: groupName }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+  if (!confirmed) return
+  try {
+    await deleteHistoryByGroup(groupId)
+    toast.success(t('history.deleted_by_group'))
   } catch {
     toast.error(t('common.error'))
   }
@@ -740,6 +758,9 @@ onMounted(async () => {
                 </Button>
                 <Button variant="ghost" size="sm" :title="t('common.delete')" @click="handleDeleteGroup(group.id)">
                   <Trash2 class="h-4 w-4 text-red-500" />
+                </Button>
+                <Button variant="ghost" size="sm" :title="t('history.delete_by_group')" @click="handleDeleteHistoryByGroup(group.id, group.name)">
+                  <RotateCcw class="h-4 w-4 text-orange-500" />
                 </Button>
                 <Button variant="ghost" size="sm" :title="expandedGroupId === group.id ? t('common.collapse') : t('common.expand')" @click="handleToggleGroupExpand(group.id)">
                   <ChevronUp v-if="expandedGroupId === group.id" class="h-4 w-4" />

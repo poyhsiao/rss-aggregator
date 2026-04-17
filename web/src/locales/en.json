@@ -240,7 +240,15 @@
     "name_updated": "Batch name updated",
     "delete_title": "Delete Batch",
     "delete_confirm": "Are you sure you want to delete this batch? This will also delete all items in this batch.",
-    "deleted": "Batch deleted"
+    "deleted": "Batch deleted",
+    "delete_all": "Delete All",
+    "delete_all_title": "Delete All History",
+    "delete_all_confirm": "Are you sure you want to delete all history records? This action cannot be undone.",
+    "deleted_all": "All history deleted",
+    "delete_by_group": "Delete History by Group",
+    "delete_by_group_title": "Delete Group History",
+    "delete_by_group_confirm": "Are you sure you want to delete all history records for the group \"{name}\"?",
+    "deleted_by_group": "Group history deleted"
   },
   "pagination": {
     "prev": "Previous",

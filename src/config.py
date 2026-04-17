@@ -41,8 +41,7 @@ class Settings(BaseSettings):
     fetch_retry_delay: int = 5
     max_feed_items: int = 1000
 
-    # Scheduler
-    scheduler_enabled: bool = False
+    scheduler_enabled: bool = True
     scheduler_interval: int = 60
 
     # Default Sources
