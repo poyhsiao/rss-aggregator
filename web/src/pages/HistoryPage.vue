@@ -4,18 +4,15 @@ import { computed, onMounted, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import { deleteAllHistory, deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
 import { getGroups } from "@/api/source-groups"
-import Button from "@/components/ui/Button.vue"
-import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
-import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
 import type { HistoryBatch, HistoryItem } from "@/types/history"
 import type { SourceGroup } from "@/types/source-group"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
-import JsonPreview from "@/components/JsonPreview.vue"
-import MarkdownPreview from "@/components/MarkdownPreview.vue"
-import RssXmlPreview from "@/components/RssXmlPreview.vue"
-import { cn } from "@/utils/cn"
+import Button from "@/components/ui/Button.vue"
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
+import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
+import RssPreviewDialog from "@/components/RssPreviewDialog.vue"
 
 const { t } = useI18n()
 const toast = useToast()
@@ -51,11 +48,19 @@ const deletingAll = ref(false)
 // Preview state
 const previewOpen = ref(false)
 const previewBatchId = ref<number | null>(null)
-const previewBatchName = ref("")
-const previewItems = ref<HistoryItem[]>([])
-const previewLoading = ref(false)
-const previewFormat = ref<"rss" | "json" | "markdown">("rss")
-const previewCopied = ref(false)
+const previewBatchTitle = ref("")
+
+function openPreview(batch: HistoryBatch): void {
+  previewBatchId.value = batch.id
+  previewBatchTitle.value = batch.name || t("history.batch_title", { id: batch.id })
+  previewOpen.value = true
+}
+
+function closePreview(): void {
+  previewOpen.value = false
+  previewBatchId.value = null
+  previewBatchTitle.value = ""
+}
 
 // Article preview state
 const articlePreviewOpen = ref(false)
@@ -193,130 +198,16 @@ async function confirmDeleteAll(): Promise<void> {
   }
 }
 
-async function openPreview(batch: HistoryBatch): Promise<void> {
+async function openPreview(batch: HistoryBatch): void {
   previewBatchId.value = batch.id
-  previewBatchName.value = batch.name || t("history.batch_title", { id: batch.id })
+  previewBatchTitle.value = batch.name || t("history.batch_title", { id: batch.id })
   previewOpen.value = true
-  previewLoading.value = true
-  previewFormat.value = "rss"
-  previewCopied.value = false
-
-  try {
-    const response = await getHistoryByBatch(batch.id, 1, 100)
-    previewItems.value = response.items
-  } catch {
-    toast.error(t("common.error"))
-    previewOpen.value = false
-  } finally {
-    previewLoading.value = false
-  }
 }
 
 function closePreview(): void {
   previewOpen.value = false
   previewBatchId.value = null
-  previewItems.value = []
-}
-
-async function copyPreviewContent(): Promise<void> {
-  try {
-    let content = ""
-    if (previewFormat.value === "json") {
-      content = JSON.stringify(previewItems.value, null, 2)
-    } else if (previewFormat.value === "markdown") {
-      content = generateMarkdown()
-    } else {
-      content = generateRssXml()
-    }
-    await navigator.clipboard.writeText(content)
-    previewCopied.value = true
-    setTimeout(() => {
-      previewCopied.value = false
-    }, 2000)
-  } catch {
-    toast.error(t("keys.copy_failed"))
-  }
-}
-
-function downloadPreview(): void {
-  let content = ""
-  let mimeType = ""
-  let filename = ""
-
-  if (previewFormat.value === "rss") {
-    content = generateRssXml()
-    mimeType = "application/xml"
-    filename = `batch-${previewBatchId.value}.xml`
-  } else if (previewFormat.value === "json") {
-    content = JSON.stringify(previewItems.value, null, 2)
-    mimeType = "application/json"
-    filename = `batch-${previewBatchId.value}.json`
-  } else {
-    content = generateMarkdown()
-    mimeType = "text/markdown"
-    filename = `batch-${previewBatchId.value}.md`
-  }
-
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement("a")
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-function generateRssXml(): string {
-  const items = previewItems.value
-    .map(
-      (item) => `    <item>
-      <title>${escapeXml(item.title)}</title>
-      <link>${escapeXml(item.link)}</link>
-      <description>${escapeXml(item.description)}</description>
-      <pubDate>${item.published_at || ""}</pubDate>
-      <source>${escapeXml(item.source)}</source>
-    </item>`
-    )
-    .join("\n")
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>${escapeXml(previewBatchName.value)}</title>
-    <link>https://example.com/batch/${previewBatchId.value}</link>
-    <description>Feed items from batch #${previewBatchId.value}</description>
-${items}
-  </channel>
-</rss>`
-}
-
-function generateMarkdown(): string {
-  const items = previewItems.value
-    .map(
-      (item) => `### [${item.title}](${item.link})
-
-**Source:** ${item.source}
-**Published:** ${item.published_at ? formatDate(item.published_at) : "N/A"}
-
-${item.description}
-`
-    )
-    .join("\n---\n\n")
-
-  return `# ${previewBatchName.value}
-
-${items}`
-}
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
+  previewBatchTitle.value = ""
 }
 
 function openArticlePreview(item: HistoryItem): void {
@@ -326,15 +217,6 @@ function openArticlePreview(item: HistoryItem): void {
   }
   articlePreviewOpen.value = true
 }
-
-const itemCount = computed(() => previewItems.value.length)
-
-const previewSourceName = computed(() => {
-  if (previewItems.value.length > 0) {
-    return previewItems.value[0].source
-  }
-  return null
-})
 </script>
 
 <template>
@@ -604,131 +486,12 @@ const previewSourceName = computed(() => {
     />
 
     <!-- Preview Dialog -->
-    <Teleport to="body">
-      <Transition name="preview-dialog">
-        <div v-if="previewOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="closePreview" />
-          <div class="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-neutral-800 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-              <div class="flex-1 min-w-0">
-                <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                  {{ previewBatchName }}
-                </h2>
-                <div class="flex items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
-                  <span v-if="previewSourceName">{{ previewSourceName }}</span>
-                  <span v-if="itemCount > 0">
-                    {{ itemCount }} {{ itemCount === 1 ? t('feed.item') : t('feed.items') }}
-                  </span>
-                </div>
-              </div>
-              <button
-                class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                @click="closePreview"
-              >
-                <X class="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-              </button>
-            </div>
-
-            <!-- Loading -->
-            <div v-if="previewLoading" class="flex-1 flex items-center justify-center">
-              <RefreshCw class="h-8 w-8 animate-spin text-primary-500" />
-            </div>
-
-            <!-- Content -->
-            <template v-else>
-              <!-- Format Tabs -->
-              <div class="px-4 pt-4">
-                <div class="bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl inline-flex">
-                  <button
-                    @click="previewFormat = 'rss'"
-                    :class="cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      previewFormat === 'rss'
-                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                    )"
-                  >
-                    <FileText class="h-4 w-4" />
-                    {{ t('feed.format_rss') }}
-                  </button>
-                  <button
-                    @click="previewFormat = 'json'"
-                    :class="cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      previewFormat === 'json'
-                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                    )"
-                  >
-                    <span class="text-base font-mono">{ }</span>
-                    {{ t('feed.format_json') }}
-                  </button>
-                  <button
-                    @click="previewFormat = 'markdown'"
-                    :class="cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      previewFormat === 'markdown'
-                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                    )"
-                  >
-                    <Edit3 class="h-4 w-4" />
-                    {{ t('feed.format_markdown') }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Preview Content -->
-              <div class="flex-1 overflow-auto p-4">
-                <div class="bg-slate-100 dark:bg-slate-950 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-                  <div v-if="previewFormat !== 'markdown'" class="flex items-center justify-between px-4 py-3 bg-slate-200 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800">
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {{ t(`feed.format_${previewFormat}`) }}
-                    </span>
-                  </div>
-
-                  <div v-if="previewFormat === 'rss'" class="p-4 max-h-[40vh] overflow-auto bg-white dark:bg-slate-950">
-                    <RssXmlPreview :content="generateRssXml()" />
-                  </div>
-
-                  <div v-else-if="previewFormat === 'json'" class="p-4 max-h-[40vh] overflow-auto bg-white dark:bg-slate-950">
-                    <JsonPreview :content="previewItems" />
-                  </div>
-
-                  <div v-else-if="previewFormat === 'markdown'" class="bg-white dark:bg-slate-950">
-                    <MarkdownPreview :content="generateMarkdown()" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="p-4 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  @click="copyPreviewContent"
-                  class="gap-2"
-                >
-                  <Check v-if="previewCopied" class="h-4 w-4 text-green-500" />
-                  <Copy v-else class="h-4 w-4" />
-                  {{ previewCopied ? t('keys.copied') : t('keys.copy') }}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  @click="downloadPreview"
-                  class="gap-2"
-                >
-                  <Download class="h-4 w-4" />
-                  {{ t('feed.download', { format: t(`feed.format_${previewFormat}`) }) }}
-                </Button>
-              </div>
-            </template>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <RssPreviewDialog
+      :open="previewOpen"
+      :title="previewBatchTitle"
+      :params="{ batch_id: previewBatchId }"
+      @update:open="(open) => { previewOpen = open; if (!open) closePreview() }"
+    />
 
     <!-- Article Preview Dialog -->
     <ArticlePreviewDialog

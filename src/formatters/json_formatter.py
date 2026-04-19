@@ -20,21 +20,24 @@ class JsonFormatter(BaseFormatter):
         Returns:
             JSON string
         """
-        data = [
-            {
+        data = []
+        for item in items:
+            # Safe access to source - avoid triggering lazy loads
+            source_name = ""
+            source_id = None
+            if item.source:
+                source_name = item.source.name
+                source_id = item.source_id
+
+            data.append({
                 "id": item.id,
                 "title": item.title,
                 "link": item.link,
                 "description": item.description or "",
-                "source": item.source.name if item.source else "",
+                "source": source_name,
+                "source_id": source_id,
                 "published_at": to_iso_string(item.published_at),
-                "source_groups": [
-                    {"id": g.id, "name": g.name}
-                    for g in getattr(getattr(item, "source", None), "groups", [])
-                ] if item.source else [],
-            }
-            for item in items
-        ]
+            })
         return json.dumps(data, indent=2)
 
     def get_content_type(self) -> str:
