@@ -1,6 +1,6 @@
 """Source management API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
 from src.api.deps import get_feed_service, get_scheduler, get_source_group_service, get_source_service, require_api_key
@@ -246,6 +246,66 @@ async def get_source_feed(
     - keywords: Keywords for filtering (semicolon-separated)
     """
     source_service = SourceService(feed_service.session)
+    source = await source_service.get_source(source_id)
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+
+    content, content_type = await feed_service.get_formatted_feed(
+        format=format,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        valid_time=valid_time,
+        keywords=keywords,
+        source_id=source_id,
+    )
+    return Response(content=content, media_type=content_type)
+
+
+@router.get("/{source_id}/{format}")
+async def get_source_feed_by_format(
+    source_id: int,
+    format: str = Path(
+        ...,
+        pattern="^(rss|json|markdown)$",
+        description="Output format: 'rss', 'json', or 'markdown'",
+    ),
+    sort_by: str = Query(
+        "published_at",
+        pattern="^(published_at|source)$",
+        description="Sort by field",
+    ),
+    sort_order: str = Query(
+        "desc",
+        pattern="^(asc|desc)$",
+        description="Sort direction",
+    ),
+    valid_time: int | None = Query(
+        None,
+        ge=1,
+        description="Time range in hours",
+    ),
+    keywords: str | None = Query(
+        None,
+        description="Keywords (semicolon-separated)",
+    ),
+    feed_service: FeedService = Depends(get_feed_service),
+    source_service: SourceService = Depends(get_source_service),
+    _: str = Depends(require_api_key),
+) -> Response:
+    """Get feed for a specific source by format path parameter.
+
+    Returns RSS, JSON, or Markdown based on the format path parameter.
+
+    Path params:
+    - source_id: Source ID
+    - format: Output format ('rss', 'json', or 'markdown')
+
+    Query params:
+    - sort_by: Sort field ('published_at' or 'source')
+    - sort_order: Sort direction ('asc' or 'desc')
+    - valid_time: Time range in hours
+    - keywords: Keywords for filtering (semicolon-separated)
+    """
     source = await source_service.get_source(source_id)
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")

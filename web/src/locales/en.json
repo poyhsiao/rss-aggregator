@@ -89,7 +89,10 @@
     "item": "item",
     "items": "items",
     "view_source": "Source",
-    "view_preview": "Preview"
+    "view_preview": "Preview",
+    "api_paths": "API Paths",
+    "copy_path": "Copy path",
+    "path_copied": "Path copied"
   },
   "sources": {
     "title": "Sources",
@@ -234,7 +237,7 @@
     "item": "item",
     "items": "items",
     "edit_name": "Edit Name",
-    "preview": "Preview",
+    "preview": "Preview Feed",
     "name_placeholder": "Enter batch name",
     "name_required": "Name is required",
     "name_updated": "Batch name updated",

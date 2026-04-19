@@ -89,7 +89,10 @@
     "item": "項目",
     "items": "項目",
     "view_source": "原始碼",
-    "view_preview": "預覽"
+    "view_preview": "預覽",
+    "api_paths": "API 路徑",
+    "copy_path": "複製路徑",
+    "path_copied": "路徑已複製"
   },
   "sources": {
     "title": "來源",
@@ -210,7 +213,7 @@
     "batch_title": "批次 #{id}",
     "fetched": "取得",
     "edit_name": "編輯名稱",
-    "preview": "預覽",
+    "preview": "預覽摘要",
     "name_placeholder": "輸入批次名稱",
     "name_required": "名稱為必填",
     "name_updated": "批次名稱已更新",
@@ -218,7 +221,7 @@
     "delete_confirm": "確定要刪除此批次嗎？這將同時刪除此批次中的所有項目。",
     "deleted": "批次已刪除",
     "delete_all": "刪除全部",
-"delete_all_title": "刪除所有歷史紀錄",
+    "delete_all_title": "刪除所有歷史紀錄",
     "delete_all_confirm": "確定要刪除所有歷史紀錄嗎？此操作無法復原。",
     "deleted_all": "所有歷史紀錄已刪除",
     "delete_by_group": "刪除群組歷史紀錄",

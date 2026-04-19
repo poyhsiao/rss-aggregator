@@ -3,6 +3,7 @@ import { Braces, Check, Copy, Database, Download, FileCode, FileText, X } from "
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { FeedParams } from "@/api/feed";
+import { buildFeedPathUrl } from "@/api/feed";
 import Button from "@/components/ui/Button.vue";
 import Dialog from "@/components/ui/Dialog.vue";
 import JsonPreview from "@/components/JsonPreview.vue";
@@ -27,6 +28,28 @@ const { t } = useI18n();
 
 const selectedFormat = ref<Format>("rss");
 const copied = ref(false);
+const copiedPath = ref<string | null>(null);
+
+const feedFormats: Format[] = ["rss", "json", "markdown"];
+
+const apiPaths = computed(() => {
+	return feedFormats.map((format) => ({
+		format,
+		url: buildFeedPathUrl(format, props.params),
+	}));
+});
+
+async function copyPath(url: string): Promise<void> {
+	try {
+		await navigator.clipboard.writeText(url);
+		copiedPath.value = url;
+		setTimeout(() => {
+			copiedPath.value = null;
+		}, 2000);
+	} catch (error) {
+		console.error("Failed to copy path:", error);
+	}
+}
 
 const {
 	rssContent,
@@ -176,6 +199,35 @@ watch(
       </div>
 
       <div v-else class="space-y-4">
+        <!-- API Paths Section -->
+        <div class="bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+          <div class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {{ t('feed.api_paths') }}
+          </div>
+          <div class="space-y-1">
+            <div
+              v-for="{ format, url } in apiPaths"
+              :key="format"
+              class="flex items-center justify-between text-sm"
+            >
+              <span class="text-slate-600 dark:text-slate-400 w-16">
+                {{ t(`feed.format_${format}`) }}
+              </span>
+              <code class="flex-1 text-xs bg-white dark:bg-slate-800 px-2 py-1 rounded text-slate-700 dark:text-slate-300 truncate ml-2">
+                {{ url }}
+              </code>
+              <button
+                @click="copyPath(url)"
+                class="ml-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                :title="t('feed.copy_path')"
+              >
+                <Check v-if="copiedPath === url" class="h-4 w-4 text-green-500" />
+                <Copy v-else class="h-4 w-4 text-slate-500 dark:text-slate-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-neutral-100 dark:bg-slate-800 p-1 rounded-xl inline-flex">
           <button
             @click="selectedFormat = 'rss'"

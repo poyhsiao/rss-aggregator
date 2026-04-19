@@ -1,13 +1,17 @@
 """Source group management API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_scheduler, get_source_group_service, require_api_key
+from src.api.deps import get_scheduler, get_feed_service, get_source_group_service, require_api_key
+from src.services.feed_service import FeedService
 from src.services.source_group_service import SourceGroupService
 from src.utils.time import to_iso_string
 
 router = APIRouter(prefix="/source-groups", tags=["source-groups"])
+
+# Alias router for /groups prefix
+groups_router = APIRouter(prefix="/groups", tags=["groups"])
 
 
 class GroupCreate(BaseModel):
@@ -183,3 +187,65 @@ async def refresh_group_sources(
         raise HTTPException(status_code=404, detail=str(e))
     await scheduler.refresh_group(group_id)
     return {"message": "Group sources refresh triggered"}
+
+
+# Groups router (alias for /groups prefix)
+@groups_router.get("/{group_id}/{format}")
+async def get_group_feed_by_format(
+    group_id: int,
+    format: str = Path(
+        ...,
+        pattern="^(rss|json|markdown)$",
+        description="Output format: 'rss', 'json', or 'markdown'",
+    ),
+    sort_by: str = Query(
+        "published_at",
+        pattern="^(published_at|source)$",
+        description="Sort by field",
+    ),
+    sort_order: str = Query(
+        "desc",
+        pattern="^(asc|desc)$",
+        description="Sort direction",
+    ),
+    valid_time: int | None = Query(
+        None,
+        ge=1,
+        description="Time range in hours",
+    ),
+    keywords: str | None = Query(
+        None,
+        description="Keywords (semicolon-separated)",
+    ),
+    feed_service: FeedService = Depends(get_feed_service),
+    group_service: SourceGroupService = Depends(get_source_group_service),
+    _: str = Depends(require_api_key),
+) -> Response:
+    """Get feed for a specific group by format path parameter.
+
+    Returns RSS, JSON, or Markdown based on the format path parameter.
+
+    Path params:
+    - group_id: Group ID
+    - format: Output format ('rss', 'json', or 'markdown')
+
+    Query params:
+    - sort_by: Sort field ('published_at' or 'source')
+    - sort_order: Sort direction ('asc' or 'desc')
+    - valid_time: Time range in hours
+    - keywords: Keywords for filtering (semicolon-separated)
+    """
+    # Check if group exists
+    sources = await group_service.get_group_sources(group_id)
+    if not sources:
+        raise HTTPException(status_code=404, detail="Group not found or has no sources")
+
+    content, content_type = await feed_service.get_formatted_feed(
+        format=format,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        valid_time=valid_time,
+        keywords=keywords,
+        group_id=group_id,
+    )
+    return Response(content=content, media_type=content_type)
