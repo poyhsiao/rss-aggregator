@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.18.2] - 2026-04-19
+
+### Features
+
+- New history batch feed export API: `/history/batches/{batch_id}/{format}` endpoint supports RSS, JSON, Markdown, and preview formats
+- Added "preview" format output that renders feed items with markdown content
+- Unified preview dialog experience across Feed, Sources, and History pages
+
+### Fixed
+
+- Fixed JSON formatter lazy loading issue with source_groups relationship
+- Docker deployment verified and working
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.18.2
+- RssPreviewDialog: Share links now in expandable bottom section (click to expand)
+- HistoryPage now uses RssPreviewDialog component consistent with other pages
+
 ## [v0.18.1] - 2026-04-17
 
 ### Fixed
