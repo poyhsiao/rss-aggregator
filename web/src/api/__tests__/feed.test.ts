@@ -13,61 +13,66 @@ describe('buildFeedPathUrl', () => {
     vi.resetAllMocks()
     // Reset window global
     delete (window as any).__VITE_API_BASE_URL__
+    // Reset location
+    Object.defineProperty(window, 'location', {
+      value: { origin: 'http://localhost:8080' },
+      writable: true,
+    })
   })
 
   describe('global feed', () => {
-    it('should build global feed URL with rss format', () => {
+    it('should build full URL with rss format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss')
-      expect(url).toBe('/api/v1/feed/rss')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss')
     })
 
-    it('should build global feed URL with json format', () => {
+    it('should build full URL with json format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('json')
-      expect(url).toBe('/api/v1/feed/json')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/json')
     })
 
-    it('should build global feed URL with markdown format', () => {
+    it('should build full URL with markdown format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('markdown')
-      expect(url).toBe('/api/v1/feed/markdown')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/markdown')
     })
 
     it('should include non-default sort_by parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { sort_by: 'source' })
-      expect(url).toBe('/api/v1/feed/rss?sort_by=source')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss?sort_by=source')
     })
 
     it('should include non-default sort_order parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { sort_order: 'asc' })
-      expect(url).toBe('/api/v1/feed/rss?sort_order=asc')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss?sort_order=asc')
     })
 
     it('should include valid_time parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { valid_time: 24 })
-      expect(url).toBe('/api/v1/feed/rss?valid_time=24')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss?valid_time=24')
     })
 
     it('should include keywords parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { keywords: 'python,ai' })
-      expect(url).toBe('/api/v1/feed/rss?keywords=python%2Cai')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss?keywords=python%2Cai')
     })
 
     it('should exclude default sort_by parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { sort_by: 'published_at' })
-      expect(url).toBe('/api/v1/feed/rss')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss')
     })
 
     it('should exclude default sort_order parameter', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { sort_order: 'desc' })
-      expect(url).toBe('/api/v1/feed/rss')
+      expect(url).toBe('http://localhost:8080/api/v1/feed/rss')
     })
 
     it('should include multiple non-default params', () => {
@@ -78,7 +83,7 @@ describe('buildFeedPathUrl', () => {
         valid_time: 48,
       })
       expect(url).toBe(
-        '/api/v1/feed/json?sort_by=source&sort_order=asc&valid_time=48'
+        'http://localhost:8080/api/v1/feed/json?sort_by=source&sort_order=asc&valid_time=48'
       )
     })
   })
@@ -87,19 +92,19 @@ describe('buildFeedPathUrl', () => {
     it('should build source feed URL with rss format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { source_id: 5 })
-      expect(url).toBe('/api/v1/sources/5/rss')
+      expect(url).toBe('http://localhost:8080/api/v1/sources/5/rss')
     })
 
     it('should build source feed URL with json format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('json', { source_id: 1 })
-      expect(url).toBe('/api/v1/sources/1/json')
+      expect(url).toBe('http://localhost:8080/api/v1/sources/1/json')
     })
 
     it('should build source feed URL with markdown format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('markdown', { source_id: 10 })
-      expect(url).toBe('/api/v1/sources/10/markdown')
+      expect(url).toBe('http://localhost:8080/api/v1/sources/10/markdown')
     })
 
     it('should include query params for source feed', () => {
@@ -108,7 +113,7 @@ describe('buildFeedPathUrl', () => {
         source_id: 3,
         sort_by: 'source',
       })
-      expect(url).toBe('/api/v1/sources/3/json?sort_by=source')
+      expect(url).toBe('http://localhost:8080/api/v1/sources/3/json?sort_by=source')
     })
   })
 
@@ -116,19 +121,19 @@ describe('buildFeedPathUrl', () => {
     it('should build group feed URL with rss format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('rss', { group_id: 2 })
-      expect(url).toBe('/api/v1/groups/2/rss')
+      expect(url).toBe('http://localhost:8080/api/v1/groups/2/rss')
     })
 
     it('should build group feed URL with json format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('json', { group_id: 1 })
-      expect(url).toBe('/api/v1/groups/1/json')
+      expect(url).toBe('http://localhost:8080/api/v1/groups/1/json')
     })
 
     it('should build group feed URL with markdown format', () => {
       vi.mocked(isTauri).mockReturnValue(false)
       const url = buildFeedPathUrl('markdown', { group_id: 7 })
-      expect(url).toBe('/api/v1/groups/7/markdown')
+      expect(url).toBe('http://localhost:8080/api/v1/groups/7/markdown')
     })
 
     it('should include query params for group feed', () => {
@@ -137,7 +142,7 @@ describe('buildFeedPathUrl', () => {
         group_id: 5,
         keywords: 'tech',
       })
-      expect(url).toBe('/api/v1/groups/5/markdown?keywords=tech')
+      expect(url).toBe('http://localhost:8080/api/v1/groups/5/markdown?keywords=tech')
     })
   })
 
@@ -167,6 +172,26 @@ describe('buildFeedPathUrl', () => {
       ;(window as any).__VITE_API_BASE_URL__ = 'https://api.example.com/v1'
       const url = buildFeedPathUrl('rss')
       expect(url).toBe('https://api.example.com/v1/feed/rss')
+    })
+  })
+
+  describe('batch feed', () => {
+    it('should build batch feed URL with rss format', () => {
+      vi.mocked(isTauri).mockReturnValue(false)
+      const url = buildFeedPathUrl('rss', { batch_id: 1 })
+      expect(url).toBe('http://localhost:8080/api/v1/history/batches/1/rss')
+    })
+
+    it('should build batch feed URL with json format', () => {
+      vi.mocked(isTauri).mockReturnValue(false)
+      const url = buildFeedPathUrl('json', { batch_id: 5 })
+      expect(url).toBe('http://localhost:8080/api/v1/history/batches/5/json')
+    })
+
+    it('should build batch feed URL with markdown format', () => {
+      vi.mocked(isTauri).mockReturnValue(false)
+      const url = buildFeedPathUrl('markdown', { batch_id: 10 })
+      expect(url).toBe('http://localhost:8080/api/v1/history/batches/10/markdown')
     })
   })
 })

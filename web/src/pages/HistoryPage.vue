@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, ChevronDown, ChevronUp, Copy, Download, Edit3, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X, ScrollText, Inbox, Newspaper } from "lucide-vue-next"
+import { Check, ChevronDown, ChevronUp, Eye, ExternalLink, FileText, Pencil, RefreshCw, Trash2, X, ScrollText, Inbox, Newspaper } from "lucide-vue-next"
 import { computed, onMounted, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import { deleteAllHistory, deleteBatch, getHistoryBatches, getHistoryByBatch, updateBatchName } from "@/api/history"
@@ -196,18 +196,6 @@ async function confirmDeleteAll(): Promise<void> {
   } finally {
     deletingAll.value = false
   }
-}
-
-async function openPreview(batch: HistoryBatch): void {
-  previewBatchId.value = batch.id
-  previewBatchTitle.value = batch.name || t("history.batch_title", { id: batch.id })
-  previewOpen.value = true
-}
-
-function closePreview(): void {
-  previewOpen.value = false
-  previewBatchId.value = null
-  previewBatchTitle.value = ""
 }
 
 function openArticlePreview(item: HistoryItem): void {
@@ -489,7 +477,7 @@ function openArticlePreview(item: HistoryItem): void {
     <RssPreviewDialog
       :open="previewOpen"
       :title="previewBatchTitle"
-      :params="{ batch_id: previewBatchId }"
+      :params="previewBatchId !== null ? { batch_id: previewBatchId } : undefined"
       @update:open="(open) => { previewOpen = open; if (!open) closePreview() }"
     />
 

@@ -14,8 +14,8 @@ router = APIRouter(prefix="/feed", tags=["feed"])
 async def get_feed(
     format: str = Query(
         "rss",
-        pattern="^(rss|json|markdown)$",
-        description="Output format: 'rss', 'json', or 'markdown'",
+        pattern="^(rss|json|markdown|preview)$",
+        description="Output format: 'rss', 'json', 'markdown', or 'preview'",
     ),
     sort_by: str = Query(
         "published_at",
@@ -49,11 +49,11 @@ async def get_feed(
 ) -> Any:
     """Get aggregated RSS feed.
 
-    Returns RSS by default, or JSON/Markdown when format is specified.
+    Returns RSS by default, or JSON/Markdown/Preview when format is specified.
     Supports filtering by time range, keywords, and source ID, and sorting.
 
     Query params:
-    - format: Output format ('rss', 'json', or 'markdown', default: 'rss')
+    - format: Output format ('rss', 'json', 'markdown', or 'preview', default: 'rss')
     - sort_by: Sort field ('published_at' or 'source')
     - sort_order: Sort direction ('asc' or 'desc')
     - valid_time: Time range in hours
@@ -76,8 +76,8 @@ async def get_feed(
 async def get_feed_by_format(
     format: str = Path(
         ...,
-        pattern="^(rss|json|markdown)$",
-        description="Output format: 'rss', 'json', or 'markdown'",
+        pattern="^(rss|json|markdown|preview)$",
+        description="Output format: 'rss', 'json', 'markdown', or 'preview'",
     ),
     sort_by: str = Query(
         "published_at",

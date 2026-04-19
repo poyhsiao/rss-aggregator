@@ -1,4 +1,3 @@
-import api from '.'
 import { useAuthStore } from '@/stores/auth'
 import { isTauri } from '@/utils/environment'
 
@@ -23,9 +22,10 @@ export interface FeedParams {
   keywords?: string
   source_id?: number
   group_id?: number
+  batch_id?: number
 }
 
-export type FeedFormat = 'rss' | 'json' | 'markdown'
+export type FeedFormat = 'rss' | 'json' | 'markdown' | 'preview'
 
 export interface FormattedFeedResponse {
   content: string
@@ -46,13 +46,21 @@ function buildQueryString(params?: Record<string, unknown>): string {
 
 /**
  * Get the base API URL for the current environment.
+ * Returns full URL with origin (e.g., http://localhost:8080/api/v1)
  */
 function getBaseUrl(): string {
   if (isTauri()) {
     return 'http://localhost:8000/api/v1'
   }
   const win = window as { __VITE_API_BASE_URL__?: string }
-  return win.__VITE_API_BASE_URL__ || '/api/v1'
+  const basePath = win.__VITE_API_BASE_URL__ || '/api/v1'
+  // If already a full URL, return as-is
+  if (basePath.startsWith('http://') || basePath.startsWith('https://')) {
+    return basePath
+  }
+  // Build full URL from window.location.origin
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8080'
+  return `${origin}${basePath}`
 }
 
 /**
@@ -75,6 +83,8 @@ export function buildFeedPathUrl(
     path = `/sources/${params.source_id}`
   } else if (params?.group_id !== undefined) {
     path = `/groups/${params.group_id}`
+  } else if (params?.batch_id !== undefined) {
+    path = `/history/batches/${params.batch_id}`
   }
 
   // Add format to path
@@ -103,7 +113,24 @@ export function buildFeedPathUrl(
 }
 
 export async function getFeed(params?: FeedParams): Promise<FeedItem[]> {
-  return api.get<FeedItem[]>(`/feed${buildQueryString({ ...params, format: 'json' })}`)
+  // Use fetch to get JSON content with proper auth headers
+  const authStore = useAuthStore()
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+  }
+  if (authStore.apiKey) {
+    headers['X-API-Key'] = authStore.apiKey
+  }
+
+  // Use path-based URL with format as path parameter
+  const url = buildFeedPathUrl('json', params)
+  const response = await fetch(url, { headers })
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  return response.json()
 }
 
 export async function getFormattedFeed(
@@ -119,15 +146,10 @@ export async function getFormattedFeed(
     headers['X-API-Key'] = authStore.apiKey
   }
 
-  const getWebBaseUrl = (): string => {
-    const win = window as { __VITE_API_BASE_URL__?: string }
-    return win.__VITE_API_BASE_URL__ || '/api/v1'
-  }
-  const baseUrl = isTauri() ? 'app://localhost/api/v1' : getWebBaseUrl()
-  const response = await fetch(
-    `${baseUrl}/feed${buildQueryString({ ...params, format })}`,
-    { headers }
-  )
+  // Use path-based URL instead of query parameter
+  const url = buildFeedPathUrl(format, params)
+
+  const response = await fetch(url, { headers })
 
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`)
