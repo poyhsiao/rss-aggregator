@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import async_session_factory, engine
 from src.models import Base
+from src.models.app_settings import AppSettings
 
 
 @pytest.fixture
@@ -26,3 +27,13 @@ async def db_session():
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest_asyncio.fixture
+async def app_settings_default(db_session: AsyncSession) -> AppSettings:
+    """Seed default AppSettings record."""
+    settings = AppSettings()
+    db_session.add(settings)
+    await db_session.commit()
+    await db_session.refresh(settings)
+    return settings
