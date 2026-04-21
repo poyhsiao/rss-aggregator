@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.19.4] - 2026-04-22
+
+### Features
+
+- Complete feature flags system with localStorage sync between frontend and backend
+- Feature flags dialog with 10-click trigger
+- Share link API endpoints respect `feature_share_links` flag: return HTTP 404 when disabled
+- Scheduler respects feature flags instead of `SCHEDULER_ENABLED` env var
+- AppSettings model and API endpoint (`GET/PUT /api/v1/settings`)
+- Conditional rendering for feature toggles in UI
+
+### Fixed
+
+- Scheduler ignores `SCHEDULER_ENABLED`, uses only feature flags
+- Hide group filter badges when `feature_groups` is OFF
+- Enforce `feature_share_links` flag on all share link endpoints
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.19.4
+
 ## [v0.18.2] - 2026-04-19
 
 ### Features
