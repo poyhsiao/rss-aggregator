@@ -63,7 +63,7 @@ describe('FeatureFlagsDialog', () => {
   const mountComponent = async (props = { open: true }) => {
     const { default: FeatureFlagsDialog } = await import('../../components/FeatureFlagsDialog.vue')
     return mount(FeatureFlagsDialog, {
-      props: { open: true, ...props },
+      props,
       global: {
         plugins: [i18n],
         stubs: {

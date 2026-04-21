@@ -8,6 +8,7 @@ import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
 import AuthDialog from '@/components/AuthDialog.vue'
 import DebugDialog from '@/components/DebugDialog.vue'
+import FeatureFlagsDialog from '@/components/FeatureFlagsDialog.vue'
 import Button from '@/components/ui/Button.vue'
 
 const route = useRoute()
@@ -21,25 +22,35 @@ const clickCount = ref(0)
 const clickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const debugDialogOpen = ref(false)
 
+// Hidden feature flags: click Feed icon 10 times on Settings page to open feature flags dialog
+const featureFlagsDialogOpen = ref(false)
+
 function handleFeedIconClick(): void {
-  // Only activate on Feed page
-  if (route.path !== '/') return
-  
+  // Activate on Settings page for feature flags, Feed page for debug dialog
+  const isSettingsPage = route.path === '/settings'
+  const isFeedPage = route.path === '/'
+
+  if (!isSettingsPage && !isFeedPage) return
+
   // Clear previous timer
   if (clickTimer.value) {
     clearTimeout(clickTimer.value)
   }
-  
+
   clickCount.value++
-  
+
   // Reset counter after 2 seconds of no clicks
   clickTimer.value = setTimeout(() => {
     clickCount.value = 0
   }, 2000)
-  
-  // Open debug dialog after 10 clicks
+
+  // Open appropriate dialog after 10 clicks
   if (clickCount.value >= 10) {
-    debugDialogOpen.value = true
+    if (isSettingsPage) {
+      featureFlagsDialogOpen.value = true
+    } else if (isFeedPage) {
+      debugDialogOpen.value = true
+    }
     clickCount.value = 0
     if (clickTimer.value) {
       clearTimeout(clickTimer.value)
@@ -124,5 +135,6 @@ const menuItems = computed(() => {
     
     <AuthDialog />
     <DebugDialog v-model:open="debugDialogOpen" />
+    <FeatureFlagsDialog v-model:open="featureFlagsDialogOpen" />
   </div>
 </template>
