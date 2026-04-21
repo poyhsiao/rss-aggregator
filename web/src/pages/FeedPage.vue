@@ -13,9 +13,11 @@ import type { FeedItem } from "@/types/feed";
 import type { SourceGroup } from "@/types/source-group";
 import { useToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/format";
+import { useFeatureFlagsStore } from "@/stores/featureFlags";
 
 const { t } = useI18n();
 const toast = useToast();
+const featureFlags = useFeatureFlagsStore();
 
 const feedItems = ref<FeedItem[]>([]);
 const groups = ref<SourceGroup[]>([]);
@@ -152,7 +154,7 @@ watch([sortBy, keywords, selectedGroupId], () => {
     </div>
 
     <!-- Group Filter Chips -->
-    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+    <div v-if="featureFlags.feature_groups && groups.length > 0" class="flex flex-wrap gap-2">
       <button
         :class="[
           'px-3 py-1 rounded-full text-sm font-medium transition-colors',

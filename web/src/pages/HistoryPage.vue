@@ -13,10 +13,12 @@ import Button from "@/components/ui/Button.vue"
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
 import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
 import RssPreviewDialog from "@/components/RssPreviewDialog.vue"
+import { useFeatureFlagsStore } from "@/stores/featureFlags"
 
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const featureFlags = useFeatureFlagsStore()
 
 const batches = ref<HistoryBatch[]>([])
 const groups = ref<SourceGroup[]>([])
@@ -230,7 +232,7 @@ function openArticlePreview(item: HistoryItem): void {
     </div>
 
     <!-- Group Filter Chips -->
-    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+    <div v-if="featureFlags.feature_groups && groups.length > 0" class="flex flex-wrap gap-2">
       <button
         :class="[
           'px-3 py-1 rounded-full text-sm font-medium transition-colors',
