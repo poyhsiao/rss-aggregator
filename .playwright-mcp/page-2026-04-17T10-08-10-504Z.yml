@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7] [cursor=pointer]
+          - generic [ref=e11]: RSS Aggregator
+        - generic [ref=e12]:
+          - button "切換主題" [ref=e13] [cursor=pointer]:
+            - img [ref=e14]
+          - button "中" [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+            - text: 中
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - navigation [ref=e23]:
+          - link "動態" [ref=e24] [cursor=pointer]:
+            - /url: /
+            - img [ref=e25]
+            - generic [ref=e29]: 動態
+          - link "歷史查詢" [ref=e30] [cursor=pointer]:
+            - /url: /history
+            - img [ref=e31]
+            - generic [ref=e35]: 歷史查詢
+          - link "來源" [ref=e36] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e37]
+            - generic [ref=e43]: 來源
+          - link "設定" [ref=e44] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e45]
+            - generic [ref=e48]: 設定
+      - main [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e52]:
+            - img [ref=e53]
+            - heading "動態" [level=1] [ref=e57]
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]:
+                - button "時間排序" [ref=e61] [cursor=pointer]:
+                  - img [ref=e62]
+                  - generic [ref=e65]: 時間排序
+                - button "來源排序" [ref=e66] [cursor=pointer]:
+                  - img [ref=e67]
+                  - generic [ref=e71]: 來源排序
+              - textbox "關鍵字搜尋..." [ref=e72]
+            - generic [ref=e73]:
+              - button "一鍵更新" [ref=e74] [cursor=pointer]:
+                - img [ref=e75]
+                - generic [ref=e80]: 一鍵更新
+              - button "預覽摘要" [ref=e81] [cursor=pointer]:
+                - img [ref=e82]
+                - generic [ref=e85]: 預覽摘要
+          - generic [ref=e86]: 載入中...
+  - generic [ref=e91]:
+    - generic [ref=e92]:
+      - heading "歡迎使用 RSS Aggregator" [level=2] [ref=e93]:
+        - img [ref=e94]
+        - text: 歡迎使用 RSS Aggregator
+      - paragraph [ref=e97]: 請輸入您的 API Key 以繼續
+    - textbox "輸入 API Key" [ref=e99]
+    - generic [ref=e100]:
+      - button "驗證" [disabled]:
+        - img
+        - generic: 驗證

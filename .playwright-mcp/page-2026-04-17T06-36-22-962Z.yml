@@ -1,0 +1,83 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7] [cursor=pointer]
+          - generic [ref=e11]: RSS Aggregator
+        - generic [ref=e12]:
+          - button "切換主題" [ref=e13] [cursor=pointer]:
+            - img [ref=e14]
+          - button "中" [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+            - text: 中
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - navigation [ref=e23]:
+          - link "動態" [ref=e24] [cursor=pointer]:
+            - /url: /
+            - img [ref=e25]
+            - generic [ref=e29]: 動態
+          - link "歷史查詢" [ref=e30] [cursor=pointer]:
+            - /url: /history
+            - img [ref=e31]
+            - generic [ref=e35]: 歷史查詢
+          - link "來源" [ref=e36] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e37]
+            - generic [ref=e43]: 來源
+          - link "設定" [ref=e44] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e45]
+            - generic [ref=e48]: 設定
+      - main [ref=e49]:
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - heading "歷史查詢" [level=1] [ref=e66]:
+              - img [ref=e67]
+              - text: 歷史查詢
+            - generic [ref=e70]:
+              - button "刪除全部" [active] [ref=e71] [cursor=pointer]:
+                - img [ref=e72]
+                - generic [ref=e75]: 刪除全部
+              - button "刷新" [ref=e76] [cursor=pointer]:
+                - img [ref=e77]
+                - generic [ref=e82]: 刷新
+          - generic [ref=e83]:
+            - button "全部" [ref=e84] [cursor=pointer]
+            - button "sdf" [ref=e85] [cursor=pointer]
+            - button "erwrq" [ref=e86] [cursor=pointer]
+            - button "豐富" [ref=e87] [cursor=pointer]
+            - button "規範的份啊" [ref=e88] [cursor=pointer]
+            - button "jhh" [ref=e89] [cursor=pointer]
+          - generic [ref=e90]: 1 個批次，共 20 項
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: 2026-04-10 18:02:10
+                - generic [ref=e97]: 20 項
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - img [ref=e100]
+                  - text: 2026年4月10日
+                - text: • 取得 6 天前
+                - generic [ref=e103]: • 不合格
+                - generic [ref=e104]: sdf
+            - generic [ref=e105]:
+              - button "編輯名稱" [ref=e106] [cursor=pointer]:
+                - img [ref=e107]
+              - button "預覽" [ref=e110] [cursor=pointer]:
+                - img [ref=e111]
+              - button "刪除" [ref=e114] [cursor=pointer]:
+                - img [ref=e115]
+              - button [ref=e118] [cursor=pointer]:
+                - img [ref=e119]
+  - generic [ref=e124]:
+    - generic [ref=e126]:
+      - img [ref=e127]
+      - generic [ref=e129]:
+        - heading "刪除所有歷史紀錄" [level=3] [ref=e130]
+        - paragraph [ref=e131]: 確定要刪除所有歷史紀錄嗎？此操作無法復原。
+    - generic [ref=e132]:
+      - button "取消" [ref=e133] [cursor=pointer]
+      - button "刪除" [ref=e134] [cursor=pointer]

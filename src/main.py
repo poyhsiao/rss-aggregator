@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.deps import get_scheduler, set_scheduler
-from src.api.routes import backup, feed, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
+from src.api.routes import backup, feed, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash, feature_flags
 from src.config import settings
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.scheduler.schedule_scheduler import ScheduleScheduler
@@ -85,3 +85,4 @@ app.include_router(backup.router, prefix="/api/v1")
 app.include_router(source_groups.router, prefix="/api/v1")
 app.include_router(source_groups.groups_router, prefix="/api/v1")
 app.include_router(schedule.router, prefix="/api/v1")
+app.include_router(feature_flags.router, prefix="/api/v1")
