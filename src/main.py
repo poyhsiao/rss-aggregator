@@ -46,21 +46,22 @@ async def lifespan(app: FastAPI):
         fetch_scheduler=scheduler,
     )
 
-    if settings.scheduler_enabled:
-        await scheduler.start()
-        await schedule_scheduler.start()
+    # Schedulers always start — execution is controlled by feature flags
+    # inside _check_and_execute() (feature_schedules, feature_groups).
+    # SCHEDULER_ENABLED env var is ignored for scheduled updates.
+    await scheduler.start()
+    await schedule_scheduler.start()
 
     yield
 
-    if settings.scheduler_enabled:
-        await schedule_scheduler.stop()
-        await scheduler.stop()
+    await schedule_scheduler.stop()
+    await scheduler.stop()
 
 
 app = FastAPI(
     title="RSS Aggregator",
     description="Aggregate multiple RSS feeds into a single, filterable output",
-    version="0.19.0",
+    version="0.19.2",
     lifespan=lifespan,
 )
 
