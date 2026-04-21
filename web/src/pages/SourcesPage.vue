@@ -5,14 +5,14 @@ import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, Fol
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
 import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources, refreshGroupSources } from '@/api/source-groups'
 import { deleteHistoryByGroup } from '@/api/history'
-import { 
-  getTrashItems, 
-  restoreSource, 
-  permanentDeleteSource, 
-  clearTrash, 
-  type TrashItem, 
+import {
+  getTrashItems,
+  restoreSource,
+  permanentDeleteSource,
+  clearTrash,
+  type TrashItem,
   type RestoreConflict,
-  RestoreConflictError 
+  RestoreConflictError
 } from '@/api/trash'
 import type { Source } from '@/types/source'
 import type { SourceGroup } from '@/types/source-group'
@@ -26,6 +26,7 @@ import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import { useAppSettings } from '@/composables/useAppSettings'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
 import TooltipButton from '@/components/ui/TooltipButton.vue'
@@ -35,6 +36,7 @@ import { isTauri } from '@/utils/environment'
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const { settings, fetchSettings } = useAppSettings()
 
 const activeTab = ref<'active' | 'trash' | 'groups'>('active')
 const sources = ref<Source[]>([])
@@ -454,7 +456,7 @@ async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void
 }
 
 onMounted(async () => {
-  await Promise.all([fetchSources(), fetchTrash(), fetchGroups()])
+  await Promise.all([fetchSources(), fetchTrash(), fetchGroups(), fetchSettings()])
 })
 </script>
 
@@ -526,9 +528,10 @@ onMounted(async () => {
         <Trash2 class="h-4 w-4 inline-block" /> {{ t('trash.tab_trash') }} ({{ trashItems.length }})
       </button>
       <button
+        v-if="settings.group_enabled"
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-        :class="activeTab === 'groups' 
-          ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+        :class="activeTab === 'groups'
+          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
           : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
         @click="handleTabChange('groups')"
       >
@@ -689,7 +692,7 @@ onMounted(async () => {
     </div>
 
     <!-- Groups Tab -->
-    <div v-if="isGroupsTab && !loading">
+    <div v-if="isGroupsTab && !loading && settings.group_enabled">
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
         <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
         {{ t('groups.empty') }}
@@ -804,7 +807,7 @@ onMounted(async () => {
               </div>
 
               <!-- Schedule Section (Web only) -->
-              <ScheduleConfigPanel v-if="!isTauri()" :group-id="group.id" @saved="() => {}" />
+              <ScheduleConfigPanel v-if="!isTauri() && settings.schedule_enabled && settings.group_enabled" :group-id="group.id" @saved="() => {}" />
             </div>
           </div>
         </div>

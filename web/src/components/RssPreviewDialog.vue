@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Braces, Check, Copy, Database, Download, FileCode, FileText, X } from "lucide-vue-next";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useAppSettings } from "@/composables/useAppSettings";
 import { useI18n } from "vue-i18n";
 import type { FeedParams } from "@/api/feed";
 import { buildFeedPathUrl } from "@/api/feed";
@@ -25,6 +26,7 @@ const props = withDefaults(
 const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
 const { t } = useI18n();
+const { settings, fetchSettings } = useAppSettings();
 
 const selectedFormat = ref<Format>("rss");
 const copied = ref(false);
@@ -154,6 +156,10 @@ watch(
 		}
 	},
 );
+
+onMounted(async () => {
+	await fetchSettings();
+});
 </script>
 
 <template>
@@ -263,23 +269,6 @@ watch(
           <Button
             variant="outline"
             size="sm"
-            @click="showApiPaths = !showApiPaths"
-            class="gap-2"
-          >
-            <svg 
-              class="h-4 w-4 transition-transform" 
-              :class="{ 'rotate-90': showApiPaths }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            {{ t('feed.share_links') }}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
             @click="copyToClipboard"
             class="gap-2"
           >
@@ -298,40 +287,60 @@ watch(
           </Button>
         </div>
 
-        <!-- Share Links Expanded Section -->
-        <Transition
-          enter-active-class="transition-all duration-200 ease-out"
-          enter-from-class="opacity-0 max-h-0"
-          enter-to-class="opacity-100 max-h-40"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 max-h-40"
-          leave-to-class="opacity-0 max-h-0"
-        >
-          <div v-show="showApiPaths" class="bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-3 overflow-hidden">
-            <div class="space-y-1">
-              <div
-                v-for="{ format, url } in apiPaths"
-                :key="format"
-                class="flex items-center justify-between text-sm"
-              >
-                <span class="text-slate-600 dark:text-slate-400 w-16">
-                  {{ t(`feed.format_${format}`) }}
-                </span>
-                <code class="flex-1 text-xs bg-white dark:bg-slate-800 px-2 py-1 rounded text-slate-700 dark:text-slate-300 truncate ml-2">
-                  {{ url }}
-                </code>
-                <button
-                  @click="copyPath(url)"
-                  class="ml-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                  :title="t('feed.copy_path')"
+        <!-- Share Links Expanded Section (feature-gated) -->
+        <div v-if="settings.share_enabled">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="showApiPaths = !showApiPaths"
+            class="gap-2"
+          >
+            <svg
+              class="h-4 w-4 transition-transform"
+              :class="{ 'rotate-90': showApiPaths }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            {{ t('feed.share_links') }}
+          </Button>
+
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 max-h-0"
+            enter-to-class="opacity-100 max-h-40"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 max-h-40"
+            leave-to-class="opacity-0 max-h-0"
+          >
+            <div v-show="showApiPaths" class="bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-3 overflow-hidden mt-2">
+              <div class="space-y-1">
+                <div
+                  v-for="{ format, url } in apiPaths"
+                  :key="format"
+                  class="flex items-center justify-between text-sm"
                 >
-                  <Check v-if="copiedPath === url" class="h-4 w-4 text-green-500" />
-                  <Copy v-else class="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                </button>
+                  <span class="text-slate-600 dark:text-slate-400 w-16">
+                    {{ t(`feed.format_${format}`) }}
+                  </span>
+                  <code class="flex-1 text-xs bg-white dark:bg-slate-800 px-2 py-1 rounded text-slate-700 dark:text-slate-300 truncate ml-2">
+                    {{ url }}
+                  </code>
+                  <button
+                    @click="copyPath(url)"
+                    class="ml-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    :title="t('feed.copy_path')"
+                  >
+                    <Check v-if="copiedPath === url" class="h-4 w-4 text-green-500" />
+                    <Copy v-else class="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </Transition>
+          </Transition>
+        </div>
       </div>
     </div>
   </Dialog>
