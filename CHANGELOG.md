@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.19.2] - 2026-04-21
+
+### Fixed
+
+- Backend scheduler: scheduled updates now controlled **only** by feature flags (`feature_schedules`, `feature_groups`), ignoring `SCHEDULER_ENABLED` env var
+  - Removed `if settings.scheduler_enabled:` guards around `schedule_scheduler.start()` / `stop()` in lifespan
+  - Schedulers always start; execution gating is handled entirely inside `_check_and_execute()` via feature flags
+
 ## [v0.19.0] - 2026-04-21
 
 ### Features
