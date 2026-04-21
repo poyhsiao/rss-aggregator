@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { setActivePinia, createPinia } from 'pinia'
+import { useFeatureFlagsStore } from '@/stores/featureFlags'
 
 const i18n = createI18n({
   legacy: false,
@@ -141,6 +142,49 @@ describe('FeatureFlagsDialog', () => {
       const wrapper = await mountComponent({ open: true })
       const toggle = wrapper.find('.toggle-shareLinks')
       await toggle.trigger('click')
+    })
+  })
+
+  describe('cascade logic: groups → schedules', () => {
+    it('should disable schedules toggle when groups is OFF', async () => {
+      const wrapper = await mountComponent({ open: true })
+      const schedulesBtn = wrapper.find('.toggle-schedules')
+      expect(schedulesBtn.attributes('disabled')).toBeDefined()
+      expect(schedulesBtn.attributes('aria-disabled')).toBeDefined()
+    })
+
+    it('should NOT call store.toggle for schedules when groups is OFF', async () => {
+      const store = useFeatureFlagsStore()
+      store.feature_groups = false
+      store.feature_schedules = true
+      const toggleSpy = vi.spyOn(store, 'toggle')
+      const wrapper = await mountComponent({ open: true })
+      const schedulesToggle = wrapper.find('.toggle-schedules')
+      await schedulesToggle.trigger('click')
+      expect(toggleSpy).not.toHaveBeenCalled()
+    })
+
+    it('should cascade-disable schedules when groups is toggled OFF', async () => {
+      const store = useFeatureFlagsStore()
+      store.feature_groups = true
+      store.feature_schedules = true
+      const wrapper = await mountComponent({ open: true })
+      expect(store.feature_schedules).toBe(true)
+      const groupsToggle = wrapper.find('.toggle-groups')
+      await groupsToggle.trigger('click')
+      await flushPromises()
+      expect(store.feature_groups).toBe(false)
+      expect(store.feature_schedules).toBe(false)
+    })
+
+    it('should show schedules toggle as visually disabled when groups is OFF', async () => {
+      const store = useFeatureFlagsStore()
+      store.feature_groups = false
+      store.feature_schedules = true
+      const wrapper = await mountComponent({ open: true })
+      const schedulesToggle = wrapper.find('.toggle-schedules')
+      expect(schedulesToggle.classes()).toContain('opacity-50')
+      expect(schedulesToggle.classes()).toContain('cursor-not-allowed')
     })
   })
 })

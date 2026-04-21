@@ -2,26 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v0.19.4] - 2026-04-22
+## [v0.19.0] - 2026-04-21
 
 ### Features
 
-- Complete feature flags system with localStorage sync between frontend and backend
-- Feature flags dialog with 10-click trigger
-- Share link API endpoints respect `feature_share_links` flag: return HTTP 404 when disabled
-- Scheduler respects feature flags instead of `SCHEDULER_ENABLED` env var
-- AppSettings model and API endpoint (`GET/PUT /api/v1/settings`)
-- Conditional rendering for feature toggles in UI
+- **Feature Flags System** - Toggle visibility of Groups, Schedules, and Share Links features
+  - Feature gates control UI visibility for Groups, Schedules, and Share Links
+  - Settings dialog triggered by 10 consecutive clicks on the site icon
+  - Dual storage: localStorage (instant) + Backend API (multi-device sync)
+  - New API endpoints: `GET/PUT /api/v1/feature-flags`
+  - Frontend store: `useFeatureFlagsStore` with reactive feature toggles
 
 ### Fixed
 
-- Scheduler ignores `SCHEDULER_ENABLED`, uses only feature flags
-- Hide group filter badges when `feature_groups` is OFF
-- Enforce `feature_share_links` flag on all share link endpoints
+- Feature Flags: store.init() no longer overwrites localStorage user preferences on every page navigation
+  - localStorage now takes priority over API values on load (preserves user's toggle state)
+  - API values merge on top without saving back to localStorage
+  - Removed redundant saveCurrentFlags() call from init()
 
 ### Changed
 
-- OpenAPI/Swagger version updated to 0.19.4
+- OpenAPI/Swagger version updated to 0.19.0
 
 ## [v0.18.2] - 2026-04-19
 

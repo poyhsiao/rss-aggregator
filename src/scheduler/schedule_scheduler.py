@@ -52,6 +52,20 @@ class ScheduleScheduler:
 
     async def _check_and_execute(self) -> None:
         async with self.session_factory() as session:
+            # Check feature flags before executing any schedules
+            from src.models.feature_flag import FeatureFlag
+            from sqlalchemy import select
+
+            flag_result = await session.execute(
+                select(FeatureFlag).where(FeatureFlag.key.in_(["feature_schedules", "feature_groups"]))
+            )
+            flags = {f.key: f.enabled for f in flag_result.scalars().all()}
+
+            # If either flag is disabled, skip schedule execution but still calculate next run times
+            if not flags.get("feature_schedules", False) or not flags.get("feature_groups", False):
+                logger.debug("Schedules or groups feature disabled — skipping schedule execution")
+                return
+
             now = get_now()
             result = await session.execute(
                 select(SourceGroupSchedule).where(

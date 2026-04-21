@@ -19,6 +19,7 @@ A FastAPI-based RSS feed aggregator with source management, scheduled fetching, 
 - **Article Quick Preview** - Preview article content with markdown rendering and caching
 - **Desktop application support** (Windows, macOS, Linux)
 - **Enhanced UI** - Animations, Lucide Icons, and accessible components (Skeleton, EmptyState, Tooltip)
+- **Feature Flags** - Toggle visibility of Groups, Schedules, and Share Links features (10-click trigger on site icon)
 
 ## Installation
 

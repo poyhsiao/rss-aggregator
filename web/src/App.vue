@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useFeatureFlagsStore } from '@/stores/featureFlags'
 import MainLayout from '@/layouts/MainLayout.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
 
-const { init, listenSystemPreference } = useTheme()
+const { init: initTheme, listenSystemPreference } = useTheme()
+const featureFlagsStore = useFeatureFlagsStore()
+
+let initialized = false
 
 onMounted(() => {
-  init()
+  initTheme()
   listenSystemPreference()
+  if (!initialized) {
+    initialized = true
+    featureFlagsStore.init()
+  }
 })
 </script>
 
