@@ -3,11 +3,13 @@
 from typing import AsyncGenerator, Optional
 
 from fastapi import Depends, Header, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.db.database import get_session
 from src.scheduler.fetch_scheduler import FetchScheduler
+from src.models.app_settings import AppSettings
 from src.services.auth_service import AuthService
 from src.services.feed_service import FeedService
 from src.services.fetch_service import FetchService
@@ -106,6 +108,18 @@ async def get_schedule_service(
     session: AsyncSession = Depends(get_session),
 ) -> SourceGroupScheduleService:
     return SourceGroupScheduleService(session)
+
+
+async def get_app_settings(session: AsyncSession = Depends(get_session)) -> AppSettings:
+    """Return the singleton AppSettings record, creating it if absent."""
+    result = await session.execute(select(AppSettings))
+    settings = result.scalars().first()
+    if settings is None:
+        settings = AppSettings()
+        session.add(settings)
+        await session.commit()
+        await session.refresh(settings)
+    return settings
 
 
 async def require_api_key(

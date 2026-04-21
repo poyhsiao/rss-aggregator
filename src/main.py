@@ -6,8 +6,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.deps import get_scheduler, set_scheduler
-from src.api.routes import backup, feed, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
+from src.api.routes import (
+    app_settings,
+    backup,
+    feed,
+    health,
+    history,
+    keys,
+    logs,
+    previews,
+    schedule,
+    source_groups,
+    sources,
+    stats,
+    trash,
+)
 from src.config import settings
+from src.models.app_settings import AppSettings
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.scheduler.schedule_scheduler import ScheduleScheduler
 
@@ -34,6 +49,17 @@ async def lifespan(app: FastAPI):
         print(f"[ERROR] Failed to run migrations: {e}", flush=True)
 
     from src.db.database import async_session_factory
+    from sqlalchemy import select
+
+    # Ensure AppSettings singleton exists
+    try:
+        async with async_session_factory() as session:
+            result = await session.execute(select(AppSettings))
+            if result.scalars().first() is None:
+                session.add(AppSettings())
+                await session.commit()
+    except Exception as e:
+        print(f"[WARN] Could not initialize AppSettings: {e}", flush=True)
 
     scheduler = FetchScheduler(
         session_factory=async_session_factory,
@@ -72,6 +98,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(app_settings.router, prefix="/api/v1")
 app.include_router(health.router)
 app.include_router(feed.router, prefix="/api/v1")
 app.include_router(sources.router, prefix="/api/v1")
