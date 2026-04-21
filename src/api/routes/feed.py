@@ -2,10 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, Path, Query, Response, HTTPException, status
+from fastapi import APIRouter, Depends, Path, Query, Response
 
-from src.api.deps import get_app_settings, get_feed_service, require_api_key
-from src.models.app_settings import AppSettings
+from src.api.deps import get_feed_service, require_api_key, require_share_links_enabled
 from src.services.feed_service import FeedService
 
 router = APIRouter(prefix="/feed", tags=["feed"])
@@ -46,18 +45,17 @@ async def get_feed(
         None,
         description="Filter by source group ID",
     ),
-    settings: AppSettings = Depends(get_app_settings),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Any:
     """Get aggregated RSS feed.
 
     Returns RSS by default, or JSON/Markdown/Preview when format is specified.
     Supports filtering by time range, keywords, and source ID, and sorting.
-    Share mode is gated by share_enabled feature flag.
 
     Query params:
-    - share: Enable share mode (requires share_enabled=True)
+    - share: Enable share mode
     - format: Output format ('rss', 'json', 'markdown', or 'preview', default: 'rss')
     - sort_by: Sort field ('published_at' or 'source')
     - sort_order: Sort direction ('asc' or 'desc')
@@ -65,8 +63,6 @@ async def get_feed(
     - keywords: Keywords for filtering (semicolon-separated)
     - source_id: Filter by source ID
     """
-    if share and not settings.share_enabled:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="分享連結功能已停用")
     content, content_type = await feed_service.get_formatted_feed(
         format=format,
         sort_by=sort_by,
@@ -115,6 +111,7 @@ async def get_feed_by_format(
     ),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Any:
     """Get aggregated RSS feed by format path parameter.
 

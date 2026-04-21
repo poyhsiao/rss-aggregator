@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_app_settings, get_scheduler, get_feed_service, get_source_group_service, require_api_key
+from src.api.deps import get_app_settings, get_scheduler, get_feed_service, get_source_group_service, require_api_key, require_share_links_enabled
 from src.models.app_settings import AppSettings
 from src.services.feed_service import FeedService
 from src.services.source_group_service import SourceGroupService
@@ -228,6 +228,7 @@ async def get_group_feed_by_format(
     feed_service: FeedService = Depends(get_feed_service),
     group_service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Response:
     """Get feed for a specific group by format path parameter.
 

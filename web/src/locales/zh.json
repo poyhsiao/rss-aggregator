@@ -14,7 +14,8 @@
     "add": "新增",
     "refresh": "刷新",
     "settings": "設定",
-    "system": "系統"
+    "system": "系統",
+    "close": "關閉"
   },
   "setup": {
     "step": "步驟",
@@ -429,5 +430,11 @@
     "delete": "刪除排程",
     "minutes_hint": "以 5 分鐘為間隔選擇（0, 5, 10, ... 55）",
     "multi_select_hint": "點擊可多選（桌面版按住 Ctrl/Cmd 點擊）"
+  },
+  "featureFlags": {
+    "title": "功能開關",
+    "groups": "群組設定功能",
+    "schedules": "定時更新功能",
+    "shareLinks": "分享連結功能"
   }
 }

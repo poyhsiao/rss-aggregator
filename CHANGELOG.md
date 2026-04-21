@@ -2,26 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v0.19.4] - 2026-04-22
-
-### Features
-
-- Complete feature flags system with localStorage sync between frontend and backend
-- Feature flags dialog with 10-click trigger
-- Share link API endpoints respect `feature_share_links` flag: return HTTP 404 when disabled
-- Scheduler respects feature flags instead of `SCHEDULER_ENABLED` env var
-- AppSettings model and API endpoint (`GET/PUT /api/v1/settings`)
-- Conditional rendering for feature toggles in UI
+## [v0.19.5] - 2026-04-22
 
 ### Fixed
 
-- Scheduler ignores `SCHEDULER_ENABLED`, uses only feature flags
-- Hide group filter badges when `feature_groups` is OFF
 - Enforce `feature_share_links` flag on all share link endpoints
+  - `/api/v1/feed` and `/api/v1/feed/{format}` now return HTTP 404 (blank) when flag is disabled
+  - `/api/v1/history/batches/{id}/{format}` now returns HTTP 404 (blank) when flag is disabled
+  - `/api/v1/sources/{id}/feed` and `/api/v1/sources/{id}/{format}` now return HTTP 404 (blank) when flag is disabled
+  - `/api/v1/groups/{id}/{format}` now returns HTTP 404 (blank) when flag is disabled
+  - Previously only `/api/v1/feed` with `share=true` returned HTTP 403
+
+## [v0.19.2] - 2026-04-21
+
+### Fixed
+
+- Backend scheduler: scheduled updates now controlled **only** by feature flags (`feature_schedules`, `feature_groups`), ignoring `SCHEDULER_ENABLED` env var
+  - Removed `if settings.scheduler_enabled:` guards around `schedule_scheduler.start()` / `stop()` in lifespan
+  - Schedulers always start; execution gating is handled entirely inside `_check_and_execute()` via feature flags
+
+## [v0.19.0] - 2026-04-21
+
+### Features
+
+- **Feature Flags System** - Toggle visibility of Groups, Schedules, and Share Links features
+  - Feature gates control UI visibility for Groups, Schedules, and Share Links
+  - Settings dialog triggered by 10 consecutive clicks on the site icon
+  - Dual storage: localStorage (instant) + Backend API (multi-device sync)
+  - New API endpoints: `GET/PUT /api/v1/feature-flags`
+  - Frontend store: `useFeatureFlagsStore` with reactive feature toggles
+
+### Fixed
+
+- Feature Flags: store.init() no longer overwrites localStorage user preferences on every page navigation
+  - localStorage now takes priority over API values on load (preserves user's toggle state)
+  - API values merge on top without saving back to localStorage
+  - Removed redundant saveCurrentFlags() call from init()
+- Feature Flags: Hide group filter badges/chips in Feed and History pages when feature_groups is OFF
 
 ### Changed
 
-- OpenAPI/Swagger version updated to 0.19.4
+- OpenAPI/Swagger version updated to 0.19.0
 
 ## [v0.18.2] - 2026-04-19
 

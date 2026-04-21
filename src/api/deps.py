@@ -10,6 +10,7 @@ from src.config import settings
 from src.db.database import get_session
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.models.app_settings import AppSettings
+from src.models.feature_flag import FeatureFlag
 from src.services.auth_service import AuthService
 from src.services.feed_service import FeedService
 from src.services.fetch_service import FetchService
@@ -173,3 +174,14 @@ async def require_api_key(
         )
 
     return x_api_key
+
+
+async def require_share_links_enabled(
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    flag_result = await session.execute(
+        select(FeatureFlag).where(FeatureFlag.key == "feature_share_links")
+    )
+    flag = flag_result.scalar_one_or_none()
+    if not flag or not flag.enabled:
+        raise HTTPException(status_code=404, detail="")
