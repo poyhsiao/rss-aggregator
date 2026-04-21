@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
 
-from src.api.deps import get_feed_service, get_history_service, require_api_key
+from src.api.deps import get_feed_service, get_history_service, require_api_key, require_share_links_enabled
 from src.schemas.history import (
     DeleteBatchResponse,
     DeleteHistoryResponse,
@@ -107,6 +107,7 @@ async def get_history_batch_feed(
     history_service: HistoryService = Depends(get_history_service),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Response:
     """Get feed for a specific history batch in RSS/JSON/Markdown/Preview format.
 

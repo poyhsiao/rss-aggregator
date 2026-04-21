@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_feed_service, get_scheduler, get_source_group_service, get_source_service, require_api_key
+from src.api.deps import get_feed_service, get_scheduler, get_source_group_service, get_source_service, require_api_key, require_share_links_enabled
 from src.services.feed_service import FeedService
 from src.services.source_group_service import SourceGroupService
 from src.services.source_service import SourceService
@@ -233,6 +233,7 @@ async def get_source_feed(
     ),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Response:
     """Get feed for a specific source.
 
@@ -291,6 +292,7 @@ async def get_source_feed_by_format(
     feed_service: FeedService = Depends(get_feed_service),
     source_service: SourceService = Depends(get_source_service),
     _: str = Depends(require_api_key),
+    __: None = Depends(require_share_links_enabled),
 ) -> Response:
     """Get feed for a specific source by format path parameter.
 
