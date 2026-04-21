@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
   - localStorage now takes priority over API values on load (preserves user's toggle state)
   - API values merge on top without saving back to localStorage
   - Removed redundant saveCurrentFlags() call from init()
+- Feature Flags: Hide group filter badges/chips in Feed and History pages when feature_groups is OFF
 
 ### Changed
 
