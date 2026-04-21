@@ -3,12 +3,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_scheduler, get_feed_service, get_source_group_service, require_api_key
+from src.api.deps import get_app_settings, get_scheduler, get_feed_service, get_source_group_service, require_api_key
+from src.models.app_settings import AppSettings
 from src.services.feed_service import FeedService
 from src.services.source_group_service import SourceGroupService
 from src.utils.time import to_iso_string
 
 router = APIRouter(prefix="/source-groups", tags=["source-groups"])
+
+
+async def _require_group_enabled(settings: AppSettings = Depends(get_app_settings)) -> None:
+    if not settings.group_enabled:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="群組功能已停用")
+
 
 # Alias router for /groups prefix
 groups_router = APIRouter(prefix="/groups", tags=["groups"])
@@ -37,7 +44,7 @@ class AddSourceRequest(BaseModel):
     source_id: int
 
 
-@router.get("", response_model=list[GroupResponse])
+@router.get("", response_model=list[GroupResponse], dependencies=[Depends(_require_group_enabled)])
 async def list_groups(
     service: SourceGroupService = Depends(get_source_group_service),
     _: str = Depends(require_api_key),
@@ -56,7 +63,7 @@ async def list_groups(
     ]
 
 
-@router.post("", response_model=GroupResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=GroupResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(_require_group_enabled)])
 async def create_group(
     data: GroupCreate,
     service: SourceGroupService = Depends(get_source_group_service),
@@ -77,7 +84,7 @@ async def create_group(
     )
 
 
-@router.put("/{group_id}", response_model=GroupResponse)
+@router.put("/{group_id}", response_model=GroupResponse, dependencies=[Depends(_require_group_enabled)])
 async def update_group(
     group_id: int,
     data: GroupUpdate,
@@ -110,7 +117,7 @@ async def update_group(
     )
 
 
-@router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(_require_group_enabled)])
 async def delete_group(
     group_id: int,
     service: SourceGroupService = Depends(get_source_group_service),
@@ -122,7 +129,7 @@ async def delete_group(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/{group_id}/sources")
+@router.get("/{group_id}/sources", dependencies=[Depends(_require_group_enabled)])
 async def get_group_sources(
     group_id: int,
     service: SourceGroupService = Depends(get_source_group_service),
@@ -144,7 +151,7 @@ async def get_group_sources(
     ]
 
 
-@router.post("/{group_id}/sources")
+@router.post("/{group_id}/sources", dependencies=[Depends(_require_group_enabled)])
 async def add_source_to_group(
     group_id: int,
     data: AddSourceRequest,
@@ -159,7 +166,8 @@ async def add_source_to_group(
 
 
 @router.delete(
-    "/{group_id}/sources/{source_id}", status_code=status.HTTP_204_NO_CONTENT
+    "/{group_id}/sources/{source_id}", status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(_require_group_enabled)]
 )
 async def remove_source_from_group(
     group_id: int,
@@ -173,7 +181,7 @@ async def remove_source_from_group(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/{group_id}/refresh")
+@router.post("/{group_id}/refresh", dependencies=[Depends(_require_group_enabled)])
 async def refresh_group_sources(
     group_id: int,
     scheduler=Depends(get_scheduler),
