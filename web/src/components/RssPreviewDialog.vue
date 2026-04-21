@@ -10,6 +10,7 @@ import JsonPreview from "@/components/JsonPreview.vue";
 import MarkdownPreview from "@/components/MarkdownPreview.vue";
 import RssXmlPreview from "@/components/RssXmlPreview.vue";
 import { useFeedCache, type Format } from "@/composables/useFeedCache";
+import { useFeatureFlagsStore } from "@/stores/featureFlags";
 
 const props = withDefaults(
 	defineProps<{
@@ -25,6 +26,7 @@ const props = withDefaults(
 const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
 const { t } = useI18n();
+const store = useFeatureFlagsStore();
 
 const selectedFormat = ref<Format>("rss");
 const copied = ref(false);
@@ -261,16 +263,17 @@ watch(
 
         <div class="flex justify-end gap-2">
           <Button
+            v-if="store.feature_share_links"
             variant="outline"
             size="sm"
             @click="showApiPaths = !showApiPaths"
             class="gap-2"
           >
-            <svg 
-              class="h-4 w-4 transition-transform" 
+            <svg
+              class="h-4 w-4 transition-transform"
               :class="{ 'rotate-90': showApiPaths }"
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -300,6 +303,7 @@ watch(
 
         <!-- Share Links Expanded Section -->
         <Transition
+          v-if="store.feature_share_links"
           enter-active-class="transition-all duration-200 ease-out"
           enter-from-class="opacity-0 max-h-0"
           enter-to-class="opacity-100 max-h-40"

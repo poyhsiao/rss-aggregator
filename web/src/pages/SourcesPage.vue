@@ -31,8 +31,10 @@ import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
 import TooltipButton from '@/components/ui/TooltipButton.vue'
 import { formatDate } from '@/utils/format'
 import { isTauri } from '@/utils/environment'
+import { useFeatureFlagsStore } from '@/stores/featureFlags'
 
 const { t } = useI18n()
+const store = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -526,9 +528,10 @@ onMounted(async () => {
         <Trash2 class="h-4 w-4 inline-block" /> {{ t('trash.tab_trash') }} ({{ trashItems.length }})
       </button>
       <button
+        v-if="store.feature_groups"
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-        :class="activeTab === 'groups' 
-          ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+        :class="activeTab === 'groups'
+          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
           : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300'"
         @click="handleTabChange('groups')"
       >
@@ -689,7 +692,7 @@ onMounted(async () => {
     </div>
 
     <!-- Groups Tab -->
-    <div v-if="isGroupsTab && !loading">
+    <div v-if="isGroupsTab && !loading && store.feature_groups">
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
         <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
         {{ t('groups.empty') }}
@@ -804,7 +807,7 @@ onMounted(async () => {
               </div>
 
               <!-- Schedule Section (Web only) -->
-              <ScheduleConfigPanel v-if="!isTauri()" :group-id="group.id" @saved="() => {}" />
+              <ScheduleConfigPanel v-if="!isTauri() && store.feature_schedules" :group-id="group.id" @saved="() => {}" />
             </div>
           </div>
         </div>

@@ -21,9 +21,14 @@ function close(): void {
 
 async function handleToggleGroups(): Promise<void> {
   await store.toggle("feature_groups");
+  // Disabling groups also disables schedules (but data is preserved — scheduler skips execution)
+  if (store.feature_groups === false) {
+    await store.toggle("feature_schedules");
+  }
 }
 
 async function handleToggleSchedules(): Promise<void> {
+  if (!store.feature_groups) return;
   await store.toggle("feature_schedules");
 }
 
@@ -71,13 +76,18 @@ async function handleToggleShareLinks(): Promise<void> {
 
         <!-- Feature Schedules Toggle -->
         <div class="flex items-center justify-between">
-          <span class="label-schedules text-sm font-medium">{{ t("featureFlags.schedules") }}</span>
+          <span class="label-schedules text-sm font-medium" :class="{ 'text-neutral-400': !store.feature_groups }">{{ t("featureFlags.schedules") }}</span>
           <button
             type="button"
             role="switch"
             :aria-checked="store.feature_schedules"
+            :disabled="!store.feature_groups"
+            :aria-disabled="!store.feature_groups"
             class="toggle-switch toggle-schedules relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-            :class="store.feature_schedules ? 'bg-primary-600' : 'bg-neutral-200 dark:bg-neutral-600'"
+            :class="[
+              store.feature_schedules ? 'bg-primary-600' : 'bg-neutral-200 dark:bg-neutral-600',
+              !store.feature_groups ? 'opacity-50 cursor-not-allowed' : ''
+            ]"
             @click="handleToggleSchedules"
           >
             <span

@@ -32,14 +32,6 @@ function saveToStorage(flags: FeatureFlags): void {
   }
 }
 
-function getDefaultFlags(): FeatureFlags {
-  return {
-    feature_groups: false,
-    feature_schedules: false,
-    feature_share_links: false,
-  }
-}
-
 export const useFeatureFlagsStore = defineStore('featureFlags', () => {
   const feature_groups = ref(false)
   const feature_schedules = ref(false)
@@ -85,25 +77,21 @@ export const useFeatureFlagsStore = defineStore('featureFlags', () => {
     isLoading.value = true
     error.value = null
 
+    const stored = loadFromStorage()
+    if (stored) {
+      feature_groups.value = stored.feature_groups
+      feature_schedules.value = stored.feature_schedules
+      feature_share_links.value = stored.feature_share_links
+    }
+
     try {
-      const data = await api.get<FeatureFlags>('/feature-flags')
-      feature_groups.value = data.feature_groups
-      feature_schedules.value = data.feature_schedules
-      feature_share_links.value = data.feature_share_links
-      saveCurrentFlags()
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch'
-      const stored = loadFromStorage()
-      if (stored) {
-        feature_groups.value = stored.feature_groups
-        feature_schedules.value = stored.feature_schedules
-        feature_share_links.value = stored.feature_share_links
-      } else {
-        const defaults = getDefaultFlags()
-        feature_groups.value = defaults.feature_groups
-        feature_schedules.value = defaults.feature_schedules
-        feature_share_links.value = defaults.feature_share_links
-      }
+      const data = await api.get<Array<{ key: string; enabled: boolean }>>('/feature-flags')
+      const flags = Object.fromEntries(data.map((f) => [f.key, f.enabled]))
+      feature_groups.value = flags['feature_groups'] ?? feature_groups.value
+      feature_schedules.value = flags['feature_schedules'] ?? feature_schedules.value
+      feature_share_links.value = flags['feature_share_links'] ?? feature_share_links.value
+    } catch {
+      error.value = 'Failed to sync with server — using local settings'
     } finally {
       isLoading.value = false
     }

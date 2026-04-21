@@ -186,7 +186,7 @@ describe('Feature Flags Store', () => {
       const store = useFeatureFlagsStore()
       await store.init()
 
-      expect(store.error).toBe('Failed to fetch')
+      expect(store.error).toBe('Failed to sync with server — using local settings')
     })
 
     it('should clear error on successful init', async () => {
@@ -195,14 +195,14 @@ describe('Feature Flags Store', () => {
 
       const store = useFeatureFlagsStore()
       await store.init()
-      expect(store.error).toBe('Failed to fetch')
+      expect(store.error).toBe('Failed to sync with server — using local settings')
 
       // Now API succeeds
-      vi.mocked(api.get).mockResolvedValueOnce({
-        feature_groups: true,
-        feature_schedules: false,
-        feature_share_links: false,
-      })
+      vi.mocked(api.get).mockResolvedValueOnce([
+        { key: 'feature_groups', enabled: true },
+        { key: 'feature_schedules', enabled: false },
+        { key: 'feature_share_links', enabled: false },
+      ])
 
       await store.init()
       expect(store.error).toBe(null)

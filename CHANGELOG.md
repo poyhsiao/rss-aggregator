@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.19.0] - 2026-04-21
+
+### Features
+
+- **Feature Flags System** - Toggle visibility of Groups, Schedules, and Share Links features
+  - Feature gates control UI visibility for Groups, Schedules, and Share Links
+  - Settings dialog triggered by 10 consecutive clicks on the site icon
+  - Dual storage: localStorage (instant) + Backend API (multi-device sync)
+  - New API endpoints: `GET/PUT /api/v1/feature-flags`
+  - Frontend store: `useFeatureFlagsStore` with reactive feature toggles
+
+### Fixed
+
+- Feature Flags: store.init() no longer overwrites localStorage user preferences on every page navigation
+  - localStorage now takes priority over API values on load (preserves user's toggle state)
+  - API values merge on top without saving back to localStorage
+  - Removed redundant saveCurrentFlags() call from init()
+
+### Changed
+
+- OpenAPI/Swagger version updated to 0.19.0
+
 ## [v0.18.2] - 2026-04-19
 
 ### Features
