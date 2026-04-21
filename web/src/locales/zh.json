@@ -371,6 +371,25 @@
       "success": "已清除所有預覽內容"
     }
   },
+  "featureSettings": {
+    "title": "功能設定",
+    "group": {
+      "label": "群組功能",
+      "description": "啟用後可新增、管理 RSS 來源群組"
+    },
+    "schedule": {
+      "label": "定時更新功能",
+      "description": "啟用後可為各群組設定自動更新時間表",
+      "disabledHint": "需先開啟群組功能"
+    },
+    "share": {
+      "label": "分享連結功能",
+      "description": "啟用後可在預覽摘要中使用分享連結"
+    },
+    "apply": "套用",
+    "cancel": "取消",
+    "applied": "已套用設定"
+  },
   "schedule": {
     "title": "定時更新",
     "quick": "快捷設定",

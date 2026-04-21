@@ -371,6 +371,25 @@
       "success": "All preview contents cleared"
     }
   },
+  "featureSettings": {
+    "title": "Feature Settings",
+    "group": {
+      "label": "Group Feature",
+      "description": "Enable to add and manage RSS source groups"
+    },
+    "schedule": {
+      "label": "Scheduled Update",
+      "description": "Enable to configure automatic update schedules for groups",
+      "disabledHint": "Enable group feature first"
+    },
+    "share": {
+      "label": "Share Links",
+      "description": "Enable to use share link functionality in preview summaries"
+    },
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "applied": "Settings applied"
+  },
   "schedule": {
     "title": "Scheduled Update",
     "quick": "Quick Settings",
