@@ -14,7 +14,8 @@
     "add": "Add",
     "refresh": "Refresh",
     "settings": "Settings",
-    "system": "System"
+    "system": "System",
+    "close": "Close"
   },
   "setup": {
     "step": "Step",
@@ -410,5 +411,11 @@
     "delete": "Delete schedule",
     "minutes_hint": "Select in 5-minute intervals (0, 5, 10, ... 55)",
     "multi_select_hint": "Tap to select multiple (Ctrl/Cmd+click on desktop)"
+  },
+  "featureFlags": {
+    "title": "Feature Flags",
+    "groups": "Group Settings",
+    "schedules": "Scheduled Updates",
+    "shareLinks": "Share Links"
   }
 }
