@@ -1,0 +1,317 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7] [cursor=pointer]
+          - generic [ref=e11]: RSS Aggregator
+        - generic [ref=e12]:
+          - button "切換主題" [ref=e13] [cursor=pointer]:
+            - img [ref=e14]
+          - button "中" [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+            - text: 中
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - navigation [ref=e23]:
+          - link "動態" [ref=e24] [cursor=pointer]:
+            - /url: /
+            - img [ref=e25]
+            - generic [ref=e29]: 動態
+          - link "歷史查詢" [ref=e30] [cursor=pointer]:
+            - /url: /history
+            - img [ref=e31]
+            - generic [ref=e35]: 歷史查詢
+          - link "來源" [ref=e36] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e37]
+            - generic [ref=e43]: 來源
+          - link "設定" [ref=e44] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e45]
+            - generic [ref=e48]: 設定
+      - main [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - img [ref=e53]
+              - heading "來源" [level=1] [ref=e59]
+            - generic [ref=e60]:
+              - button "一鍵更新" [ref=e61] [cursor=pointer]:
+                - img [ref=e62]
+                - text: 一鍵更新
+              - button "新增來源" [ref=e67] [cursor=pointer]:
+                - img [ref=e68]
+                - text: 新增來源
+          - generic [ref=e69]:
+            - button "啟用中 (10)" [ref=e70] [cursor=pointer]:
+              - img [ref=e71]
+              - text: 啟用中 (10)
+            - button "垃圾桶 (0)" [ref=e73] [cursor=pointer]:
+              - img [ref=e74]
+              - text: 垃圾桶 (0)
+            - button "群組 (5)" [ref=e77] [cursor=pointer]:
+              - img [ref=e78]
+              - text: 群組 (5)
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]:
+                - generic [ref=e84]:
+                  - img [ref=e85]
+                  - generic [ref=e87]:
+                    - generic [ref=e88]: 下架
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/8771132983711331521" [ref=e89]: www.google.com...295206897648/8771132983711331521
+                - generic [ref=e90]:
+                  - generic [ref=e91]: 啟用
+                  - generic [ref=e92]:
+                    - button "編輯" [ref=e93] [cursor=pointer]:
+                      - img [ref=e94]
+                    - button "預覽摘要" [ref=e97] [cursor=pointer]:
+                      - img [ref=e98]
+                    - button "刷新" [ref=e101] [cursor=pointer]:
+                      - img [ref=e102]
+                    - button "刪除" [ref=e107] [cursor=pointer]:
+                      - img [ref=e108]
+              - generic [ref=e112]:
+                - generic [ref=e113]:
+                  - img [ref=e114]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e116]:
+                  - img [ref=e117]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - generic [ref=e122]:
+                  - img [ref=e123]
+                  - generic [ref=e125]:
+                    - generic [ref=e126]: 不合格
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/15977787427686840562" [ref=e127]: www.google.com...95206897648/15977787427686840562
+                - generic [ref=e128]:
+                  - generic [ref=e129]: 啟用
+                  - generic [ref=e130]:
+                    - button "編輯" [ref=e131] [cursor=pointer]:
+                      - img [ref=e132]
+                    - button "預覽摘要" [ref=e135] [cursor=pointer]:
+                      - img [ref=e136]
+                    - button "刷新" [ref=e139] [cursor=pointer]:
+                      - img [ref=e140]
+                    - button "刪除" [ref=e145] [cursor=pointer]:
+                      - img [ref=e146]
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - img [ref=e152]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e154]:
+                  - img [ref=e155]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - img [ref=e161]
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: 回收
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/858296615764274760" [ref=e165]: www.google.com...8295206897648/858296615764274760
+                - generic [ref=e166]:
+                  - generic [ref=e167]: 啟用
+                  - generic [ref=e168]:
+                    - button "編輯" [ref=e169] [cursor=pointer]:
+                      - img [ref=e170]
+                    - button "預覽摘要" [ref=e173] [cursor=pointer]:
+                      - img [ref=e174]
+                    - button "刷新" [ref=e177] [cursor=pointer]:
+                      - img [ref=e178]
+                    - button "刪除" [ref=e183] [cursor=pointer]:
+                      - img [ref=e184]
+              - generic [ref=e188]:
+                - generic [ref=e189]:
+                  - img [ref=e190]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e192]:
+                  - img [ref=e193]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e196]:
+              - generic [ref=e197]:
+                - generic [ref=e198]:
+                  - img [ref=e199]
+                  - generic [ref=e201]:
+                    - generic [ref=e202]: 摻假
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/7750413354995128314" [ref=e203]: www.google.com...295206897648/7750413354995128314
+                - generic [ref=e204]:
+                  - generic [ref=e205]: 啟用
+                  - generic [ref=e206]:
+                    - button "編輯" [ref=e207] [cursor=pointer]:
+                      - img [ref=e208]
+                    - button "預覽摘要" [ref=e211] [cursor=pointer]:
+                      - img [ref=e212]
+                    - button "刷新" [ref=e215] [cursor=pointer]:
+                      - img [ref=e216]
+                    - button "刪除" [ref=e221] [cursor=pointer]:
+                      - img [ref=e222]
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - img [ref=e228]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e230]:
+                  - img [ref=e231]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic [ref=e236]:
+                  - img [ref=e237]
+                  - generic [ref=e239]:
+                    - generic [ref=e240]: 標示
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/7793429260631908675" [ref=e241]: www.google.com...295206897648/7793429260631908675
+                - generic [ref=e242]:
+                  - generic [ref=e243]: 啟用
+                  - generic [ref=e244]:
+                    - button "編輯" [ref=e245] [cursor=pointer]:
+                      - img [ref=e246]
+                    - button "預覽摘要" [ref=e249] [cursor=pointer]:
+                      - img [ref=e250]
+                    - button "刷新" [ref=e253] [cursor=pointer]:
+                      - img [ref=e254]
+                    - button "刪除" [ref=e259] [cursor=pointer]:
+                      - img [ref=e260]
+              - generic [ref=e264]:
+                - generic [ref=e265]:
+                  - img [ref=e266]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e268]:
+                  - img [ref=e269]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e272]:
+              - generic [ref=e273]:
+                - generic [ref=e274]:
+                  - img [ref=e275]
+                  - generic [ref=e277]:
+                    - generic [ref=e278]: 檢出
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/5418400828002675426" [ref=e279]: www.google.com...295206897648/5418400828002675426
+                - generic [ref=e280]:
+                  - generic [ref=e281]: 啟用
+                  - generic [ref=e282]:
+                    - button "編輯" [ref=e283] [cursor=pointer]:
+                      - img [ref=e284]
+                    - button "預覽摘要" [ref=e287] [cursor=pointer]:
+                      - img [ref=e288]
+                    - button "刷新" [ref=e291] [cursor=pointer]:
+                      - img [ref=e292]
+                    - button "刪除" [ref=e297] [cursor=pointer]:
+                      - img [ref=e298]
+              - generic [ref=e302]:
+                - generic [ref=e303]:
+                  - img [ref=e304]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e306]:
+                  - img [ref=e307]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - generic [ref=e312]:
+                  - img [ref=e313]
+                  - generic [ref=e315]:
+                    - generic [ref=e316]: 詐欺
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/7750413354995129943" [ref=e317]: www.google.com...295206897648/7750413354995129943
+                - generic [ref=e318]:
+                  - generic [ref=e319]: 啟用
+                  - generic [ref=e320]:
+                    - button "編輯" [ref=e321] [cursor=pointer]:
+                      - img [ref=e322]
+                    - button "預覽摘要" [ref=e325] [cursor=pointer]:
+                      - img [ref=e326]
+                    - button "刷新" [ref=e329] [cursor=pointer]:
+                      - img [ref=e330]
+                    - button "刪除" [ref=e335] [cursor=pointer]:
+                      - img [ref=e336]
+              - generic [ref=e340]:
+                - generic [ref=e341]:
+                  - img [ref=e342]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e344]:
+                  - img [ref=e345]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e348]:
+              - generic [ref=e349]:
+                - generic [ref=e350]:
+                  - img [ref=e351]
+                  - generic [ref=e353]:
+                    - generic [ref=e354]: 過期
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/11386262423670412898" [ref=e355]: www.google.com...95206897648/11386262423670412898
+                - generic [ref=e356]:
+                  - generic [ref=e357]: 啟用
+                  - generic [ref=e358]:
+                    - button "編輯" [ref=e359] [cursor=pointer]:
+                      - img [ref=e360]
+                    - button "預覽摘要" [ref=e363] [cursor=pointer]:
+                      - img [ref=e364]
+                    - button "刷新" [ref=e367] [cursor=pointer]:
+                      - img [ref=e368]
+                    - button "刪除" [ref=e373] [cursor=pointer]:
+                      - img [ref=e374]
+              - generic [ref=e378]:
+                - generic [ref=e379]:
+                  - img [ref=e380]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e382]:
+                  - img [ref=e383]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e386]:
+              - generic [ref=e387]:
+                - generic [ref=e388]:
+                  - img [ref=e389]
+                  - generic [ref=e391]:
+                    - generic [ref=e392]: 阿塞德a s d f
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/18077335193938239941" [ref=e393]: www.google.com...95206897648/18077335193938239941
+                - generic [ref=e394]:
+                  - generic [ref=e395]: 啟用
+                  - generic [ref=e396]:
+                    - button "編輯" [ref=e397] [cursor=pointer]:
+                      - img [ref=e398]
+                    - button "預覽摘要" [ref=e401] [cursor=pointer]:
+                      - img [ref=e402]
+                    - button "刷新" [ref=e405] [cursor=pointer]:
+                      - img [ref=e406]
+                    - button "刪除" [ref=e411] [cursor=pointer]:
+                      - img [ref=e412]
+              - generic [ref=e416]:
+                - generic [ref=e417]:
+                  - img [ref=e418]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e420]:
+                  - img [ref=e421]
+                  - text: "更新時間: 8 分鐘前"
+            - generic [ref=e424]:
+              - generic [ref=e425]:
+                - generic [ref=e426]:
+                  - img [ref=e427]
+                  - generic [ref=e429]:
+                    - generic [ref=e430]: 食安
+                    - generic "https://www.google.com/alerts/feeds/08386838295206897648/12633346845282007382" [ref=e431]: www.google.com...95206897648/12633346845282007382
+                - generic [ref=e432]:
+                  - generic [ref=e433]: 啟用
+                  - generic [ref=e434]:
+                    - button "編輯" [ref=e435] [cursor=pointer]:
+                      - img [ref=e436]
+                    - button "預覽摘要" [ref=e439] [cursor=pointer]:
+                      - img [ref=e440]
+                    - button "刷新" [ref=e443] [cursor=pointer]:
+                      - img [ref=e444]
+                    - button "刪除" [ref=e449] [cursor=pointer]:
+                      - img [ref=e450]
+              - generic [ref=e454]:
+                - generic [ref=e455]:
+                  - img [ref=e456]
+                  - text: "建立時間: 8 分鐘前"
+                - generic [ref=e458]:
+                  - img [ref=e459]
+                  - text: "更新時間: 8 分鐘前"
+  - generic [ref=e466]:
+    - generic [ref=e467]:
+      - heading "歡迎使用 RSS Aggregator" [level=2] [ref=e468]:
+        - img [ref=e469]
+        - text: 歡迎使用 RSS Aggregator
+      - paragraph [ref=e472]: 請輸入您的 API Key 以繼續
+    - textbox "輸入 API Key" [ref=e474]
+    - generic [ref=e475]:
+      - button "驗證" [disabled]:
+        - img
+        - generic: 驗證
