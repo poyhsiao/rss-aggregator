@@ -103,3 +103,51 @@ export function highlightXml(xml: string): string {
 
 	return xml
 }
+
+export function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+}
+
+export function highlightMarkdownSource(source: string): string {
+	let result = escapeHtml(source)
+
+	const codeBlocks: { placeholder: string; html: string }[] = []
+
+	result = result.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, lang, code) => {
+		let highlightedCode: string
+		if (lang && hljs.getLanguage(lang)) {
+			try {
+				highlightedCode = hljs.highlight(code.trim(), { language: lang }).value
+			} catch {
+				highlightedCode = hljs.highlightAuto(code.trim()).value
+			}
+		} else {
+			highlightedCode = hljs.highlightAuto(code.trim()).value
+		}
+		const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`
+		codeBlocks.push({
+			placeholder,
+			html: `<div class="source-code-block"><code class="language-${lang || 'text'}">${highlightedCode}</code></div>`
+		})
+		return placeholder
+	})
+
+	result = result.replace(/`([^`\n]+)`/g, '<code class="source-inline-code">$1</code>')
+
+	for (const block of codeBlocks) {
+		result = result.replace(block.placeholder, block.html)
+	}
+
+	result = result.replace(/^(#{1,6})\s(.*)$/gm, '<span class="md-header">$1</span> <span class="md-header-text">$2</span>')
+	result = result.replace(/\*\*([^*\n]+)\*\*/g, '<span class="md-bold">$1</span>')
+	result = result.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<span class="md-italic">$1</span>')
+	result = result.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g, '<span class="md-link-text">$1</span> <span class="md-link-url">($2)</span>')
+	result = result.replace(/^(\s*)([-*+])(\s)/gm, '$1<span class="md-list">$2</span>$3')
+	result = result.replace(/^(---)$/gm, '<span class="md-hr">$1</span>')
+	result = result.replace(/^(&gt;\s?.*)$/gm, '<span class="md-quote">$1</span>')
+
+	return result
+}

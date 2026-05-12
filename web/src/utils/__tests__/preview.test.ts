@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { highlightJson, manualHighlightJson } from '../preview.highlight'
+import { highlightJson, manualHighlightJson, highlightMarkdownSource, escapeHtml } from '../preview.highlight'
 
 describe('highlightJson', () => {
   it('highlights JSON keys', () => {
@@ -95,6 +95,63 @@ describe('addLineNumbers', () => {
     const result = addLineNumbers('line1\n\nline3')
     // Empty lines get a space placeholder (line || ' ')
     expect(result).toContain('<span class="code-line-content"> </span>')
+  })
+})
+
+describe('highlightMarkdownSource', () => {
+  it('highlights headings', () => {
+    const result = highlightMarkdownSource('# Hello')
+    expect(result).toContain('<span class="md-header">#</span>')
+    expect(result).toContain('<span class="md-header-text">Hello</span>')
+  })
+
+  it('highlights bold text', () => {
+    const result = highlightMarkdownSource('**bold**')
+    expect(result).toContain('<span class="md-bold">')
+  })
+
+  it('highlights italic text', () => {
+    const result = highlightMarkdownSource('*italic*')
+    expect(result).toContain('<span class="md-italic">')
+  })
+
+  it('highlights inline code', () => {
+    const result = highlightMarkdownSource('`code`')
+    expect(result).toContain('<code class="source-inline-code">')
+  })
+
+  it('protects code blocks from being highlighted', () => {
+    const result = highlightMarkdownSource('```js\nconsole.log("hi")\n```')
+    expect(result).toContain('<div class="source-code-block">')
+  })
+
+  it('highlights links', () => {
+    const result = highlightMarkdownSource('[link](http://example.com)')
+    expect(result).toContain('<span class="md-link-text">')
+    expect(result).toContain('<span class="md-link-url">')
+  })
+
+  it('highlights list markers', () => {
+    const result = highlightMarkdownSource('- item 1')
+    expect(result).toContain('<span class="md-list">')
+  })
+
+  it('escapes HTML entities', () => {
+    const result = highlightMarkdownSource('<div>')
+    expect(result).toContain('&lt;')
+    expect(result).toContain('&gt;')
+  })
+})
+
+describe('escapeHtml', () => {
+  it('escapes &', () => {
+    expect(escapeHtml('&amp;')).toBe('&amp;amp;')
+  })
+  it('escapes <', () => {
+    expect(escapeHtml('<div>')).toBe('&lt;div&gt;')
+  })
+  it('escapes >', () => {
+    expect(escapeHtml('a > b')).toBe('a &gt; b')
   })
 })
 
