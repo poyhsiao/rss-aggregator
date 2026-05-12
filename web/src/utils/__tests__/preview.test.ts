@@ -1,4 +1,52 @@
 import { describe, it, expect } from 'vitest'
+import { highlightJson, manualHighlightJson } from '../preview.highlight'
+
+describe('highlightJson', () => {
+  it('highlights JSON keys', () => {
+    const result = highlightJson('{"key": "value"}')
+    expect(result).toContain('<span class="hljs-attr">')
+  })
+
+  it('highlights string values', () => {
+    const result = highlightJson('{"key": "value"}')
+    expect(result).toContain('<span class="hljs-string">')
+  })
+
+  it('highlights numbers', () => {
+    const result = highlightJson('{"num": 123}')
+    expect(result).toContain('<span class="hljs-number">123</span>')
+  })
+
+  it('highlights booleans', () => {
+    const result = highlightJson('{"flag": true}')
+    expect(result).toContain('hljs-literal')
+    expect(result).toContain('true')
+  })
+
+  it('highlights null', () => {
+    const result = highlightJson('{"val": null}')
+    expect(result).toContain('hljs-literal')
+    expect(result).toContain('null')
+  })
+
+  it('escapes < and > characters', () => {
+    const result = highlightJson('{"html": "<b>"}')
+    expect(result).toContain('&lt;')
+    expect(result).toContain('&gt;')
+  })
+})
+
+describe('manualHighlightJson', () => {
+  it('handles nested JSON objects', () => {
+    const result = manualHighlightJson('{"outer": {"inner": "value"}}')
+    expect(result).toContain('<span class="json-key">')
+  })
+
+  it('handles JSON arrays', () => {
+    const result = manualHighlightJson('["a", "b", "c"]')
+    expect(result).toContain('<span class="json-string">')
+  })
+})
 import { cleanContent, addLineNumbers } from '../preview'
 import { highlightXml } from '../preview.highlight'
 
