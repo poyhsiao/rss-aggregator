@@ -5,9 +5,9 @@ import { useI18n } from "vue-i18n";
 import type { FeedParams } from "@/api/feed";
 import Button from "@/components/ui/Button.vue";
 import Dialog from "@/components/ui/Dialog.vue";
-import JsonPreview from "@/components/JsonPreview.vue";
-import MarkdownPreview from "@/components/MarkdownPreview.vue";
-import RssXmlPreview from "@/components/RssXmlPreview.vue";
+import JsonPreview from "@/components/preview/JsonPreview.vue";
+import MarkdownPreview from "@/components/preview/MarkdownPreview.vue";
+import RssXmlPreview from "@/components/preview/RssXmlPreview.vue";
 import { useFeedCache, type Format } from "@/composables/useFeedCache";
 
 const props = withDefaults(

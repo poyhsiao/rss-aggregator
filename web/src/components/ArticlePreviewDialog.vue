@@ -3,7 +3,7 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ExternalLink, X, RefreshCw, AlertCircle } from 'lucide-vue-next'
 import Dialog from '@/components/ui/Dialog.vue'
-import MarkdownPreview from '@/components/MarkdownPreview.vue'
+import MarkdownPreview from '@/components/preview/MarkdownPreview.vue'
 import { useArticlePreview } from '@/composables/useArticlePreview'
 
 const props = defineProps<{

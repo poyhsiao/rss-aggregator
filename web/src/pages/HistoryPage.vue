@@ -12,9 +12,9 @@ import type { SourceGroup } from "@/types/source-group"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
-import JsonPreview from "@/components/JsonPreview.vue"
-import MarkdownPreview from "@/components/MarkdownPreview.vue"
-import RssXmlPreview from "@/components/RssXmlPreview.vue"
+import JsonPreview from "@/components/preview/JsonPreview.vue"
+import MarkdownPreview from "@/components/preview/MarkdownPreview.vue"
+import RssXmlPreview from "@/components/preview/RssXmlPreview.vue"
 import { cn } from "@/utils/cn"
 
 const { t } = useI18n()
