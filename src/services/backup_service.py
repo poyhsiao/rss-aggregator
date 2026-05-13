@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-__version__ = "0.18.0"
+__version__ = "0.20.0"
 
 
 class BackupService:

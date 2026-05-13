@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.20.0] - 2026-05-13
+
+### Features
+
+- **Preview Components Refactor** - Complete refactor of RssXmlPreview, JsonPreview, and MarkdownPreview with TDD methodology
+  - Extracted pure utility functions: `cleanContent`, `addLineNumbers`, `highlightXml`, `highlightJson`, `highlightMarkdownSource`, `escapeHtml`
+  - Created shared `PreviewContainer.vue` with DOMPurify sanitization and line numbers
+  - Moved preview components to `components/preview/` directory
+  - Extracted shared CSS to `preview-shared.css` for consistent styling
+  - Added `manualHighlightJson` for JSON syntax highlighting without external dependencies
+  - All preview components now use scoped CSS with `@import` for shared styles
+
+### Added
+
+- Unit tests for all preview utility functions (34 tests, all passing)
+- Component unit tests for RssXmlPreview, JsonPreview, MarkdownPreview, and PreviewContainer (12 tests, all passing)
+- E2E BDD tests for preview components in `preview-components.spec.ts`
+- Vitest configuration with `globals: true` and `happy-dom` environment
+
+### Fixed
+
+- Fixed `MarkdownPreview.test.ts` syntax error (missing closing brace in mount options)
+- Fixed `tsconfig.json` to exclude test files from production build (avoiding `vi` not found errors)
+- Fixed `@import` CSS order warning in Vite build
+
 ## [v0.18.1] - 2026-04-17
 
 ### Fixed

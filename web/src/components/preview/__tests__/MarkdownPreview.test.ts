@@ -31,7 +31,7 @@ describe('MarkdownPreview', () => {
   it('can switch to source mode', async () => {
     const wrapper = mount(MarkdownPreview, {
       props: { content: '# Hello' },
-      global: { plugins: [i18n], stubs: { LucideIcon: true }
+      global: { plugins: [i18n], stubs: { LucideIcon: true } }
     })
     const buttons = wrapper.findAll('button')
     await buttons[0].trigger('click')
@@ -41,7 +41,7 @@ describe('MarkdownPreview', () => {
   it('can switch back to preview mode', async () => {
     const wrapper = mount(MarkdownPreview, {
       props: { content: '# Hello' },
-      global: { plugins: [i18n], stubs: { LucideIcon: true }
+      global: { plugins: [i18n], stubs: { LucideIcon: true } }
     })
     const buttons = wrapper.findAll('button')
     await buttons[0].trigger('click')
