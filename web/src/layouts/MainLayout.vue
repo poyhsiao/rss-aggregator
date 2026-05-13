@@ -25,6 +25,9 @@ const settingsClickCount = ref(0)
 const settingsClickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const featureFlagsDialogOpen = ref(false)
 
+// Prevent tree-shaking: expose for parent access
+defineExpose({ settingsClickCount, settingsClickTimer, featureFlagsDialogOpen, handleSettingsIconClick })
+
 function handleFeedIconClick(): void {
   // Only activate on Feed page
   if (route.path !== '/') return
