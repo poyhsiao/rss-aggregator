@@ -35,7 +35,7 @@ const sizeClasses = computed(() => {
     md: 'max-w-lg',
     lg: 'max-w-xl',
     xl: 'max-w-2xl',
-    '2xl': 'max-w-4xl',
+    '2xl': 'max-w-3xl',
   }
   return sizes[props.size]
 })
@@ -58,12 +58,12 @@ const sizeClasses = computed(() => {
               'relative w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl',
               sizeClasses,
               'max-h-[90vh] flex flex-col',
-              'min-w-[320px] md:min-w-[400px]'
+              'min-w-[380px] md:min-w-[480px]'
             )"
             @click.stop
           >
             <!-- Header -->
-            <div v-if="$slots.header" class="flex-shrink-0 px-8 py-5 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+            <div v-if="$slots.header" class="flex-shrink-0 px-8 py-6 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
               <slot name="header" />
             </div>
             <!-- Default slot (scrollable content) -->
@@ -71,7 +71,7 @@ const sizeClasses = computed(() => {
               <slot />
             </div>
             <!-- Footer -->
-            <div v-if="$slots.footer" class="flex-shrink-0 px-8 py-5 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+            <div v-if="$slots.footer" class="flex-shrink-0 px-8 py-6 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
               <slot name="footer" />
             </div>
           </div>
