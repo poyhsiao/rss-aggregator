@@ -413,6 +413,8 @@
     "groupsEnabledDesc": "Enable/disable group functionality",
     "groupSchedulesEnabled": "Group Schedules",
     "groupSchedulesEnabledDesc": "Enable/disable scheduled updates for groups",
+    "sourceGroupSchedulesEnabled": "Source Group Schedules",
+    "sourceGroupSchedulesEnabledDesc": "Enable/disable scheduled updates for source groups",
     "confirm": "Confirm",
     "schedulesDisabledHint": "Requires Groups Feature to be enabled",
     "cascadeWarningTitle": "Disabling groups will also disable schedules",

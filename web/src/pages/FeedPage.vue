@@ -154,7 +154,7 @@ watch([sortBy, keywords, selectedGroupId], () => {
     </div>
 
     <!-- Group Filter Chips -->
-    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+    <div v-if="featureFlagsStore.groupsEnabled && groups.length > 0" class="flex flex-wrap gap-2">
       <button
         :class="[
           'px-3 py-1 rounded-full text-sm font-medium transition-colors',

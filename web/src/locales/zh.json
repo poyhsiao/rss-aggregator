@@ -413,6 +413,8 @@
     "groupsEnabledDesc": "啟用/停用群組功能",
     "groupSchedulesEnabled": "群組定時更新",
     "groupSchedulesEnabledDesc": "啟用/停用群組的定時更新功能",
+    "sourceGroupSchedulesEnabled": "來源群組定時更新",
+    "sourceGroupSchedulesEnabledDesc": "啟用/停用來源群組的定時更新功能",
     "confirm": "確認",
     "schedulesDisabledHint": "需要先啟用群組功能",
     "cascadeWarningTitle": "停用群組功能也將停用排程更新",

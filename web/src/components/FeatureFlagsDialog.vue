@@ -29,14 +29,17 @@ watch(() => props.open, (val) => {
 })
 
 function handleGroupsToggle(val: boolean) {
-  localGroupsEnabled.value = val
-  if (!val && (store.groupSchedulesEnabled || store.sourceGroupSchedulesEnabled)) {
-    showCascadeWarning.value = true
-  } else {
+  if (val) {
+    localGroupsEnabled.value = val
     showCascadeWarning.value = false
-    store.groupsEnabled = val
-    localSchedulesEnabled.value = store.groupSchedulesEnabled
-    localSourceGroupSchedulesEnabled.value = store.sourceGroupSchedulesEnabled
+  } else {
+    if (store.groupSchedulesEnabled || store.sourceGroupSchedulesEnabled) {
+      localGroupsEnabled.value = val
+      showCascadeWarning.value = true
+    } else {
+      localGroupsEnabled.value = val
+      showCascadeWarning.value = false
+    }
   }
 }
 
@@ -51,13 +54,9 @@ function handleSourceGroupSchedulesToggle(val: boolean) {
 }
 
 function handleCascadeConfirm() {
-  store.groupsEnabled = false
-  store.groupSchedulesEnabled = false
-  store.sourceGroupSchedulesEnabled = false
   localSchedulesEnabled.value = false
   localSourceGroupSchedulesEnabled.value = false
   showCascadeWarning.value = false
-  emit('update:open', false)
 }
 
 function handleCascadeCancel() {
