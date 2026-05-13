@@ -16,8 +16,10 @@ import JsonPreview from "@/components/preview/JsonPreview.vue"
 import MarkdownPreview from "@/components/preview/MarkdownPreview.vue"
 import RssXmlPreview from "@/components/preview/RssXmlPreview.vue"
 import { cn } from "@/utils/cn"
+import { useFeatureFlagsStore } from "@/stores/featureFlags"
 
 const { t } = useI18n()
+const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -360,7 +362,7 @@ const previewSourceName = computed(() => {
     </div>
 
     <!-- Group Filter Chips -->
-    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+    <div v-if="featureFlagsStore.groupsEnabled && groups.length > 0" class="flex flex-wrap gap-2">
       <button
         :class="[
           'px-3 py-1 rounded-full text-sm font-medium transition-colors',
