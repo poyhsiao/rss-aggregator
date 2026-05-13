@@ -418,6 +418,7 @@
     "confirm": "確認",
     "schedulesDisabledHint": "需要先啟用群組功能",
     "cascadeWarningTitle": "停用群組功能也將停用排程更新",
+    "cascadeWarningMessage": "停用群組功能將同時停用排程更新。群組功能可隨時重新啟用，但排程需要手動重新啟用。是否繼續？",
     "cascadeWarningConfirm": "確認",
     "cascadeWarningCancel": "取消"
   }

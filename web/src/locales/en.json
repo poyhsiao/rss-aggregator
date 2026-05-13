@@ -418,6 +418,7 @@
     "confirm": "Confirm",
     "schedulesDisabledHint": "Requires Groups Feature to be enabled",
     "cascadeWarningTitle": "Disabling groups will also disable schedules",
+    "cascadeWarningMessage": "Disabling groups will also disable schedule updates. Groups can be re-enabled anytime, but schedules will need to be manually re-enabled. Continue?",
     "cascadeWarningConfirm": "Confirm",
     "cascadeWarningCancel": "Cancel"
   }
