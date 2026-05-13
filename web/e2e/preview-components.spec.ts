@@ -47,9 +47,11 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
   // -----------------------------------------------------------------------
   async function closeDialog(page: import('@playwright/test').Page): Promise<void> {
     const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
-    const closeBtn = dialog.locator('.close-btn, button').filter({ has: page.locator('svg') }).last()
+    // The close button is a button containing an X (close) icon in the header
+    // Use aria-label or icon class to be specific
+    const closeBtn = dialog.locator('button').filter({ has: page.locator('svg.h-5.w-5') }).first()
     await closeBtn.click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
     await expect(dialog).not.toBeVisible({ timeout: 5000 })
   }
 
@@ -68,7 +70,8 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
     test('dialog opens with RSS tab selected by default', async ({ page }) => {
       const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
       // RSS button should be "active" (has light/dark background class)
-      const rssBtn = dialog.getByRole('button', { name: /rss/i })
+      // Use .first() because /rss/i matches both "RSS" tab and "Download RSS" button
+      const rssBtn = dialog.getByRole('button', { name: /rss/i }).first()
       await expect(rssBtn).toBeVisible()
       await expect(rssBtn).toHaveClass(/bg-white|bg-slate-700/)
     })
@@ -170,7 +173,8 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
 
     test('can switch to Markdown tab', async ({ page }) => {
       const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
-      const mdBtn = dialog.getByRole('button', { name: /markdown/i })
+      // Use .first() because /markdown/i matches both "Markdown" tab and "Download Markdown" button
+      const mdBtn = dialog.getByRole('button', { name: /markdown/i }).first()
       await mdBtn.click()
       await page.waitForTimeout(1000)
 
@@ -182,7 +186,8 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
       const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
 
       // Switch to Markdown tab
-      await dialog.getByRole('button', { name: /markdown/i }).click()
+      const mdBtn = dialog.getByRole('button', { name: /markdown/i }).first()
+      await mdBtn.click()
       await page.waitForTimeout(1000)
 
       // Default should be preview (prose div visible, source div hidden)
@@ -195,11 +200,12 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
       const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
 
       // Switch to Markdown tab
-      await dialog.getByRole('button', { name: /markdown/i }).click()
+      const mdBtn = dialog.getByRole('button', { name: /markdown/i }).first()
+      await mdBtn.click()
       await page.waitForTimeout(1000)
 
-      // Click "Source" button (Code icon)
-      const sourceBtn = dialog.getByRole('button', { name: /source/i }).first()
+      // Click "Source" button (Code icon) - use exact match to avoid "Download Markdown"
+      const sourceBtn = dialog.getByRole('button', { name: 'Source' }).first()
       await sourceBtn.click()
       await page.waitForTimeout(500)
 
@@ -216,15 +222,17 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
       const dialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
 
       // Switch to Markdown tab
-      await dialog.getByRole('button', { name: /markdown/i }).click()
+      const mdBtn = dialog.getByRole('button', { name: /markdown/i }).first()
+      await mdBtn.click()
       await page.waitForTimeout(1000)
 
       // Switch to source
-      await dialog.getByRole('button', { name: /source/i }).first().click()
+      const sourceBtn = dialog.getByRole('button', { name: 'Source' }).first()
+      await sourceBtn.click()
       await page.waitForTimeout(500)
 
       // Switch back to preview
-      const previewBtn = dialog.getByRole('button', { name: /preview/i }).first()
+      const previewBtn = dialog.getByRole('button', { name: 'Preview' }).first()
       await previewBtn.click()
       await page.waitForTimeout(500)
 
