@@ -406,5 +406,17 @@
     "delete": "Delete schedule",
     "minutes_hint": "Select in 5-minute intervals (0, 5, 10, ... 55)",
     "multi_select_hint": "Tap to select multiple (Ctrl/Cmd+click on desktop)"
+  },
+  "featureFlags": {
+    "title": "Feature Flags",
+    "groupsEnabled": "Groups Feature",
+    "groupsEnabledDesc": "Enable/disable group functionality",
+    "groupSchedulesEnabled": "Group Schedules",
+    "groupSchedulesEnabledDesc": "Enable/disable scheduled updates for groups",
+    "confirm": "Confirm",
+    "schedulesDisabledHint": "Requires Groups Feature to be enabled",
+    "cascadeWarningTitle": "Disabling groups will also disable schedules",
+    "cascadeWarningConfirm": "Confirm",
+    "cascadeWarningCancel": "Cancel"
   }
 }

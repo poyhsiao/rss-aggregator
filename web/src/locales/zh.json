@@ -406,5 +406,17 @@
     "delete": "刪除排程",
     "minutes_hint": "以 5 分鐘為間隔選擇（0, 5, 10, ... 55）",
     "multi_select_hint": "點擊可多選（桌面版按住 Ctrl/Cmd 點擊）"
+  },
+  "featureFlags": {
+    "title": "功能開關",
+    "groupsEnabled": "群組功能",
+    "groupsEnabledDesc": "啟用/停用群組功能",
+    "groupSchedulesEnabled": "群組定時更新",
+    "groupSchedulesEnabledDesc": "啟用/停用群組的定時更新功能",
+    "confirm": "確認",
+    "schedulesDisabledHint": "需要先啟用群組功能",
+    "cascadeWarningTitle": "停用群組功能也將停用排程更新",
+    "cascadeWarningConfirm": "確認",
+    "cascadeWarningCancel": "取消"
   }
 }
