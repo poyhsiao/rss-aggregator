@@ -13,9 +13,11 @@ import type { FeedItem } from "@/types/feed";
 import type { SourceGroup } from "@/types/source-group";
 import { useToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/format";
+import { useFeatureFlagsStore } from "@/stores/featureFlags";
 
 const { t } = useI18n();
 const toast = useToast();
+const featureFlagsStore = useFeatureFlagsStore();
 
 const feedItems = ref<FeedItem[]>([]);
 const groups = ref<SourceGroup[]>([]);
@@ -202,7 +204,7 @@ watch([sortBy, keywords, selectedGroupId], () => {
           >
             <div class="flex items-center gap-2 text-sm text-neutral-500 mb-2 flex-wrap">
               <span class="text-primary-600 dark:text-primary-400">{{ item.source }}</span>
-              <template v-if="item.source_groups?.length">
+              <template v-if="featureFlagsStore.groupsEnabled && item.source_groups?.length">
                 <span
                   v-for="g in item.source_groups.slice(0, 2)"
                   :key="g.id"

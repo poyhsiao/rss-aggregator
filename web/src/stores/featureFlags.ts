@@ -8,12 +8,17 @@ export const useFeatureFlagsStore = defineStore('featureFlags', () => {
   const groupSchedulesEnabled = ref<boolean>(
     localStorage.getItem('ff_group_schedules_enabled') !== 'false'
   )
+  const sourceGroupSchedulesEnabled = ref<boolean>(
+    localStorage.getItem('ff_source_group_schedules_enabled') !== 'false'
+  )
 
   watch(groupsEnabled, (val) => {
     localStorage.setItem('ff_groups_enabled', String(val))
     if (!val) {
       groupSchedulesEnabled.value = false
       localStorage.setItem('ff_group_schedules_enabled', 'false')
+      sourceGroupSchedulesEnabled.value = false
+      localStorage.setItem('ff_source_group_schedules_enabled', 'false')
     }
   })
 
@@ -21,5 +26,9 @@ export const useFeatureFlagsStore = defineStore('featureFlags', () => {
     localStorage.setItem('ff_group_schedules_enabled', String(val))
   })
 
-  return { groupsEnabled, groupSchedulesEnabled }
+  watch(sourceGroupSchedulesEnabled, (val) => {
+    localStorage.setItem('ff_source_group_schedules_enabled', String(val))
+  })
+
+  return { groupsEnabled, groupSchedulesEnabled, sourceGroupSchedulesEnabled }
 })

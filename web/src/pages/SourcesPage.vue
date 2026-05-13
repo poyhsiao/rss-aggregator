@@ -807,7 +807,7 @@ onMounted(async () => {
               </div>
 
               <!-- Schedule Section (Web only) -->
-              <ScheduleConfigPanel v-if="!isTauri()" :group-id="group.id" @saved="() => {}" />
+              <ScheduleConfigPanel v-if="!isTauri() && featureFlagsStore.sourceGroupSchedulesEnabled" :group-id="group.id" @saved="() => {}" />
             </div>
           </div>
         </div>

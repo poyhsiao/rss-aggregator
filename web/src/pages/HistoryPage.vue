@@ -461,7 +461,7 @@ const previewSourceName = computed(() => {
                   • {{ batch.sources.slice(0, 3).join(", ") }}
                   <span v-if="batch.sources.length > 3">+{{ batch.sources.length - 3 }}</span>
                 </span>
-                <template v-if="batch.groups?.length">
+                <template v-if="featureFlagsStore.groupsEnabled && batch.groups?.length">
                   <span
                     v-for="g in batch.groups.slice(0, 3)"
                     :key="g.id"
