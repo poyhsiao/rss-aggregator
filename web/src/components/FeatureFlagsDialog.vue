@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Settings, Users, Clock, CalendarClock, X } from 'lucide-vue-next'
 import Dialog from '@/components/ui/Dialog.vue'
-import Toggle from '@/components/ui/Toggle.vue'
+import Switch from '@/components/ui/Switch.vue'
 import Button from '@/components/ui/Button.vue'
 import CascadeWarningDialog from '@/components/ui/CascadeWarningDialog.vue'
 import { useFeatureFlagsStore } from '@/stores/featureFlags'
@@ -115,7 +115,7 @@ function handleClose() {
             </div>
           </div>
         </div>
-        <Toggle v-model="localGroupsEnabled" @update:model-value="handleGroupsToggle" />
+        <Switch v-model="localGroupsEnabled" @update:model-value="handleGroupsToggle" />
       </div>
 
       <!-- Group Schedules Toggle -->
@@ -134,7 +134,7 @@ function handleClose() {
             </div>
           </div>
         </div>
-        <Toggle
+        <Switch
           v-model="localSchedulesEnabled"
           @update:model-value="handleSchedulesToggle"
           :disabled="!localGroupsEnabled"
@@ -157,7 +157,7 @@ function handleClose() {
             </div>
           </div>
         </div>
-        <Toggle
+        <Switch
           v-model="localSourceGroupSchedulesEnabled"
           @update:model-value="handleSourceGroupSchedulesToggle"
           :disabled="!localGroupsEnabled"
