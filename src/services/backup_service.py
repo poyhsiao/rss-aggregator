@@ -19,6 +19,7 @@ from src.models import (
     SourceGroupMember,
     Stats,
 )
+from src.services.feature_flag_service import FeatureFlagService
 from src.schemas.backup import (
     BackupConfig,
     BackupContent,
@@ -398,6 +399,15 @@ class BackupService:
         if not options.include_logs:
             data["fetch_logs"] = []
 
+        # Get feature flags
+        ff_service = FeatureFlagService(self._db)
+        feature_flags = await ff_service.get_all()
+        data["feature_flags"] = {
+            "groups_enabled": str(feature_flags["groups_enabled"]).lower(),
+            "group_schedules_enabled": str(feature_flags["group_schedules_enabled"]).lower(),
+            "source_group_schedules_enabled": str(feature_flags["source_group_schedules_enabled"]).lower(),
+        }
+
         backup_content = BackupContent(
             version=__version__,
             exported_at=datetime.now(timezone.utc).isoformat(),
@@ -567,6 +577,13 @@ class BackupService:
                         )
                         self._db.add(new_member)
                         source_group_members_imported += 1
+
+            # Restore feature flags if present
+            if "feature_flags" in content.data:
+                ff_service = FeatureFlagService(self._db)
+                ff_data = content.data["feature_flags"]
+                for key, value in ff_data.items():
+                    await ff_service.upsert(key, value == "true")
 
             await self._db.commit()
 
