@@ -9,10 +9,6 @@ import type { SourceGroup } from "@/types/source-group"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
-import JsonPreview from "@/components/preview/JsonPreview.vue"
-import MarkdownPreview from "@/components/preview/MarkdownPreview.vue"
-import RssXmlPreview from "@/components/preview/RssXmlPreview.vue"
-import { cn } from "@/utils/cn"
 import { useFeatureFlagsStore } from "@/stores/featureFlags"
 
 const { t } = useI18n()
@@ -480,7 +476,7 @@ function openArticlePreview(item: HistoryItem): void {
       :open="previewOpen"
       :title="previewBatchTitle"
       :params="previewBatchId !== null ? { batch_id: previewBatchId } : undefined"
-      @update:open="(open) => { previewOpen = open; if (!open) closePreview() }"
+      @update:open="(open: boolean) => { previewOpen = open; if (!open) closePreview() }"
     />
 
     <!-- Article Preview Dialog -->

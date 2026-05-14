@@ -38,7 +38,7 @@ const { t } = useI18n()
 const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
-const { settings, fetchSettings } = useAppSettings()
+const { fetchSettings } = useAppSettings()
 
 const activeTab = ref<'active' | 'trash' | 'groups'>('active')
 const sources = ref<Source[]>([])
