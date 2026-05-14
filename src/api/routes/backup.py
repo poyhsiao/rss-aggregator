@@ -1,6 +1,6 @@
 """Backup and restore API routes."""
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from src.api.deps import get_backup_service, require_api_key

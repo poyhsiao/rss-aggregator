@@ -1,6 +1,5 @@
 """Tests for app settings API route."""
 
-from collections.abc import AsyncGenerator
 from typing import AsyncGenerator as AsyncGen
 
 import pytest

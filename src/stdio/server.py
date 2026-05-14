@@ -8,7 +8,6 @@ from src.config import settings
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.stdio.protocol import (
     InternalError,
-    JSONRPCRequest,
     JSONRPCResponse,
     ParseError,
     InvalidRequest,
@@ -180,7 +179,7 @@ class StdioServer:
 
         try:
             result = await self._router.route(request)
-            print(f"[DEBUG] Request processed successfully", file=sys.stderr, flush=True)
+            print("[DEBUG] Request processed successfully", file=sys.stderr, flush=True)
             return result
         except Exception as e:
             error_msg = f"{e}\n{traceback.format_exc()}"

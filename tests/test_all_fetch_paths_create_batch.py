@@ -1,13 +1,10 @@
 """TDD tests for ALL feed update paths creating FetchBatch."""
 
-import json
 import pytest
 import pytest_asyncio
-from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import FeedItem, FetchBatch, Source
 from src.services.fetch_service import FetchService

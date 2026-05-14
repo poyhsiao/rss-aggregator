@@ -1,7 +1,6 @@
 """Tests for API key hard-delete behavior."""
 
 import pytest
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 

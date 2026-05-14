@@ -1,7 +1,6 @@
 """Tests for preview API routes."""
 
 import hashlib
-from collections.abc import AsyncGenerator
 from typing import AsyncGenerator as AsyncGen
 from unittest.mock import AsyncMock, patch
 

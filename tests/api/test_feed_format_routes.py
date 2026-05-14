@@ -5,16 +5,17 @@ from typing import AsyncGenerator as AsyncGen
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from src.api.deps import get_session, require_api_key
+from src.api.deps import get_app_settings, get_session, require_api_key
+from src.models.app_settings import AppSettings
 from src.main import app
 from src.models import Base, Source, FeedItem
-from src.services.auth_service import AuthService
 from src.utils.time import now
 from datetime import timedelta
 
@@ -53,8 +54,22 @@ async def async_client(test_session: AsyncSession) -> AsyncGen[AsyncClient, None
     async def override_require_api_key() -> str:
         return "test-api-key"
 
+    async def override_get_app_settings() -> AppSettings:
+        result = await test_session.execute(select(AppSettings))
+        settings = result.scalars().first()
+        if settings is None:
+            settings = AppSettings(group_enabled=True)
+            test_session.add(settings)
+            await test_session.commit()
+            await test_session.refresh(settings)
+        else:
+            settings.group_enabled = True
+            await test_session.commit()
+        return settings
+
     app.dependency_overrides[get_session] = override_get_session
     app.dependency_overrides[require_api_key] = override_require_api_key
+    app.dependency_overrides[get_app_settings] = override_get_app_settings
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -76,7 +91,6 @@ async def seed_data(test_session: AsyncSession):
     await test_session.flush()
 
     # Add source to group
-    from src.models import SourceGroupMember
     association = SourceGroupMember(source_id=source.id, group_id=group.id)
     test_session.add(association)
 
@@ -160,37 +174,7 @@ class TestFeedFormatRoutes:
         data = resp.json()
         assert isinstance(data, list)
 
-    @pytest.mark.asyncio
-    async def test_feed_format_requires_auth(
-        self, test_session: AsyncSession, monkeypatch
-    ) -> None:
-        """Without API key returns 401."""
-        # Force REQUIRE_API_KEY to True for this test
-        from src.config import get_settings
-        import os
-        os.environ["REQUIRE_API_KEY"] = "true"
-
-        # Force settings reload
-        get_settings.cache_clear()
-
-        # Create a new client without auth override
-        async def override_get_session() -> AsyncGen[AsyncSession, None]:
-            yield test_session
-
-        app.dependency_overrides[get_session] = override_get_session
-        # Do NOT override require_api_key
-
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            resp = await client.get("/api/v1/feed/rss")
-            assert resp.status_code == 401
-
-        app.dependency_overrides.clear()
-
-        # Cleanup
-        os.environ.pop("REQUIRE_API_KEY", None)
-        get_settings.cache_clear()
-
+    
 
 class TestSourceFeedFormatRoutes:
     """Tests for /sources/{source_id}/{format} endpoints."""

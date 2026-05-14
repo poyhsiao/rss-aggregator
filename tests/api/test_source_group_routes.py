@@ -5,13 +5,15 @@ from typing import AsyncGenerator as AsyncGen
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from src.api.deps import get_session, require_api_key
+from src.api.deps import get_app_settings, get_session, require_api_key
+from src.models.app_settings import AppSettings
 from src.main import app
 from src.models import Base, Source
 
@@ -50,8 +52,22 @@ async def async_client(test_session: AsyncSession) -> AsyncGen[AsyncClient, None
     async def override_require_api_key() -> str:
         return "test-api-key"
 
+    async def override_get_app_settings() -> AppSettings:
+        result = await test_session.execute(select(AppSettings))
+        settings = result.scalars().first()
+        if settings is None:
+            settings = AppSettings(group_enabled=True)
+            test_session.add(settings)
+            await test_session.commit()
+            await test_session.refresh(settings)
+        else:
+            settings.group_enabled = True
+            await test_session.commit()
+        return settings
+
     app.dependency_overrides[get_session] = override_get_session
     app.dependency_overrides[require_api_key] = override_require_api_key
+    app.dependency_overrides[get_app_settings] = override_get_app_settings
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:

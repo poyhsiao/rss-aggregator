@@ -1,6 +1,5 @@
 """Tests for trash API routes."""
 
-from collections.abc import AsyncGenerator
 from typing import AsyncGenerator as AsyncGen
 
 import pytest

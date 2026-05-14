@@ -1,5 +1,5 @@
 import pytest
-from src.models import SourceGroup, SourceGroupSchedule
+from src.models import SourceGroup
 from src.services.source_group_schedule_service import (
     DuplicateScheduleError,
     SourceGroupScheduleService,

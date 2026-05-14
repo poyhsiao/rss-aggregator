@@ -1,6 +1,6 @@
 """Dependency injection for FastAPI."""
 
-from typing import AsyncGenerator, Optional
+from typing import Optional
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select

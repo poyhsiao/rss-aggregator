@@ -1,6 +1,5 @@
 """Feature flags API routes."""
 
-from typing import Any
 
 from fastapi import APIRouter, Depends
 

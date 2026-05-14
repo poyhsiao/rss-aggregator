@@ -13,10 +13,9 @@ from src.api.deps import (
     get_fetch_service,
     get_history_service,
     get_preview_service,
-    get_session,
     get_source_service,
 )
-from src.api.routes import feed, health, keys, logs, sources, stats
+from src.api.routes import health
 from src.config import settings
 from src.schemas.history import UpdateBatchNameRequest
 from src.db.database import async_session_factory
@@ -503,8 +502,6 @@ class StdioRouter:
         """Handle POST /api/v1/sources/{id}/refresh."""
         import json as json_module
         from src.models import FetchBatch
-        from src.services.source_service import SourceService
-        from src.utils.time import now
 
         source_id = self._extract_path_param(path, r"/api/v1/sources/(\d+)/refresh$")
         source_service = await get_source_service(session)
@@ -532,7 +529,6 @@ class StdioRouter:
     async def _handle_refresh_all_sources(self, query: dict[str, Any], session: Any) -> dict[str, Any]:
         import json as json_module
         from src.models import FetchBatch, Source, SourceGroupMember
-        from src.services.fetch_service import FetchService
         from sqlalchemy import select
 
         group_id = query.get("group_id")
@@ -1315,7 +1311,6 @@ class StdioRouter:
     async def _handle_refresh_group(self, path: str, session: Any) -> dict[str, Any]:
         import json as json_module
         from src.models import FetchBatch, Source, SourceGroupMember
-        from src.services.fetch_service import FetchService
         from sqlalchemy import select
 
         group_id = self._extract_path_param(path, r"/api/v1/source-groups/(\d+)/refresh$")

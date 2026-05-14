@@ -70,7 +70,9 @@ jobs:
         run: uv sync
 
       - name: Run migrations
-        run: uv run alembic upgrade head
+        run: |
+          mkdir -p data
+          uv run alembic upgrade head
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
@@ -237,6 +239,7 @@ jobs:
 
       - name: Run API (background)
         run: |
+          mkdir -p data
           cd ..
           uv sync
           uv run alembic upgrade head
@@ -278,7 +281,7 @@ jobs:
       - name: Build Web image
         uses: docker/build-push-action@v6
         with:
-          context: ./web
+          context: .
           file: ./Dockerfile.web
           push: false
           tags: rss-aggregator:web

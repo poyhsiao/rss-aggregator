@@ -13,8 +13,6 @@ Usage:
 
 import asyncio
 import json
-import os
-import sys
 from pathlib import Path
 
 
@@ -119,7 +117,7 @@ async def check_test_data():
         LIMIT 5
     """)
     batches = cursor.fetchall()
-    print(f"\nSample batches:")
+    print("\nSample batches:")
     for batch in batches:
         print(f"  Batch {batch[0]}: {batch[3]} items (expected {batch[1]})")
 
@@ -134,10 +132,7 @@ async def check_jsonrpc_api():
     try:
         from src.stdio.router import StdioRouter
         from src.stdio.protocol import JSONRPCRequest
-        from src.db.database import async_session_factory
-        from src.models import Base
-        from sqlalchemy.ext.asyncio import create_async_engine
-
+                        
         # Use Tauri App database path
         home = Path.home()
         db_path = home / "Library" / "Application Support" / "RSS Aggregator" / "rss.db"
@@ -146,8 +141,7 @@ async def check_jsonrpc_api():
         print(f"Connecting to database: {db_url}")
 
         # Create test engine
-        from src.db.database import engine
-
+        
         router = StdioRouter()
 
         # Test get_history_batches
@@ -295,7 +289,7 @@ async def create_test_data():
             batch_id
         ))
 
-    print(f"Created 3 test feed items")
+    print("Created 3 test feed items")
 
     conn.commit()
     conn.close()
@@ -329,7 +323,7 @@ async def main():
 
         if data_ok:
             # Check API
-            api_ok = await check_jsonrpc_api()
+            _ = await check_jsonrpc_api()
 
     print("\n" + "=" * 60)
     print("Diagnostic complete!")

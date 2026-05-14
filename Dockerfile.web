@@ -17,7 +17,6 @@ RUN pnpm install --ignore-scripts
 
 # Copy source code
 COPY web/ ./
-COPY assets/ ../assets/
 
 # Build arguments for environment variables
 ARG VITE_API_BASE_URL=/api/v1

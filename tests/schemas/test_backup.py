@@ -1,8 +1,6 @@
 """Tests for backup schemas."""
 
-from datetime import datetime
 
-import pytest
 
 from src.schemas.backup import (
     BackupConfig,

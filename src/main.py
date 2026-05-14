@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.deps import get_scheduler, set_scheduler
+from src.api.deps import set_scheduler
 from src.api.routes import app_settings, backup, feed, feature_flags, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
 from src.config import settings
 from src.models.app_settings import AppSettings
@@ -96,5 +96,6 @@ app.include_router(previews.router, prefix="/api/v1")
 app.include_router(trash.router, prefix="/api/v1")
 app.include_router(backup.router, prefix="/api/v1")
 app.include_router(source_groups.router, prefix="/api/v1")
+app.include_router(source_groups.groups_router, prefix="/api/v1")
 app.include_router(schedule.router, prefix="/api/v1")
 app.include_router(feature_flags.router, prefix="/api/v1")

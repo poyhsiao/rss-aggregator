@@ -7,8 +7,6 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from src.config import settings
-from src.utils.time import now as get_now
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ class FetchScheduler:
         logger.info("Fetch scheduler stopped")
 
     async def _check_and_fetch(self) -> None:
-        import json
         from src.models import FetchBatch, Source, SourceGroup, SourceGroupMember, SourceGroupSchedule
         from src.services.fetch_service import FetchService
 

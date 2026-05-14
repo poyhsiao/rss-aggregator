@@ -1,7 +1,6 @@
 """Tests for backup service with feature flags."""
 
 import pytest
-from zipfile import ZipFile
 import json
 from io import BytesIO
 from unittest.mock import MagicMock, AsyncMock, patch

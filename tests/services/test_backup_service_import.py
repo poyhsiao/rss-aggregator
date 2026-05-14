@@ -1,6 +1,5 @@
 """Tests for BackupService import functionality."""
 
-from io import BytesIO
 from unittest.mock import MagicMock, AsyncMock, patch
 
 import pytest
