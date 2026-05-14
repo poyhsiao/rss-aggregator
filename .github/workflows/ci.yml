@@ -240,6 +240,7 @@ jobs:
       - name: Run API (background)
         run: |
           mkdir -p data
+          cd ..
           uv run alembic upgrade head
           nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
           for i in $(seq 1 30); do
