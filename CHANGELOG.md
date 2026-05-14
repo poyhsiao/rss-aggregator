@@ -7,15 +7,27 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **GitHub Actions CI/CD** - Complete CI pipeline with lint, type check, test, and Docker build jobs
+## [v0.21.1] - 2026-05-14
 
 ### Fixed
+
+- **Switch component** - Simplified iOS-style toggle to smaller, cleaner design (h-7 w-11)
+- **Dialog component** - Removed extra border-radius and borders from panel, header, and footer
+- **FeatureFlagsDialog** - Alignment cleanup (items-start → items-center), removed rounded corners from option cards
+
+## [v0.21.0] - 2026-05-13
 
 - **CI workflow** - Added pnpm installation, proper caching, and DATABASE_URL environment variables
 - **Backend lint** - Fixed ruff errors (unused imports, `== True` comparisons, ambiguous variable names)
 - **Type check** - Fixed `feed_service.py` type error in `get_aggregated_feed` ordering logic
 - **Test fixtures** - Added missing FeatureFlagService mocks to `test_backup_service_export.py` (6 tests)
 
-### Changed
+- **Feature Flags Persistence** - Complete feature flags system with TDD/BDD methodology
+  - Backend: SQLAlchemy model with upsert logic, API endpoints for CRUD operations
+  - Frontend: FeatureFlagsStore synced with backend via API, localStorage fallback
+  - Database migration: `alembic/versions/3c1cf4c7a4b5_add_feature_flags_table.py`
+  - E2E tests: Playwright BDD tests for API and UI flows
+  - Three feature flags: `groupsEnabled`, `groupSchedulesEnabled`, `sourceGroupSchedulesEnabled`
 
 - **CI mypy flags** - Added `--disable-error-code=import-untyped` to handle third-party stubs
 
@@ -38,7 +50,7 @@ All notable changes to this project will be documented in this file.
   - E2E tests: Playwright BDD tests for API and UI flows
   - Three feature flags: `groupsEnabled`, `groupSchedulesEnabled`, `sourceGroupSchedulesEnabled`
 
-### Fixed
+### Added
 
 - FeatureFlagsDialog: Toggle style corrected (w-9 h-10 with proper translate values)
 - FeatureFlagsDialog: Cascade warning logic corrected (preview only, cancel restores state)
