@@ -237,6 +237,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Serve frontend (background)
+        run: |
+          npx serve dist -l 8080 &
+          echo "Frontend server PID: $!"
+
       - name: Run API (background)
         run: |
           mkdir -p ../data
@@ -254,7 +259,7 @@ jobs:
       - name: E2E
         run: pnpm test:e2e
         env:
-          E2E_BASE_URL: http://localhost:8000
+          E2E_BASE_URL: http://localhost:8080
 
       - name: Upload Playwright report
         if: failure()
