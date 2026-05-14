@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { watch } from 'vue'
+import { computed, watch, onUnmounted } from 'vue'
 import { cn } from '@/utils/cn'
+
+let dialogInstanceCounter = 0
 
 const props = withDefaults(defineProps<{
   open: boolean
@@ -10,7 +11,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   open: false,
   size: 'lg',
-  titleId: 'dialog-title',
+  titleId: '',
 })
 
 const emit = defineEmits<{
@@ -24,6 +25,12 @@ watch(() => props.open, (isOpen) => {
     document.body.style.overflow = ''
   }
 })
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
+
+const resolvedTitleId = computed(() => props.titleId || `dialog-title-${++dialogInstanceCounter}`)
 
 function close(): void {
   emit('update:open', false)
@@ -44,7 +51,7 @@ const sizeClasses = computed(() => {
 <template>
   <Teleport to="body">
     <Transition name="dialog">
-      <div v-if="open" class="fixed inset-0 z-50" role="dialog" aria-modal="true" :aria-labelledby="titleId">
+      <div v-if="open" class="fixed inset-0 z-50" role="dialog" aria-modal="true" :aria-labelledby="resolvedTitleId">
         <!-- Backdrop -->
         <div 
           class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -53,7 +60,7 @@ const sizeClasses = computed(() => {
         <!-- Dialog container -->
         <div class="fixed inset-0 flex items-center justify-center p-4">
           <div 
-            :id="titleId"
+            :id="resolvedTitleId"
             :class="cn(
               'relative w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl',
               sizeClasses,

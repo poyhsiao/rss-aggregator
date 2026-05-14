@@ -16,6 +16,12 @@ export function cleanContent(content: string): string {
 	return cleaned
 }
 
+function escapeHtml(text: string): string {
+	const div = document.createElement('div')
+	div.textContent = text
+	return div.innerHTML
+}
+
 /**
  * Wraps each line of content in a div with line number and content spans.
  * Used for code preview rendering with line numbers.
@@ -28,7 +34,7 @@ export function addLineNumbers(xml: string): string {
 	return lines
 		.map((line, index) => {
 			const lineNum = (index + 1).toString().padStart(lineNumWidth, ' ')
-			return `<div class="code-line"><span class="code-line-number">${lineNum}</span><span class="code-line-content">${line || ' '}</span></div>`
+			return `<div class="code-line"><span class="code-line-number">${lineNum}</span><span class="code-line-content">${escapeHtml(line || ' ')}</span></div>`
 		})
 		.join('')
 }

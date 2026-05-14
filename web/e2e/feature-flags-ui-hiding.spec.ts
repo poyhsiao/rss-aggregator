@@ -53,7 +53,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForTimeout(500)
 
     // Member count badges should be visible when enabled
-    const badgesBefore = page.locator('text=sources').count()
+    const badgesBefore = await page.locator('text=sources').count()
     expect(badgesBefore).toBeGreaterThan(0)
 
     // Disable groups via dialog
@@ -67,7 +67,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForTimeout(500)
 
     // Member count badges should be hidden
-    const badgesAfter = page.locator('text=sources').count()
+    const badgesAfter = await page.locator('text=sources').count()
     expect(badgesAfter).toBe(0)
   })
 
@@ -158,7 +158,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
 
     // Blue badges (group badges) should be hidden
-    const groupBadges = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
+    const groupBadges = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
     expect(groupBadges).toBe(0)
   })
 
@@ -167,7 +167,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
 
     // Group badges on feed items should be visible when enabled
-    const badgesBefore = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
+    const badgesBefore = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
 
     // Disable groups
     await openDialog(page)
@@ -178,7 +178,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
 
     // Group badges should be hidden
-    const badgesAfter = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
+    const badgesAfter = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
     expect(badgesAfter).toBe(0)
   })
 
@@ -197,7 +197,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
 
     // Blue group badges should be hidden in history page
-    const groupBadges = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
+    const groupBadges = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
     expect(groupBadges).toBe(0)
   })
 
@@ -217,7 +217,7 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
 
     // Group badges in batch should be hidden
-    const groupBadgesAfter = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
+    const groupBadgesAfter = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
     expect(groupBadgesAfter).toBe(0)
   })
 })

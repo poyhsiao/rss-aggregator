@@ -34,7 +34,7 @@ function handleGroupsToggle(val: boolean) {
     localGroupsEnabled.value = val
     showCascadeWarning.value = false
   } else {
-    if (store.groupSchedulesEnabled || store.sourceGroupSchedulesEnabled) {
+    if (localSchedulesEnabled.value || localSourceGroupSchedulesEnabled.value) {
       localGroupsEnabled.value = val
       showCascadeWarning.value = true
     } else {
@@ -46,12 +46,10 @@ function handleGroupsToggle(val: boolean) {
 
 function handleSchedulesToggle(val: boolean) {
   localSchedulesEnabled.value = val
-  store.groupSchedulesEnabled = val
 }
 
 function handleSourceGroupSchedulesToggle(val: boolean) {
   localSourceGroupSchedulesEnabled.value = val
-  store.sourceGroupSchedulesEnabled = val
 }
 
 function handleCascadeConfirm() {
