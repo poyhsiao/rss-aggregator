@@ -241,7 +241,7 @@ jobs:
 
       - name: Serve frontend (background)
         run: |
-          npx vite preview --port 8080 &
+          pnpm vite preview --port 8080 --strictPort &
           echo "Frontend server PID: $!"
 
       - name: Run API (background)
