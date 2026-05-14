@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.21.1] - 2026-05-14
+
+### Fixed
+
+- **Switch component** - Simplified iOS-style toggle to smaller, cleaner design (h-7 w-11)
+- **Dialog component** - Removed extra border-radius and borders from panel, header, and footer
+- **FeatureFlagsDialog** - Alignment cleanup (items-start → items-center), removed rounded corners from option cards
+
 ## [v0.21.0] - 2026-05-13
 
 ### Features
