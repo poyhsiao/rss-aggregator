@@ -240,11 +240,11 @@ jobs:
       - name: Run API (background)
         run: |
           mkdir -p data
-          cd ..
           uv sync
           uv run alembic upgrade head
           uv run uvicorn src.main:app --port 8000 &
           sleep 5
+          curl -f http://localhost:8000/health || echo "API not responding"
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
