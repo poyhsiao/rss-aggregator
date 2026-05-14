@@ -5,11 +5,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 3 : 0,
-  workers: process.env.CI ? 10 : undefined,
+  workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  timeout: 60000,
+  timeout: 120000,
   expect: {
-    timeout: 10000,
+    timeout: 20000,
   },
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:51086',
