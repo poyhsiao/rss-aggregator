@@ -240,8 +240,9 @@ jobs:
       - name: Run API (background)
         run: |
           mkdir -p data
-          (cd .. && uv sync && uv run alembic upgrade head && uv run uvicorn src.main:app --port 8000 &)
-          sleep 8
+          nohup sh -c 'cd .. && uv sync && uv run alembic upgrade head && uv run uvicorn src.main:app --port 8000' > /tmp/api.log 2>&1 &
+          sleep 15
+          cat /tmp/api.log | tail -20
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
