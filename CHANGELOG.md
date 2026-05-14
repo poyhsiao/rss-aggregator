@@ -7,17 +7,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **GitHub Actions CI/CD** - Complete CI pipeline with lint, type check, test, and Docker build jobs
-
-
 - **Feature Flags Persistence** - Complete feature flags system with TDD/BDD methodology
   - Backend: SQLAlchemy model with upsert logic, API endpoints for CRUD operations
   - Frontend: FeatureFlagsStore synced with backend via API, localStorage fallback
   - Database migration: `alembic/versions/3c1cf4c7a4b5_add_feature_flags_table.py`
   - E2E tests: Playwright BDD tests for API and UI flows
   - Three feature flags: `groupsEnabled`, `groupSchedulesEnabled`, `sourceGroupSchedulesEnabled`
-
-### Added
-
 - FeatureFlagsDialog: Toggle style corrected (w-9 h-10 with proper translate values)
 - FeatureFlagsDialog: Cascade warning logic corrected (preview only, cancel restores state)
 - FeedPage: Group filter chips hidden when groupsEnabled=false
