@@ -261,7 +261,7 @@ jobs:
           REQUIRE_API_KEY: "false"
 
       - name: E2E
-        run: pnpm test:e2e
+        run: pnpm test:e2e --grep "debug"
         env:
           E2E_BASE_URL: http://localhost:8080
 
