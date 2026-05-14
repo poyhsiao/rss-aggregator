@@ -238,7 +238,7 @@ class TestFetchAndCache:
         self, preview_service: PreviewService
     ) -> None:
         url = "https://example.com/article"
-        cached = await preview_service.upsert(url, "# Cached", "Cached")
+        await preview_service.upsert(url, "# Cached", "Cached")
 
         mock_response = AsyncMock()
         mock_response.json = lambda: {

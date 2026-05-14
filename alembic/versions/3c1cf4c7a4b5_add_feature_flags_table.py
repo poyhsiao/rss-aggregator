@@ -25,9 +25,11 @@ def upgrade() -> None:
     sa.Column('key', sa.String(length=100), nullable=False),
     sa.Column('value', sa.String(length=50), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('key')
-    )
-    op.drop_table('test')
+    sa.PrimaryKeyConstraint('key'),
+    if_not_exists=True,
+)
+    # Remove old test table if exists (was part of auto-generated migration)
+    op.execute("DROP TABLE IF EXISTS test")
     op.alter_column('feed_items', 'fetched_at',
                existing_type=sa.DATETIME(),
                nullable=True)

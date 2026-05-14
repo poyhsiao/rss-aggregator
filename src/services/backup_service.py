@@ -173,7 +173,7 @@ class BackupService:
             "api_keys": [self._serialize_model(k) for k in api_keys],
             "preview_contents": [self._serialize_model(p) for p in preview_contents],
             "fetch_batches": [self._serialize_model(b) for b in fetch_batches],
-            "fetch_logs": [self._serialize_model(l) for l in fetch_logs],
+            "fetch_logs": [self._serialize_model(log) for log in fetch_logs],
             "stats": [self._serialize_model(s) for s in stats],
             "source_groups": [self._serialize_model(g) for g in source_groups],
             "source_group_members": [
