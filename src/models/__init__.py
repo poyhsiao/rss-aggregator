@@ -5,6 +5,7 @@ from src.models.app_settings import AppSettings
 from src.models.base import Base, TimestampMixin
 from src.models.fetch_batch import FetchBatch
 from src.models.fetch_log import FetchLog
+from src.models.feature_flag import FeatureFlag
 from src.models.feed_item import FeedItem
 from src.models.preview_content import PreviewContent
 from src.models.source import Source
@@ -25,5 +26,6 @@ __all__ = [
     "SourceGroup",
     "SourceGroupMember",
     "SourceGroupSchedule",
+    "FeatureFlag",
     "Stats",
 ]

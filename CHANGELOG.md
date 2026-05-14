@@ -2,45 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v0.19.4] - 2026-04-22
-
-### Features
-
-- Complete feature flags system with localStorage sync between frontend and backend
-- Feature flags dialog with 10-click trigger
-- Share link API endpoints respect `feature_share_links` flag: return HTTP 404 when disabled
-- Scheduler respects feature flags instead of `SCHEDULER_ENABLED` env var
-- AppSettings model and API endpoint (`GET/PUT /api/v1/settings`)
-- Conditional rendering for feature toggles in UI
+## [v0.21.1] - 2026-05-14
 
 ### Fixed
 
-- Scheduler ignores `SCHEDULER_ENABLED`, uses only feature flags
-- Hide group filter badges when `feature_groups` is OFF
-- Enforce `feature_share_links` flag on all share link endpoints
+- **Switch component** - Simplified iOS-style toggle to smaller, cleaner design (h-7 w-11)
+- **Dialog component** - Removed extra border-radius and borders from panel, header, and footer
+- **FeatureFlagsDialog** - Alignment cleanup (items-start → items-center), removed rounded corners from option cards
 
-### Changed
-
-- OpenAPI/Swagger version updated to 0.19.4
-
-## [v0.18.2] - 2026-04-19
+## [v0.21.0] - 2026-05-13
 
 ### Features
 
-- New history batch feed export API: `/history/batches/{batch_id}/{format}` endpoint supports RSS, JSON, Markdown, and preview formats
-- Added "preview" format output that renders feed items with markdown content
-- Unified preview dialog experience across Feed, Sources, and History pages
+- **Feature Flags Persistence** - Complete feature flags system with TDD/BDD methodology
+  - Backend: SQLAlchemy model with upsert logic, API endpoints for CRUD operations
+  - Frontend: FeatureFlagsStore synced with backend via API, localStorage fallback
+  - Database migration: `alembic/versions/3c1cf4c7a4b5_add_feature_flags_table.py`
+  - E2E tests: Playwright BDD tests for API and UI flows
+  - Three feature flags: `groupsEnabled`, `groupSchedulesEnabled`, `sourceGroupSchedulesEnabled`
 
 ### Fixed
 
-- Fixed JSON formatter lazy loading issue with source_groups relationship
-- Docker deployment verified and working
+- FeatureFlagsDialog: Toggle style corrected (w-9 h-10 with proper translate values)
+- FeatureFlagsDialog: Cascade warning logic corrected (preview only, cancel restores state)
+- FeedPage: Group filter chips hidden when groupsEnabled=false
+- i18n: Added missing sourceGroupSchedulesEnabled translations (en/zh)
 
-### Changed
+## [v0.20.0] - 2026-05-13
 
-- OpenAPI/Swagger version updated to 0.18.2
-- RssPreviewDialog: Share links now in expandable bottom section (click to expand)
-- HistoryPage now uses RssPreviewDialog component consistent with other pages
+### Features
+
+- **Preview Components Refactor** - Complete refactor of RssXmlPreview, JsonPreview, and MarkdownPreview with TDD methodology
+  - Extracted pure utility functions: `cleanContent`, `addLineNumbers`, `highlightXml`, `highlightJson`, `highlightMarkdownSource`, `escapeHtml`
+  - Created shared `PreviewContainer.vue` with DOMPurify sanitization and line numbers
+  - Moved preview components to `components/preview/` directory
+  - Extracted shared CSS to `preview-shared.css` for consistent styling
+  - Added `manualHighlightJson` for JSON syntax highlighting without external dependencies
+  - All preview components now use scoped CSS with `@import` for shared styles
+
+### Added
+
+- Unit tests for all preview utility functions (34 tests, all passing)
+- Component unit tests for RssXmlPreview, JsonPreview, MarkdownPreview, and PreviewContainer (12 tests, all passing)
+- E2E BDD tests for preview components in `preview-components.spec.ts`
+- Vitest configuration with `globals: true` and `happy-dom` environment
+
+### Fixed
+
+- Fixed `MarkdownPreview.test.ts` syntax error (missing closing brace in mount options)
+- Fixed `tsconfig.json` to exclude test files from production build (avoiding `vi` not found errors)
+- Fixed `@import` CSS order warning in Vite build
 
 ## [v0.18.1] - 2026-04-17
 

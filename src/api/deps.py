@@ -20,6 +20,7 @@ from src.services.source_service import SourceService
 from src.services.backup_service import BackupService
 from src.services.source_group_service import SourceGroupService
 from src.services.source_group_schedule_service import SourceGroupScheduleService
+from src.services.feature_flag_service import FeatureFlagService
 
 
 _rate_limiter: RateLimiter | None = None
@@ -108,6 +109,12 @@ async def get_schedule_service(
     session: AsyncSession = Depends(get_session),
 ) -> SourceGroupScheduleService:
     return SourceGroupScheduleService(session)
+
+
+async def get_feature_flag_service(
+    session: AsyncSession = Depends(get_session),
+) -> FeatureFlagService:
+    return FeatureFlagService(session)
 
 
 async def get_app_settings(session: AsyncSession = Depends(get_session)) -> AppSettings:

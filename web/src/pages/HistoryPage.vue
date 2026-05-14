@@ -9,12 +9,14 @@ import type { SourceGroup } from "@/types/source-group"
 import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
-import Button from "@/components/ui/Button.vue"
-import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
-import ArticlePreviewDialog from "@/components/ArticlePreviewDialog.vue"
-import RssPreviewDialog from "@/components/RssPreviewDialog.vue"
+import JsonPreview from "@/components/preview/JsonPreview.vue"
+import MarkdownPreview from "@/components/preview/MarkdownPreview.vue"
+import RssXmlPreview from "@/components/preview/RssXmlPreview.vue"
+import { cn } from "@/utils/cn"
+import { useFeatureFlagsStore } from "@/stores/featureFlags"
 
 const { t } = useI18n()
+const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -230,7 +232,7 @@ function openArticlePreview(item: HistoryItem): void {
     </div>
 
     <!-- Group Filter Chips -->
-    <div v-if="groups.length > 0" class="flex flex-wrap gap-2">
+    <div v-if="featureFlagsStore.groupsEnabled && groups.length > 0" class="flex flex-wrap gap-2">
       <button
         :class="[
           'px-3 py-1 rounded-full text-sm font-medium transition-colors',
@@ -329,7 +331,7 @@ function openArticlePreview(item: HistoryItem): void {
                   • {{ batch.sources.slice(0, 3).join(", ") }}
                   <span v-if="batch.sources.length > 3">+{{ batch.sources.length - 3 }}</span>
                 </span>
-                <template v-if="batch.groups?.length">
+                <template v-if="featureFlagsStore.groupsEnabled && batch.groups?.length">
                   <span
                     v-for="g in batch.groups.slice(0, 3)"
                     :key="g.id"

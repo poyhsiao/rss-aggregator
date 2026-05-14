@@ -32,8 +32,10 @@ import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
 import TooltipButton from '@/components/ui/TooltipButton.vue'
 import { formatDate } from '@/utils/format'
 import { isTauri } from '@/utils/environment'
+import { useFeatureFlagsStore } from '@/stores/featureFlags'
 
 const { t } = useI18n()
+const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
 const { settings, fetchSettings } = useAppSettings()
@@ -528,7 +530,7 @@ onMounted(async () => {
         <Trash2 class="h-4 w-4 inline-block" /> {{ t('trash.tab_trash') }} ({{ trashItems.length }})
       </button>
       <button
-        v-if="settings.group_enabled"
+        v-if="featureFlagsStore.groupsEnabled"
         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
         :class="activeTab === 'groups'
           ? 'border-blue-500 text-blue-600 dark:text-blue-400'
@@ -692,7 +694,7 @@ onMounted(async () => {
     </div>
 
     <!-- Groups Tab -->
-    <div v-if="isGroupsTab && !loading && settings.group_enabled">
+    <div v-if="isGroupsTab && !loading && featureFlagsStore.groupsEnabled">
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
         <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
         {{ t('groups.empty') }}
@@ -741,7 +743,7 @@ onMounted(async () => {
                     {{ group.name }}
                   </button>
                   <div class="flex items-center gap-1.5 shrink-0">
-                    <Badge variant="secondary">{{ group.member_count }} {{ t('groups.sources_badge') }}</Badge>
+                    <Badge v-if="featureFlagsStore.groupsEnabled" variant="secondary">{{ group.member_count }} {{ t('groups.sources_badge') }}</Badge>
                     <Badge v-if="group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
                       <Clock class="h-3 w-3 mr-0.5" /> {{ group.schedule_count }} {{ t('groups.schedules_badge') }}
                     </Badge>
@@ -807,7 +809,7 @@ onMounted(async () => {
               </div>
 
               <!-- Schedule Section (Web only) -->
-              <ScheduleConfigPanel v-if="!isTauri() && settings.schedule_enabled && settings.group_enabled" :group-id="group.id" @saved="() => {}" />
+              <ScheduleConfigPanel v-if="!isTauri() && featureFlagsStore.sourceGroupSchedulesEnabled" :group-id="group.id" @saved="() => {}" />
             </div>
           </div>
         </div>
