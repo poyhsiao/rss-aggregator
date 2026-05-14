@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.21.2] - 2026-05-14
+
+### Added
+
+- **GitHub Actions CI/CD** - Complete CI pipeline with lint, type check, test, and Docker build jobs
+
+### Fixed
+
+- **CI workflow** - Added pnpm installation, proper caching, and DATABASE_URL environment variables
+- **Backend lint** - Fixed ruff errors (unused imports, `== True` comparisons, ambiguous variable names)
+- **Type check** - Fixed `feed_service.py` type error in `get_aggregated_feed` ordering logic
+- **Test fixtures** - Added missing FeatureFlagService mocks to `test_backup_service_export.py` (6 tests)
+
+### Changed
+
+- **CI mypy flags** - Added `--disable-error-code=import-untyped` to handle third-party stubs
+
 ## [v0.21.1] - 2026-05-14
 
 ### Fixed
