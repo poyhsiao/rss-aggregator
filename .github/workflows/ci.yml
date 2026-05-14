@@ -240,9 +240,13 @@ jobs:
       - name: Run API (background)
         run: |
           mkdir -p data
-          (cd .. && uv sync && uv run alembic upgrade head && uv run uvicorn src.main:app --port 8000 &)
-          sleep 20
-          curl -s http://localhost:8000/api/v1/feeds || echo "API not ready"
+          uv run alembic upgrade head
+          nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do
+            sleep 1
+            curl -s http://localhost:8000/api/v1/feeds && break || echo "Waiting for API... ($i/30)"
+          done
+          cat /tmp/uvicorn.log || true
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
