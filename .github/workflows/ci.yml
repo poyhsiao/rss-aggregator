@@ -240,9 +240,9 @@ jobs:
       - name: Run API (background)
         run: |
           mkdir -p data
-          uv sync
-          uv run alembic upgrade head
-          uv run uvicorn src.main:app --port 8000 &
+          uv sync --project ..
+          uv run --project .. alembic upgrade head
+          uv run --project .. uvicorn src.main:app --port 8000 &
           sleep 5
           curl -f http://localhost:8000/health || echo "API not responding"
         env:
