@@ -89,7 +89,11 @@
     "item": "item",
     "items": "items",
     "view_source": "Source",
-    "view_preview": "Preview"
+    "view_preview": "Preview",
+    "api_paths": "API Paths",
+    "share_links": "Share Links",
+    "copy_path": "Copy path",
+    "path_copied": "Path copied"
   },
   "sources": {
     "title": "Sources",
@@ -234,7 +238,7 @@
     "item": "item",
     "items": "items",
     "edit_name": "Edit Name",
-    "preview": "Preview",
+    "preview": "Preview Feed",
     "name_placeholder": "Enter batch name",
     "name_required": "Name is required",
     "name_updated": "Batch name updated",
@@ -366,6 +370,25 @@
       "confirm_message": "Are you sure you want to clear all cached preview contents? This action cannot be undone.",
       "success": "All preview contents cleared"
     }
+  },
+  "featureSettings": {
+    "title": "Feature Settings",
+    "group": {
+      "label": "Group Feature",
+      "description": "Enable to add and manage RSS source groups"
+    },
+    "schedule": {
+      "label": "Scheduled Update",
+      "description": "Enable to configure automatic update schedules for groups",
+      "disabledHint": "Enable group feature first"
+    },
+    "share": {
+      "label": "Share Links",
+      "description": "Enable to use share link functionality in preview summaries"
+    },
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "applied": "Settings applied"
   },
   "schedule": {
     "title": "Scheduled Update",

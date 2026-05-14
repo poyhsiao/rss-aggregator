@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
 
-from src.api.deps import get_history_service, require_api_key
+from src.api.deps import get_feed_service, get_history_service, require_api_key
 from src.schemas.history import (
     DeleteBatchResponse,
     DeleteHistoryResponse,
@@ -9,6 +9,7 @@ from src.schemas.history import (
     HistoryResponse,
     UpdateBatchNameRequest,
 )
+from src.services.feed_service import FeedService
 from src.services.history_service import HistoryService
 
 router = APIRouter(prefix="/history", tags=["history"])
@@ -87,3 +88,45 @@ async def delete_history_by_group(
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="No history found for this group")
     return DeleteHistoryResponse(success=True, deleted_count=deleted_count)
+
+
+@router.get("/batches/{batch_id}/{format}")
+async def get_history_batch_feed(
+    batch_id: int = Path(..., description="The batch ID"),
+    format: str = Path(..., pattern="^(rss|json|markdown|preview)$", description="Output format"),
+    sort_by: str = Query(
+        "published_at",
+        pattern="^(published_at|source)$",
+        description="Sort by field",
+    ),
+    sort_order: str = Query(
+        "desc",
+        pattern="^(asc|desc)$",
+        description="Sort direction",
+    ),
+    history_service: HistoryService = Depends(get_history_service),
+    feed_service: FeedService = Depends(get_feed_service),
+    _: str = Depends(require_api_key),
+) -> Response:
+    """Get feed for a specific history batch in RSS/JSON/Markdown/Preview format.
+
+    Path params:
+    - batch_id: Batch ID
+    - format: Output format ('rss', 'json', 'markdown', or 'preview')
+    """
+    # Check if batch exists
+    batch = await history_service.get_batch(batch_id)
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+
+    # Get feed items for this batch
+    feed_items = await history_service.get_batch_raw_items(batch_id)
+
+    # Format as feed
+    content, content_type = await feed_service.format_items_as_feed(
+        items=feed_items,
+        format=format,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
+    return Response(content=content, media_type=content_type)

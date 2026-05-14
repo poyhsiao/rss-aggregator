@@ -362,6 +362,12 @@ class HistoryService:
 
         return True
 
+    async def get_batch(self, batch_id: int) -> FetchBatch | None:
+        """Get a single batch by ID."""
+        query = select(FetchBatch).where(FetchBatch.id == batch_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
     async def delete_all_history(self) -> int:
         """Delete all history records (FeedItems with batch_id and their FetchBatches)."""
         # Count items to be deleted
@@ -476,3 +482,14 @@ class HistoryService:
                 )
             )
         return history_items
+
+    async def get_batch_raw_items(self, batch_id: int) -> list[FeedItem]:
+        """Get raw FeedItem objects for a batch (for formatting)."""
+        query = (
+            select(FeedItem)
+            .options(joinedload(FeedItem.source))
+            .where(FeedItem.batch_id == batch_id)
+            .order_by(FeedItem.published_at.desc())
+        )
+        result = await self.session.execute(query)
+        return list(result.unique().scalars().all())

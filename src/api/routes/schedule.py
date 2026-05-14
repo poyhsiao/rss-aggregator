@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from src.api.deps import get_schedule_service, require_api_key
+from src.api.deps import get_app_settings, get_schedule_service, require_api_key
+from src.models.app_settings import AppSettings
 from src.services.source_group_schedule_service import (
-    DuplicateScheduleError,
     SourceGroupScheduleService,
 )
 from src.utils.time import to_iso_string
 
 router = APIRouter(prefix="/source-groups/{group_id}/schedules", tags=["schedules"])
+
+
+async def _require_schedule_enabled(settings: AppSettings = Depends(get_app_settings)) -> None:
+    if not settings.schedule_enabled:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="定時更新功能已停用")
 
 
 class ScheduleCreate(BaseModel):
@@ -52,7 +57,7 @@ async def list_schedules(
     ]
 
 
-@router.post("", response_model=ScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ScheduleResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(_require_schedule_enabled)])
 async def create_schedule(
     group_id: int,
     data: ScheduleCreate,
@@ -78,7 +83,7 @@ async def create_schedule(
     )
 
 
-@router.put("/{schedule_id}", response_model=ScheduleResponse)
+@router.put("/{schedule_id}", response_model=ScheduleResponse, dependencies=[Depends(_require_schedule_enabled)])
 async def update_schedule(
     group_id: int,
     schedule_id: int,
@@ -108,7 +113,7 @@ async def update_schedule(
     )
 
 
-@router.delete("/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(_require_schedule_enabled)])
 async def delete_schedule(
     group_id: int,
     schedule_id: int,

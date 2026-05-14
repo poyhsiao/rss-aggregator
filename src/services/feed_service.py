@@ -56,6 +56,32 @@ class FeedService:
             source_id=source_id,
             group_id=group_id,
         )
+        return await self.format_items_as_feed(items, format, sort_by, sort_order)
+
+    async def format_items_as_feed(
+        self,
+        items: list[FeedItem],
+        format: str = "rss",
+        sort_by: str = "published_at",
+        sort_order: str = "desc",
+    ) -> tuple[str, str]:
+        """Format a list of feed items into RSS/JSON/Markdown.
+
+        Args:
+            items: List of FeedItem objects.
+            format: Output format ("rss", "json", or "markdown").
+            sort_by: Sort field ("published_at" or "source").
+            sort_order: Sort direction ("asc" or "desc").
+
+        Returns:
+            tuple[str, str]: (formatted content, MIME type)
+        """
+        # Sort items
+        if sort_by == "source":
+            items = sorted(items, key=lambda x: (x.source.name if x.source else "", x.published_at or ""), reverse=(sort_order == "desc"))
+        else:
+            items = sorted(items, key=lambda x: x.published_at or "", reverse=(sort_order == "desc"))
+
         formatter = get_formatter(format)
         return formatter.format(items), formatter.get_content_type()
 

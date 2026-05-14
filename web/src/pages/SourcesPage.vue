@@ -5,14 +5,14 @@ import { FileText, RefreshCw, Trash2, RotateCcw, XCircle, Radio, FolderPlus, Fol
 import { getSources, deleteSource, refreshSource, refreshAllSources } from '@/api/sources'
 import { getGroups, createGroup, updateGroup, deleteGroup, addSourceToGroup, removeSourceFromGroup, getGroupSources, refreshGroupSources } from '@/api/source-groups'
 import { deleteHistoryByGroup } from '@/api/history'
-import { 
-  getTrashItems, 
-  restoreSource, 
-  permanentDeleteSource, 
-  clearTrash, 
-  type TrashItem, 
+import {
+  getTrashItems,
+  restoreSource,
+  permanentDeleteSource,
+  clearTrash,
+  type TrashItem,
   type RestoreConflict,
-  RestoreConflictError 
+  RestoreConflictError
 } from '@/api/trash'
 import type { Source } from '@/types/source'
 import type { SourceGroup } from '@/types/source-group'
@@ -26,6 +26,7 @@ import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import { useAppSettings } from '@/composables/useAppSettings'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
 import TooltipButton from '@/components/ui/TooltipButton.vue'
@@ -37,6 +38,7 @@ const { t } = useI18n()
 const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
+const { settings, fetchSettings } = useAppSettings()
 
 const activeTab = ref<'active' | 'trash' | 'groups'>('active')
 const sources = ref<Source[]>([])
@@ -456,7 +458,7 @@ async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void
 }
 
 onMounted(async () => {
-  await Promise.all([fetchSources(), fetchTrash(), fetchGroups()])
+  await Promise.all([fetchSources(), fetchTrash(), fetchGroups(), fetchSettings()])
 })
 </script>
 
@@ -692,7 +694,7 @@ onMounted(async () => {
     </div>
 
     <!-- Groups Tab -->
-    <div v-if="isGroupsTab && !loading">
+    <div v-if="isGroupsTab && !loading && settings.group_enabled">
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
         <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
         {{ t('groups.empty') }}

@@ -1,5 +1,6 @@
 """Schemas package."""
 
+from src.schemas.app_settings import AppSettingsResponse, AppSettingsUpdate
 from src.schemas.backup import (
     BackupConfig,
     BackupContent,
@@ -20,6 +21,8 @@ from src.schemas.history import (
 )
 
 __all__ = [
+    "AppSettingsResponse",
+    "AppSettingsUpdate",
     "BackupConfig",
     "BackupContent",
     "BackupCounts",

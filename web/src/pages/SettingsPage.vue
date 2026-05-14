@@ -8,6 +8,7 @@ import { restartBackend } from '@/utils/tauri-bridge'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import BackupManager from '@/components/BackupManager.vue'
+import FeatureSettingsDialog from '@/components/FeatureSettingsDialog.vue'
 
 // API Keys
 import { getKeys, deleteKey } from '@/api/keys'
@@ -37,6 +38,24 @@ const route = useRoute()
 const { showDesktopFeatures } = getPlatformFeatures()
 const toast = useToast()
 const confirm = useConfirm()
+
+// Feature settings 10-click easter egg (Settings page only)
+const featureDialogOpen = ref(false)
+const featureClickCount = ref(0)
+const featureClickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+
+function handleFeedIconClick(): void {
+  // Only activate on Settings page
+  if (route.path !== '/settings') return
+
+  if (featureClickTimer.value) clearTimeout(featureClickTimer.value)
+  featureClickCount.value++
+  featureClickTimer.value = setTimeout(() => { featureClickCount.value = 0 }, 2000)
+  if (featureClickCount.value >= 10) {
+    featureDialogOpen.value = true
+    featureClickCount.value = 0
+  }
+}
 
 // Main tabs
 const activeTab = ref<'keys' | 'stats' | 'settings'>('keys')
@@ -177,7 +196,9 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-bold">{{ t('common.settings') }}</h1>
+    <h1 class="text-2xl font-bold cursor-pointer select-none" @click="handleFeedIconClick">
+      {{ t('common.settings') }}
+    </h1>
 
     <!-- Main Tabs -->
     <div class="flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
@@ -436,5 +457,8 @@ onMounted(() => {
       @confirm="confirm.confirm"
       @cancel="confirm.cancel"
     />
+
+    <!-- Feature Settings Dialog (10-click easter egg) -->
+    <FeatureSettingsDialog v-model:open="featureDialogOpen" />
   </div>
 </template>

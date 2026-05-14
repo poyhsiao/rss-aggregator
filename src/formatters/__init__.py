@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 # Valid format types
-FormatType = str  # "rss", "json", or "markdown"
+FormatType = str  # "rss", "json", "markdown", or "preview"
 
 
 def get_formatter(format: str) -> BaseFormatter:
@@ -23,15 +23,17 @@ def get_formatter(format: str) -> BaseFormatter:
     Falls back to RSS formatter for invalid format values (lenient mode).
 
     Args:
-        format: Output format string ("rss", "json", or "markdown")
+        format: Output format string ("rss", "json", "markdown", or "preview")
 
     Returns:
         Appropriate formatter instance
     """
+    # "preview" uses the same formatter as "markdown" - both output readable content
     formatters = {
         "rss": RssFormatter(),
         "json": JsonFormatter(),
         "markdown": MarkdownFormatter(),
+        "preview": MarkdownFormatter(),  # preview uses markdown formatter
     }
     # Lenient mode: fallback to RSS for invalid formats
     return formatters.get(format.lower(), formatters["rss"])
