@@ -23,3 +23,4 @@ class TestFeatureFlag:
         assert "groups_enabled" in repr_str
         assert "true" in repr_str
         assert "FeatureFlag" in repr_str
+        assert "updated_at" in repr_str

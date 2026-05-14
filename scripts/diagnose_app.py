@@ -323,16 +323,33 @@ async def main():
 
         if data_ok:
             # Check API
-            _ = await check_jsonrpc_api()
+            api_ok = await check_jsonrpc_api()
+        else:
+            api_ok = False
+    else:
+        api_ok = False
 
     print("\n" + "=" * 60)
     print("Diagnostic complete!")
     print("=" * 60)
 
+    print("\nStatus Summary:")
+    print(f"  Database: {'✅ OK' if db_ok else '❌ Failed'}")
+    print(f"  Test Data: {'✅ OK' if data_ok else '❌ Failed'}")
+    print(f"  API Check: {'✅ OK' if api_ok else '❌ Failed'}")
+
     print("\nNext steps:")
-    print("1. If database is OK but API failed, restart the Tauri App")
-    print("2. If database is empty, the test data has been created - restart the app")
-    print("3. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
+    if db_ok and not api_ok:
+        print("1. Database is OK but API failed - restart the Tauri App")
+        print("2. Check Tauri App logs (View > Toggle Developer Tools)")
+    elif not db_ok:
+        print("1. Database issues found - test data has been created, restart the app")
+        print("2. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
+    elif data_ok and api_ok:
+        print("✅ All checks passed! The app should be working correctly.")
+    else:
+        print("1. Test data was created - restart the app")
+        print("2. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
 
 
 if __name__ == "__main__":

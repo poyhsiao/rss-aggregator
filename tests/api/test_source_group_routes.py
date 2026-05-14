@@ -63,6 +63,7 @@ async def async_client(test_session: AsyncSession) -> AsyncGen[AsyncClient, None
         else:
             settings.group_enabled = True
             await test_session.commit()
+            await test_session.refresh(settings)
         return settings
 
     app.dependency_overrides[get_session] = override_get_session

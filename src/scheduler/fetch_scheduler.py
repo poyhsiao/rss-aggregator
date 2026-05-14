@@ -134,7 +134,7 @@ class FetchScheduler:
             result = await session.execute(
                 select(Source)
                 .join(SourceGroupMember, SourceGroupMember.source_id == Source.id)
-                .where(SourceGroupMember.group_id == group_id, Source.is_active == True, Source.deleted_at.is_(None))
+                .where(SourceGroupMember.group_id == group_id, Source.is_active, Source.deleted_at.is_(None))
             )
             sources = list(result.scalars().all())
 
