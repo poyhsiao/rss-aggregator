@@ -247,6 +247,8 @@ jobs:
 
       - name: E2E
         run: pnpm test:e2e
+        env:
+          E2E_BASE_URL: http://localhost:8000
 
       - name: Upload Playwright report
         if: failure()
