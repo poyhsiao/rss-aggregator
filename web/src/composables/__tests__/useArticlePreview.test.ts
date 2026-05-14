@@ -2,25 +2,40 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useArticlePreview } from '../useArticlePreview'
 
 vi.mock('@/api/preview', () => ({
-  getCachedPreview: vi.fn(),
   fetchAndCachePreview: vi.fn(),
+  getCachedPreview: vi.fn(),
+  getCachedPreviewByUrl: vi.fn(),
+  savePreview: vi.fn(),
 }))
 
 vi.mock('@/utils/urlNormalizer', () => ({
   computeUrlHash: vi.fn(),
 }))
 
-import { getCachedPreview, fetchAndCachePreview } from '@/api/preview'
-import { computeUrlHash } from '@/utils/urlNormalizer'
+vi.mock('@/utils/environment', () => ({
+  isTauri: vi.fn().mockReturnValue(false),
+}))
 
-const mockGetCachedPreview = vi.mocked(getCachedPreview)
+import { fetchAndCachePreview, getCachedPreview, getCachedPreviewByUrl, savePreview } from '@/api/preview'
+import { computeUrlHash } from '@/utils/urlNormalizer'
+import { isTauri } from '@/utils/environment'
+
 const mockFetchAndCachePreview = vi.mocked(fetchAndCachePreview)
-const mockComputeUrlHash = vi.mocked(computeUrlHash)
+const mockIsTauri = vi.mocked(isTauri)
 
 describe('useArticlePreview', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockComputeUrlHash.mockResolvedValue('abc123')
+    mockIsTauri.mockReturnValue(false)
+    mockFetchAndCachePreview.mockResolvedValue({
+      id: 1,
+      url: '',
+      url_hash: '',
+      markdown_content: '# Content',
+      title: null,
+      created_at: '',
+      updated_at: '',
+    })
   })
 
   describe('fetchPreview', () => {
@@ -34,18 +49,16 @@ describe('useArticlePreview', () => {
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
       }
-      mockGetCachedPreview.mockResolvedValueOnce(mockPreview)
+      mockFetchAndCachePreview.mockResolvedValueOnce(mockPreview)
 
       const { fetchPreview, content, source } = useArticlePreview()
       await fetchPreview('https://example.com/article')
 
-      expect(mockGetCachedPreview).toHaveBeenCalled()
+      expect(mockFetchAndCachePreview).toHaveBeenCalledWith('https://example.com/article')
       expect(content.value).toBe('# Cached Content')
-      expect(source.value).toBe('cache')
     })
 
     it('should fetch from backend when not cached', async () => {
-      mockGetCachedPreview.mockResolvedValueOnce(null)
       mockFetchAndCachePreview.mockResolvedValueOnce({
         id: 1,
         url: 'https://example.com/article',
@@ -56,16 +69,14 @@ describe('useArticlePreview', () => {
         updated_at: '2024-01-01T00:00:00Z',
       })
 
-      const { fetchPreview, content, source } = useArticlePreview()
+      const { fetchPreview, content } = useArticlePreview()
       await fetchPreview('https://example.com/article')
 
       expect(mockFetchAndCachePreview).toHaveBeenCalledWith('https://example.com/article')
       expect(content.value).toBe('# New Content')
-      expect(source.value).toBe('api')
     })
 
     it('should set loading state during fetch', async () => {
-      mockGetCachedPreview.mockResolvedValueOnce(null)
       mockFetchAndCachePreview.mockImplementation(
         () =>
           new Promise((resolve) =>
@@ -96,7 +107,6 @@ describe('useArticlePreview', () => {
 
   describe('error handling', () => {
     it('should set error on fetch failure', async () => {
-      mockGetCachedPreview.mockResolvedValueOnce(null)
       mockFetchAndCachePreview.mockRejectedValueOnce(new Error('Network error'))
 
       const { fetchPreview, error } = useArticlePreview()
