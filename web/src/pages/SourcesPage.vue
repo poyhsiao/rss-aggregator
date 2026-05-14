@@ -744,7 +744,7 @@ onMounted(async () => {
                   </button>
                   <div class="flex items-center gap-1.5 shrink-0">
                     <Badge v-if="featureFlagsStore.groupsEnabled" variant="secondary">{{ group.member_count }} {{ t('groups.sources_badge') }}</Badge>
-                    <Badge v-if="group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
+                    <Badge v-if="featureFlagsStore.groupSchedulesEnabled && group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
                       <Clock class="h-3 w-3 mr-0.5" /> {{ group.schedule_count }} {{ t('groups.schedules_badge') }}
                     </Badge>
                   </div>

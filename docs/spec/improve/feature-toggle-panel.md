@@ -170,8 +170,8 @@ function useFeatureToggle(): {
 
 #### FeatureTogglePanel Component
 
-**Props:** `modelValue: boolean` (v-model for visibility)
-**Emits:** `update:modelValue`
+**Props:** `open: boolean`
+**Emits:** `update:open`
 
 **UI Structure:**
 ```
@@ -195,7 +195,7 @@ function useFeatureToggle(): {
 In `SettingsPage.vue`:
 1. Import and initialize `useFeatureToggle()` composable
 2. Add click handler to the RSS icon in the Settings header
-3. Mount `<FeatureTogglePanel v-model:open="isRevealed" />` when `isRevealed = true`
+3. Mount `<FeatureTogglePanel v-model="isRevealed" />` when `isRevealed = true`
 
 **Implementation approach:**  
 The RSS icon click handler should be in the Settings page itself (not in MainLayout) to keep concerns separated. The existing MainLayout's `handleFeedIconClick` remains untouched — it only handles clicks on the Feed page.

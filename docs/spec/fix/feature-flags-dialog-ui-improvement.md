@@ -393,7 +393,7 @@ Expected: All containers healthy
 
 | 檔案 | 變更類型 |
 |------|----------|
-| `web/src/components/ui/Toggle.vue` | 修改 — 改為橫向膠囊形（w-16×h-8）、新增 OFF/ON 標籤 |
+| `web/src/components/ui/Switch.vue` | 修改 — 改為橫向膠囊形（w-16×h-8）、新增 OFF/ON 標籤 |
 | `web/src/components/ui/CascadeWarningDialog.vue` | 新增 — 獨立確認 Dialog |
 | `web/src/components/FeatureFlagsDialog.vue` | 修改 — 移除 inline warning、使用 cascade dialog、加入 padding |
 | `web/src/locales/en.json` | 修改 — 新增 cascadeWarningMessage |

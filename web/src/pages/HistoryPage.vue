@@ -33,6 +33,13 @@ const filteredBatches = computed(() => {
   );
 });
 
+watch(() => featureFlagsStore.groupsEnabled, (enabled) => {
+  if (!enabled && selectedGroupId.value !== null) {
+    selectedGroupId.value = null
+    fetchBatches()
+  }
+})
+
 // Edit name state
 const editingBatchId = ref<number | null>(null)
 const editingName = ref("")
