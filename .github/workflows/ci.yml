@@ -241,7 +241,7 @@ jobs:
 
       - name: Serve frontend (background)
         run: |
-          npx serve dist -l 8080 &
+          npx vite preview --port 8080 &
           echo "Frontend server PID: $!"
 
       - name: Run API (background)
