@@ -149,6 +149,7 @@ class FeedService:
         if source_id is not None:
             query = query.where(FeedItem.source_id == source_id)
 
+        order_col: Any
         if sort_by == "source":
             order_col = Source.name
             query = query.join(Source)
