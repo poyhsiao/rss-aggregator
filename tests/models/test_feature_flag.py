@@ -1,7 +1,5 @@
 """Tests for FeatureFlag model."""
 
-import pytest
-
 from src.models.feature_flag import FeatureFlag
 
 

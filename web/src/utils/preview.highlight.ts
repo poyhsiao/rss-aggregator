@@ -75,6 +75,7 @@ export function highlightXml(xml: string): string {
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
 
 	// Highlight XML tags
 	xml = xml.replace(/(&lt;\/?)([\w:.-]+)(&gt;)/g, (_match, open, tag, close) => {

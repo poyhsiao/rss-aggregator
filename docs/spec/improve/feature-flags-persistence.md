@@ -280,7 +280,7 @@ function handleIconClick(): void {
   
   iconClickTimer.value = setTimeout(() => {
     iconClickCount.value = 0
-  }, 300)
+  }, 3000)
   
   if (iconClickCount.value >= 10) {
     iconClickCount.value = 0

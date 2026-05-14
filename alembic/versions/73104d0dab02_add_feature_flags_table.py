@@ -21,9 +21,22 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     # Insert default feature flags (table already created by 3c1cf4c7a4b5)
-    op.execute("INSERT INTO feature_flags (key, value, updated_at) VALUES ('groups_enabled', 'true', CURRENT_TIMESTAMP)")
-    op.execute("INSERT INTO feature_flags (key, value, updated_at) VALUES ('group_schedules_enabled', 'true', CURRENT_TIMESTAMP)")
-    op.execute("INSERT INTO feature_flags (key, value, updated_at) VALUES ('source_group_schedules_enabled', 'true', CURRENT_TIMESTAMP)")
+    # Use ON CONFLICT DO NOTHING for idempotent inserts
+    op.execute("""
+        INSERT INTO feature_flags (key, value, updated_at)
+        VALUES ('groups_enabled', 'true', CURRENT_TIMESTAMP)
+        ON CONFLICT (key) DO NOTHING
+    """)
+    op.execute("""
+        INSERT INTO feature_flags (key, value, updated_at)
+        VALUES ('group_schedules_enabled', 'true', CURRENT_TIMESTAMP)
+        ON CONFLICT (key) DO NOTHING
+    """)
+    op.execute("""
+        INSERT INTO feature_flags (key, value, updated_at)
+        VALUES ('source_group_schedules_enabled', 'true', CURRENT_TIMESTAMP)
+        ON CONFLICT (key) DO NOTHING
+    """)
 
 
 def downgrade() -> None:

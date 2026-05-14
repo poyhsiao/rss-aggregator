@@ -39,12 +39,16 @@ async def update_feature_flags(
     Returns:
         Updated feature flags.
     """
+    flags_to_update = {}
     if update.groups_enabled is not None:
-        await service.update("groups_enabled", update.groups_enabled)
+        flags_to_update["groups_enabled"] = update.groups_enabled
     if update.group_schedules_enabled is not None:
-        await service.update("group_schedules_enabled", update.group_schedules_enabled)
+        flags_to_update["group_schedules_enabled"] = update.group_schedules_enabled
     if update.source_group_schedules_enabled is not None:
-        await service.update("source_group_schedules_enabled", update.source_group_schedules_enabled)
+        flags_to_update["source_group_schedules_enabled"] = update.source_group_schedules_enabled
+
+    if flags_to_update:
+        await service.update_batch(flags_to_update)
 
     flags = await service.get_all()
     return FeatureFlagsResponse(**flags)

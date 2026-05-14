@@ -19,6 +19,13 @@ DEFAULT_FLAGS = {
 }
 
 
+def _parse_bool(value: str) -> bool:
+    """Parse stored string to boolean."""
+    if not isinstance(value, str):
+        raise TypeError(f"Expected string, got {type(value).__name__}")
+    return value.lower() == "true"
+
+
 class FeatureFlagService:
     """Service for managing feature flags."""
 
@@ -43,13 +50,13 @@ class FeatureFlagService:
         merged = {}
         for key, default in DEFAULT_FLAGS.items():
             if key in flags:
-                merged[key] = flags[key] == "true"
+                merged[key] = _parse_bool(flags[key])
             else:
                 merged[key] = default
         # Also include non-default flags
         for key, value in flags.items():
             if key not in merged:
-                merged[key] = value == "true"
+                merged[key] = _parse_bool(value)
         return merged
 
     async def update(self, key: str, value: bool) -> None:

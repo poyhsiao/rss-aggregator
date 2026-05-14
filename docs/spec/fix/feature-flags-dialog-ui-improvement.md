@@ -16,7 +16,7 @@
 ## Task 1: Toggle 組件視覺改進
 
 **Files:**
-- Modify: `web/src/components/ui/Toggle.vue`
+- Modify: `web/src/components/ui/Switch.vue`
 - Test: `web/e2e/feature-flags-dialog.spec.ts`
 
 - [ ] **Step 1: Write E2E test for toggle visibility**
@@ -357,7 +357,7 @@ git commit -m "feat(feature-flags): convert cascade warning to separate ConfirmD
 
 - [ ] **Step 1: Run full E2E test suite for feature flags dialog**
 
-Run: `cd web && pnpm test:e2e --grep "feature flag\|toggle\|cascade"`
+Run: `cd web && pnpm test:e2e --grep "feature flag|toggle|cascade"`
 Expected: All PASS
 
 - [ ] **Step 2: Run unit tests**
@@ -372,7 +372,7 @@ Expected: Built successfully
 
 - [ ] **Step 4: Docker rebuild and deploy**
 
-Run: `cd /Users/kimhsiao/Templates/git/pic.net.tw/RSS-collection && docker compose --profile full build && docker compose --profile full up -d`
+Run: `cd <repo-root> && docker compose --profile full build && docker compose --profile full up -d`
 Expected: All containers healthy
 
 - [ ] **Step 5: Final manual verification**

@@ -170,7 +170,7 @@ function useFeatureToggle(): {
 
 #### FeatureTogglePanel Component
 
-**Props:** `modelValue: boolean` (v-model for visibility)  
+**Props:** `modelValue: boolean` (v-model for visibility)
 **Emits:** `update:modelValue`
 
 **UI Structure:**
@@ -241,7 +241,7 @@ Add to `web/src/locales/en.json` and `web/src/locales/zh.json`:
 ### 6.3 Persistence
 
 - Toggle values persist across page reloads and browser restarts
-- Anonymous users' toggles are tied to `session_id` (stored in httpOnly cookie or localStorage)
+- Anonymous users' toggles are tied to `session_id` (stored in httpOnly cookie)
 
 ---
 
