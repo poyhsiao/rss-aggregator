@@ -30,7 +30,8 @@ onUnmounted(() => {
   document.body.style.overflow = ''
 })
 
-const resolvedTitleId = computed(() => props.titleId || `dialog-title-${++dialogInstanceCounter}`)
+const instanceId = props.titleId || `dialog-title-${++dialogInstanceCounter}`
+const resolvedTitleId = computed(() => instanceId)
 
 function close(): void {
   emit('update:open', false)

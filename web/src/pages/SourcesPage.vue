@@ -694,7 +694,7 @@ onMounted(async () => {
     </div>
 
     <!-- Groups Tab -->
-    <div v-if="isGroupsTab && !loading && settings.group_enabled">
+    <div v-if="isGroupsTab && !loading && featureFlagsStore.groupsEnabled">
       <div v-if="!groups.length" class="text-center py-12 text-neutral-500">
         <Inbox class="h-6 w-6 mx-auto mb-3 text-neutral-400" />
         {{ t('groups.empty') }}

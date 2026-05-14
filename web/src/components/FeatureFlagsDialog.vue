@@ -56,8 +56,6 @@ function handleCascadeConfirm() {
   localSchedulesEnabled.value = false
   localSourceGroupSchedulesEnabled.value = false
   showCascadeWarning.value = false
-  store.groupSchedulesEnabled = false
-  store.sourceGroupSchedulesEnabled = false
 }
 
 function handleCascadeCancel() {
