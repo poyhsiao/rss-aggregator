@@ -1,6 +1,21 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('FeatureFlagsDialog UI', () => {
+  // Ensure dialog is closed before each test to prevent state pollution
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/sources')
+    await page.waitForLoadState('networkidle')
+    // Close any open dialogs (e.g., from previous test in same worker)
+    const dialog = page.locator('[role="dialog"]')
+    if (await dialog.isVisible()) {
+      await page.keyboard.press('Escape')
+      await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+        // Force reload if dialog won't close
+        page.goto('/sources')
+      })
+    }
+  })
+
   async function openDialog(page: any) {
     await page.goto('/settings')
     await page.waitForLoadState('networkidle')
