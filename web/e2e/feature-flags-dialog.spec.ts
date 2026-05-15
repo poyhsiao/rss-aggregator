@@ -5,11 +5,11 @@ test.describe('FeatureFlagsDialog UI', () => {
     await page.goto('/settings')
     await page.waitForLoadState('networkidle')
 
-    // Click RSS icon 10 times
-    const rssIcon = page.locator('header svg[class*="h-6"]').first()
+    // Click the h1 heading 10 times to trigger the easter egg
+    const heading = page.locator('h1.text-2xl, h1.cursor-pointer')
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click()
-      await page.waitForTimeout(50)
+      await heading.click()
+      await page.waitForTimeout(300) // 3000ms total window
     }
     await expect(page.locator('[role="dialog"]')).toBeVisible()
   }
