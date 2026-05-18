@@ -253,7 +253,7 @@ jobs:
           # Wait for API with proper timeout
           for i in $(seq 1 60); do
             sleep 2
-            if curl -sf http://localhost:8000/api/v1/feeds > /dev/null 2>&1; then
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
               echo "API is ready"
               exit 0
             fi
