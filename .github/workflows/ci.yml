@@ -253,11 +253,12 @@ jobs:
           # Wait for API with proper timeout
           for i in $(seq 1 60); do
             sleep 2
-            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
-              echo "API is ready"
+            resp=$(curl -sf http://localhost:8000/health 2>&1)
+            if [ $? -eq 0 ]; then
+              echo "API is ready: $resp"
               exit 0
             fi
-            echo "Waiting for API... ($((i*2))s/120s)"
+            echo "Waiting for API... ($((i*2))s/120s) Response: $resp"
           done
           echo "API failed to start. Log:"
           cat /tmp/uvicorn.log
