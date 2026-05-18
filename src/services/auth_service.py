@@ -24,7 +24,7 @@ class AuthService:
         result = await self.session.execute(
             select(APIKey).where(
                 APIKey.key == api_key,
-                APIKey.is_active == True,
+                APIKey.is_active,
             )
         )
         return result.scalar_one_or_none() is not None

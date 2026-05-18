@@ -10,8 +10,8 @@ const props = defineProps<{
 const sanitizedContent = computed(() => {
   if (!props.content) return ''
   return DOMPurify.sanitize(props.content, {
-    ADD_TAGS: props.allowedTags ?? ['span'],
-    ADD_ATTR: ['class'],
+    ALLOWED_TAGS: props.allowedTags ?? ['span'],
+    ALLOWED_ATTR: ['class'],
   })
 })
 </script>

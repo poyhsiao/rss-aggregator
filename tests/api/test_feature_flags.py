@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from src.api.deps import get_session, require_api_key, get_feature_flag_service
+from src.api.deps import get_session, require_api_key
 from src.main import app
 from src.models import Base
 

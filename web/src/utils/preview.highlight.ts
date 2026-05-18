@@ -75,6 +75,7 @@ export function highlightXml(xml: string): string {
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
 
 	// Highlight XML tags
 	xml = xml.replace(/(&lt;\/?)([\w:.-]+)(&gt;)/g, (_match, open, tag, close) => {
@@ -82,7 +83,7 @@ export function highlightXml(xml: string): string {
 	})
 
 	// Highlight attributes
-	xml = xml.replace(/(\s)([\w:.-]+)(=)(&quot;[^&]*&quot;)/g, (_match, space, attr, eq, value) => {
+	xml = xml.replace(/(\s)([\w:.-]+)(=)(&quot;[\s\S]*?&quot;)/g, (_match, space, attr, eq, value) => {
 		return `${space}<span class="xml-attr-name">${attr}</span>${eq}<span class="xml-attr-value">${value}</span>`
 	})
 

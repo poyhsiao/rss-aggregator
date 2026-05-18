@@ -1,6 +1,5 @@
 """Tests for BackupService export functionality."""
 
-from io import BytesIO
 from unittest.mock import MagicMock, AsyncMock, patch
 
 import pytest
@@ -27,7 +26,12 @@ class TestBackupServiceExport:
         """Test export_backup returns bytes."""
         with patch.object(
             backup_service, "_serialize_data", new_callable=AsyncMock
-        ) as mock_serialize:
+        ) as mock_serialize, patch(
+            "src.services.backup_service.FeatureFlagService"
+        ) as MockFFService:
+            mock_ff_instance = MagicMock()
+            mock_ff_instance.get_all = AsyncMock(return_value={})
+            MockFFService.return_value = mock_ff_instance
             mock_serialize.return_value = {
                 "sources": [],
                 "feed_items": [],
@@ -60,7 +64,12 @@ class TestBackupServiceExport:
 
         with patch.object(
             backup_service, "_serialize_data", new_callable=AsyncMock
-        ) as mock_serialize:
+        ) as mock_serialize, patch(
+            "src.services.backup_service.FeatureFlagService"
+        ) as MockFFService:
+            mock_ff_instance = MagicMock()
+            mock_ff_instance.get_all = AsyncMock(return_value={})
+            MockFFService.return_value = mock_ff_instance
             mock_serialize.return_value = {
                 "sources": [{"id": 1}],
                 "feed_items": [{"id": 1}],
@@ -84,7 +93,12 @@ class TestBackupServiceExport:
 
         with patch.object(
             backup_service, "_serialize_data", new_callable=AsyncMock
-        ) as mock_serialize:
+        ) as mock_serialize, patch(
+            "src.services.backup_service.FeatureFlagService"
+        ) as MockFFService:
+            mock_ff_instance = MagicMock()
+            mock_ff_instance.get_all = AsyncMock(return_value={})
+            MockFFService.return_value = mock_ff_instance
             mock_serialize.return_value = {
                 "sources": [],
                 "feed_items": [],
@@ -108,7 +122,12 @@ class TestBackupServiceExport:
 
         with patch.object(
             backup_service, "_serialize_data", new_callable=AsyncMock
-        ) as mock_serialize:
+        ) as mock_serialize, patch(
+            "src.services.backup_service.FeatureFlagService"
+        ) as MockFFService:
+            mock_ff_instance = MagicMock()
+            mock_ff_instance.get_all = AsyncMock(return_value={})
+            MockFFService.return_value = mock_ff_instance
             mock_serialize.return_value = {
                 "sources": [],
                 "feed_items": [],
@@ -128,7 +147,12 @@ class TestBackupServiceExport:
         """Test that export creates encrypted ZIP."""
         with patch.object(
             backup_service, "_serialize_data", new_callable=AsyncMock
-        ) as mock_serialize:
+        ) as mock_serialize, patch(
+            "src.services.backup_service.FeatureFlagService"
+        ) as MockFFService:
+            mock_ff_instance = MagicMock()
+            mock_ff_instance.get_all = AsyncMock(return_value={})
+            MockFFService.return_value = mock_ff_instance
             mock_serialize.return_value = {
                 "sources": [],
                 "feed_items": [],

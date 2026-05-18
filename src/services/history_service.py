@@ -212,7 +212,7 @@ class HistoryService:
             select(FeedItem)
             .options(joinedload(FeedItem.source))
             .where(
-                FeedItem.source.has(Source.is_active == True),
+                FeedItem.source.has(Source.is_active),
                 FeedItem.source.has(Source.deleted_at.is_(None)),
             )
         )

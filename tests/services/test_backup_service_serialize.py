@@ -1,7 +1,7 @@
 """Tests for BackupService serialization methods."""
 
 from datetime import datetime, date
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

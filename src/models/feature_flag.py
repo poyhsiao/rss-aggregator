@@ -3,16 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base
 from src.utils.time import now
-
-if TYPE_CHECKING:
-    pass
 
 
 class FeatureFlag(Base):
@@ -27,4 +23,4 @@ class FeatureFlag(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<FeatureFlag(key={self.key}, value={self.value})>"
+        return f"<FeatureFlag(key={self.key}, value={self.value}, updated_at={self.updated_at})>"

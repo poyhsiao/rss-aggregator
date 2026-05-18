@@ -7,7 +7,6 @@ This test verifies the complete flow:
 4. Response format matches what frontend expects
 """
 
-import json
 
 import pytest
 import pytest_asyncio

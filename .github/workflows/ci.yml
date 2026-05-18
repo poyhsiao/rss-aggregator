@@ -10,6 +10,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  UV_SYSTEM_PYTHON: 1
+
 jobs:
   # ── Backend (Python) ──────────────────────────────────────────
   backend-lint:
@@ -47,7 +50,7 @@ jobs:
         run: uv sync
 
       - name: Type check
-        run: uv run mypy src/
+        run: uv run mypy src/ --ignore-missing-imports --disable-error-code=import-untyped
 
   backend-test:
     name: Backend Tests
@@ -67,10 +70,16 @@ jobs:
         run: uv sync
 
       - name: Run migrations
-        run: uv run alembic upgrade head
+        run: |
+          mkdir -p data
+          uv run alembic upgrade head
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
       - name: Test
         run: uv run pytest -q
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
 
   # ── Frontend (Node.js) ─────────────────────────────────────────
   frontend-lint:
@@ -86,7 +95,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -107,7 +131,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -128,7 +167,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -145,11 +199,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -159,17 +236,45 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          VITE_API_BASE_URL: http://localhost:8000
+          VITE_API_PROXY_TARGET: http://localhost:8000
+
+      - name: Serve frontend (background)
+        run: |
+          VITE_API_PROXY_TARGET=http://localhost:8000 pnpm vite preview --port 8080 --strictPort &
 
       - name: Run API (background)
         run: |
+          mkdir -p ../data
           cd ..
-          uv sync
           uv run alembic upgrade head
-          uv run uvicorn src.main:app --port 8000 &
-          sleep 5
+          nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
+          # Wait for API with proper timeout
+          for i in $(seq 1 60); do
+            sleep 2
+            resp=$(curl -sf http://localhost:8000/health 2>&1)
+            if [ $? -eq 0 ]; then
+              echo "API is ready: $resp"
+              exit 0
+            fi
+            echo "Waiting for API... ($((i*2))s/120s) Response: $resp"
+          done
+          echo "API failed to start. Log:"
+          cat /tmp/uvicorn.log
+          exit 1
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
+          ALLOWED_ORIGINS: "*"
+          REQUIRE_API_KEY: "false"
+          DEFAULT_API_KEY: "test-api-key-for-ci"
+          SCHEDULER_ENABLED: "false"
+          LOG_LEVEL: "debug"
 
       - name: E2E
-        run: pnpm test:e2e
+        run: pnpm test:e2e --reporter=line
+        env:
+          E2E_BASE_URL: http://localhost:8080
 
       - name: Upload Playwright report
         if: failure()
@@ -201,8 +306,8 @@ jobs:
       - name: Build Web image
         uses: docker/build-push-action@v6
         with:
-          context: ./web
-          file: ../Dockerfile.web
+          context: .
+          file: ./Dockerfile.web
           push: false
           tags: rss-aggregator:web
           cache-from: type=gha

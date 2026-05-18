@@ -1,19 +1,17 @@
-"""merge heads
+"""merge app_settings and feature_flags heads
 
-Revision ID: b56ea9244241
-Revises: 3c1cf4c7a4b5, 73104d0dab02
-Create Date: 2026-05-13 23:24:24.219712
+Revision ID: baffd64ba2d8
+Revises: 8f15de7f6e78, d7d3380aca40
+Create Date: 2026-05-14 19:18:48.864433
 
 """
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b56ea9244241'
-down_revision: Union[str, Sequence[str], None] = ('3c1cf4c7a4b5', '73104d0dab02')
+revision: str = 'baffd64ba2d8'
+down_revision: Union[str, Sequence[str], None] = ('8f15de7f6e78', 'd7d3380aca40')
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

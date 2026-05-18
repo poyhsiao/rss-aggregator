@@ -1,7 +1,6 @@
 """Tests for SourceGroupSchedule model."""
 
 import pytest
-from sqlalchemy import select
 
 from src.models import SourceGroup, SourceGroupSchedule
 

@@ -1,7 +1,5 @@
 """Tests for FeatureFlag model."""
 
-import pytest
-
 from src.models.feature_flag import FeatureFlag
 
 
@@ -21,4 +19,8 @@ class TestFeatureFlag:
     def test_feature_flag_repr(self):
         """FeatureFlag __repr__ 格式正確"""
         flag = FeatureFlag(key="groups_enabled", value="true")
-        assert repr(flag) == "<FeatureFlag(key=groups_enabled, value=true)>"
+        repr_str = repr(flag)
+        assert "groups_enabled" in repr_str
+        assert "true" in repr_str
+        assert "FeatureFlag" in repr_str
+        assert "updated_at" in repr_str

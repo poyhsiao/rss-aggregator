@@ -73,7 +73,7 @@ test.describe('Trash Restore Functionality', () => {
     }
   })
 
-  test('should show toast message on restore error', async ({ page }) => {
+  test('should permanently delete item from trash', async ({ page }) => {
     await page.getByRole('button', { name: /trash|垃圾桶/i }).click()
     await page.waitForTimeout(500)
 
