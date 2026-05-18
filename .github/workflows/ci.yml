@@ -266,6 +266,8 @@ jobs:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
           ALLOWED_ORIGINS: "*"
           REQUIRE_API_KEY: "false"
+          DEFAULT_API_KEY: "test-api-key-for-ci"
+          SCHEDULER_ENABLED: "false"
           LOG_LEVEL: "debug"
 
       - name: E2E
