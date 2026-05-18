@@ -266,6 +266,7 @@ jobs:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
           ALLOWED_ORIGINS: "*"
           REQUIRE_API_KEY: "false"
+          LOG_LEVEL: "debug"
 
       - name: E2E
         run: pnpm test:e2e --reporter=line
