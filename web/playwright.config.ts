@@ -16,17 +16,15 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    /* Ensure each test starts with clean storage state */
-    storageState: process.env.CI ? undefined : undefined,
   },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      /* Per-project storage state for isolation */
     },
   ],
-  webServer: process.env.CI ? undefined : {
+  globalTeardown: './e2e/global-teardown.ts',
+  webServer: process.env.CI ? undefined : process.env.E2E_BASE_URL ? undefined : {
     command: 'echo "Using existing server"',
     url: 'http://localhost:51086',
     reuseExistingServer: true,
