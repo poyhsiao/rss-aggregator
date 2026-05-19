@@ -242,7 +242,20 @@ jobs:
 
       - name: Serve frontend (background)
         run: |
-          VITE_API_PROXY_TARGET=http://localhost:8000 pnpm vite preview --port 8080 --strictPort &
+          export VITE_API_PROXY_TARGET=http://localhost:8000
+          nohup pnpm vite preview --port 8080 --strictPort > /tmp/vite.log 2>&1 &
+          # Wait for frontend to be ready
+          for i in $(seq 1 30); do
+            sleep 1
+            if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
+              echo "Frontend ready"
+              exit 0
+            fi
+            echo "Waiting for frontend... ($i/30s)"
+          done
+          echo "Frontend failed to start. Log:"
+          cat /tmp/vite.log
+          exit 1
 
       - name: Run API (background)
         run: |
