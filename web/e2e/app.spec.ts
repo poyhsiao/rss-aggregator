@@ -1,9 +1,26 @@
 import { test, expect } from '@playwright/test'
 
+// Global test fixture to handle auth initialization
+test.beforeEach(async ({ page }) => {
+  // Navigate to a blank page first to reset Vue app state
+  await page.goto('about:blank')
+  // Wait for any previous page to fully unload
+  await page.waitForTimeout(100)
+})
+
 test.describe('Sources Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
     await page.waitForLoadState('networkidle')
+    // Wait for Vue to mount and auth to initialize
+    await page.waitForTimeout(500)
+    // Auth dialog shows when isValid is false - wait for it to either disappear or be ready
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]')
+    // If auth dialog is visible, wait for it to be handled (should auto-close since require_api_key=false)
+    if (await dialog.isVisible({ timeout: 500 }).catch(() => false)) {
+      await dialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {})
+      await page.waitForTimeout(300)
+    }
   })
 
   test('should display sources page', async ({ page }) => {
@@ -51,7 +68,7 @@ test.describe('Sources Page', () => {
     await expect(card).toBeVisible({ timeout: 5000 })
   })
 
-test('should edit an existing source', async ({ page }) => {
+  test('should edit an existing source', async ({ page }) => {
     const timestamp = Date.now()
     const originalName = `Original ${timestamp}`
     const newName = `Edited ${timestamp}`
@@ -285,6 +302,13 @@ test.describe('Keys Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=keys')
     await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(500)
+    // Handle auth dialog same as Sources Page
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]')
+    if (await dialog.isVisible({ timeout: 500 }).catch(() => false)) {
+      await dialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {})
+      await page.waitForTimeout(300)
+    }
   })
 
   test('should display keys page', async ({ page }) => {
