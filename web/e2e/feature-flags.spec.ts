@@ -19,8 +19,9 @@ test.describe('Feature Flags', () => {
   }
 
   test.beforeEach(async ({ page }) => {
+    // Navigate to settings first to ensure localStorage is accessible
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     // Clear localStorage after page loads
     await page.evaluate(() => {
       localStorage.removeItem('ff_groups_enabled')

@@ -21,6 +21,9 @@ test.describe('Feature Flags UI Hiding', () => {
   }
 
   test.beforeEach(async ({ page }) => {
+    // Navigate to settings page first to ensure localStorage is accessible
+    await page.goto('/settings')
+    await page.waitForLoadState('domcontentloaded')
     // Reset to known state
     await page.evaluate(() => {
       localStorage.setItem('ff_groups_enabled', 'true')

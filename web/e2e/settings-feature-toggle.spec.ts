@@ -27,9 +27,9 @@ test.describe('Feature Settings Toggle', () => {
     await clickTitleTenTimes(page)
     const dialog = page.locator('[role="dialog"]')
 
-    await expect(dialog.getByText(/群組功能|Group Feature/i)).toBeVisible()
-    await expect(dialog.getByText(/定時更新功能|Scheduled Update/i)).toBeVisible()
-    await expect(dialog.getByText(/分享連結功能|Share Links/i)).toBeVisible()
+    await expect(dialog.getByText(/群組功能|Group Feature/i).first()).toBeVisible()
+    await expect(dialog.getByText(/定時更新功能|Scheduled Update/i).first()).toBeVisible()
+    await expect(dialog.getByText(/分享連結功能|Share Links/i).first()).toBeVisible()
   })
 
   test('Schedule toggle is disabled when group is off', async ({ page }) => {

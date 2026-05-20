@@ -7,7 +7,7 @@ test.describe('Backup Functionality', () => {
   })
 
   test('should display backup section in settings', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /backup|備份/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /backup|備份/i }).first()).toBeVisible()
   })
 
   test('should display export backup button', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('Backup Functionality', () => {
   })
 
   test('should display import backup section', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /import|匯入/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /import|匯入/i }).first()).toBeVisible()
   })
 
   test('should display export options', async ({ page }) => {
@@ -41,12 +41,8 @@ test.describe('Backup Functionality', () => {
 
   test('should show file input for import in web mode', async ({ page }) => {
     const fileInput = page.locator('input[type="file"][accept=".zip"]')
-    const isVisible = await fileInput.isVisible().catch(() => false)
-    
-    if (!isVisible) {
-      const uploadArea = page.locator('[class*="border-dashed"]').filter({ hasText: /select|選擇/i })
-      await expect(uploadArea.or(fileInput)).toBeVisible()
-    }
+    const uploadArea = page.locator('[class*="border-dashed"]').filter({ hasText: /select|選擇/i })
+    await expect(fileInput.or(uploadArea).first()).toBeVisible()
   })
 
   test('should trigger export when clicking export button', async ({ page }) => {
@@ -128,7 +124,7 @@ test.describe('Backup Page Accessibility', () => {
 
   test('should have proper heading structure', async ({ page }) => {
     const heading = page.getByRole('heading', { name: /backup|備份/i })
-    await expect(heading).toBeVisible()
+    await expect(heading.first()).toBeVisible()
   })
 
   test('should have accessible buttons', async ({ page }) => {
