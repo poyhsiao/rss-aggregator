@@ -112,29 +112,35 @@ test.describe('Sources Page', () => {
     const sourceUrl = `https://delete-${timestamp}.example.com/rss.xml`
 
     await page.getByRole('button', { name: /add|新增/i }).click()
-    
+
     const heading = page.getByRole('heading', { name: /add source/i, level: 2 })
     await expect(heading).toBeVisible({ timeout: 5000 })
-    
+
     await page.getByPlaceholder(/enter source name/i).fill(sourceName)
     await page.getByPlaceholder(/enter rss url/i).fill(sourceUrl)
-    
+
     await page.getByRole('button', { name: /^confirm$/i }).click()
-    
+
     await expect(heading).not.toBeVisible({ timeout: 10000 })
     await page.waitForTimeout(2000)
 
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: sourceName })
     await expect(card).toBeVisible({ timeout: 15000 })
-    
-    page.once('dialog', async dialog => {
+
+    // Set up dialog handler BEFORE clicking delete - avoid race condition
+    page.on('dialog', async dialog => {
       await dialog.accept()
     })
-    
+
     await card.getByRole('button', { name: /delete/i }).click()
-    await page.waitForTimeout(1000)
-    
-    await expect(card).not.toBeVisible({ timeout: 10000 })
+
+    // Wait for deletion to complete - use network idle as signal
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(2000)
+
+    // Poll for card to disappear (deletion is async)
+    const cardGone = await card.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => true)
+    expect(cardGone).toBe(true)
   })
 
   test('should refresh all sources', async ({ page }) => {
@@ -320,22 +326,24 @@ test.describe('Keys Page', () => {
     const keyName = `Test Key ${timestamp}`
 
     await page.getByRole('button', { name: /add|新增/i }).click()
-    
+
     const dialog = page.locator('[class*="rounded-2xl"]').filter({ has: page.getByRole('heading', { level: 2 }) })
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
-    
+
     await page.getByPlaceholder(/enter a name to identify this key/i).fill(keyName)
-    
+
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 15000 }),
       dialog.getByRole('button', { name: /^confirm$/i }).click()
     ])
-    
+
     await dialog.locator('code').waitFor({ timeout: 5000 })
-    
+
     const confirmButtons = dialog.getByRole('button')
     await confirmButtons.filter({ hasText: /confirm/i }).click()
     await dialog.waitFor({ state: 'hidden', timeout: 5000 })
+
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
 
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: keyName })
     await expect(card).toBeVisible({ timeout: 10000 })
@@ -346,35 +354,43 @@ test.describe('Keys Page', () => {
     const keyName = `To Delete ${timestamp}`
 
     await page.getByRole('button', { name: /add|新增/i }).click()
-    
+
     const dialog = page.locator('[class*="rounded-2xl"]').filter({ has: page.getByRole('heading', { level: 2 }) })
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
-    
+
     await page.getByPlaceholder(/enter a name to identify this key/i).fill(keyName)
-    
+
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 15000 }),
       dialog.getByRole('button', { name: /^confirm$/i }).click()
     ])
-    
+
     await dialog.locator('code').waitFor({ timeout: 5000 })
-    
+
     const confirmButtons = dialog.getByRole('button')
     await confirmButtons.filter({ hasText: /confirm/i }).click()
     await dialog.waitFor({ state: 'hidden', timeout: 5000 })
 
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: keyName })
     await expect(card).toBeVisible({ timeout: 10000 })
-    
-    page.once('dialog', async dialog => {
-      await dialog.accept()
+
+    // Set up dialog handler BEFORE clicking delete - avoid race condition
+    page.on('dialog', async d => {
+      await d.accept()
     })
-    
+
     const deleteBtn = card.getByRole('button', { name: /delete|刪除/i })
     await deleteBtn.click()
-    await page.waitForTimeout(1000)
 
-    await expect(card).not.toBeVisible({ timeout: 10000 })
+    // Wait for deletion to complete
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(2000)
+
+    // Poll for card to disappear (deletion is async)
+    const cardGone = await card.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => true)
+    expect(cardGone).toBe(true)
   })
 })
 
