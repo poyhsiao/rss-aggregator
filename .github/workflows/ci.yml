@@ -259,13 +259,24 @@ jobs:
 
       - name: Run API (background)
         run: |
+          set -x
           mkdir -p ../data
           cd ..
           uv run alembic upgrade head
           nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
+          API_PID=$!
+          echo "Uvicorn started with PID: $API_PID"
           # Wait for API with proper timeout
           for i in $(seq 1 60); do
             sleep 2
+            # Check if process is still running
+            if ! kill -0 $API_PID 2>/dev/null; then
+              echo "Uvicorn process died! Log:"
+              cat /tmp/uvicorn.log
+              echo "Process status:"
+              ps aux | grep -E "(uvicorn|python)" | grep -v grep || true
+              exit 1
+            fi
             resp=$(curl -sf http://localhost:8000/health 2>&1)
             if [ $? -eq 0 ]; then
               echo "API is ready: $resp"
@@ -275,6 +286,8 @@ jobs:
           done
           echo "API failed to start. Log:"
           cat /tmp/uvicorn.log
+          echo "Process status at timeout:"
+          ps aux | grep -E "(uvicorn|python)" | grep -v grep || true
           exit 1
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
