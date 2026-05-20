@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Backup Functionality', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/settings?tab=settings')
     await page.waitForLoadState('networkidle')
   })
 
@@ -122,7 +122,7 @@ test.describe('Backup Functionality', () => {
 
 test.describe('Backup Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/settings?tab=settings')
     await page.waitForLoadState('networkidle')
   })
 
@@ -146,7 +146,7 @@ test.describe('Backup Page Accessibility', () => {
 
 test.describe('Backup Error Handling', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/settings?tab=settings')
     await page.waitForLoadState('networkidle')
   })
 
