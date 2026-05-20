@@ -45,11 +45,11 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
+          target: process.env.VITE_API_PROXY_TARGET || env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
           changeOrigin: true,
         },
         '/health': {
-          target: env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
+          target: process.env.VITE_API_PROXY_TARGET || env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
           changeOrigin: true,
         },
       },
