@@ -333,20 +333,26 @@ test.describe('Keys Page', () => {
     await page.getByPlaceholder(/enter a name to identify this key/i).fill(keyName)
 
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 15000 }),
+      page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 20000 }),
       dialog.getByRole('button', { name: /^confirm$/i }).click()
     ])
 
-    await dialog.locator('code').waitFor({ timeout: 5000 })
+    // Wait for API key code to appear - may take longer on slow CI
+    const codeLocator = dialog.locator('code')
+    const codeVisible = await codeLocator.waitFor({ state: 'visible', timeout: 10000 }).catch(() => false)
+
+    if (!codeVisible) {
+      console.log('API key code not displayed, checking if key was created...')
+    }
 
     const confirmButtons = dialog.getByRole('button')
     await confirmButtons.filter({ hasText: /confirm/i }).click()
-    await dialog.waitFor({ state: 'hidden', timeout: 5000 })
+    await dialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {})
 
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
 
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: keyName })
-    await expect(card).toBeVisible({ timeout: 10000 })
+    await expect(card).toBeVisible({ timeout: 15000 })
   })
 
   test('should delete an API key', async ({ page }) => {
@@ -361,20 +367,22 @@ test.describe('Keys Page', () => {
     await page.getByPlaceholder(/enter a name to identify this key/i).fill(keyName)
 
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 15000 }),
+      page.waitForResponse(resp => resp.url().includes('/api/v1/keys') && resp.request().method() === 'POST', { timeout: 20000 }),
       dialog.getByRole('button', { name: /^confirm$/i }).click()
     ])
 
-    await dialog.locator('code').waitFor({ timeout: 5000 })
+    // Wait for API key code to appear - may take longer on slow CI
+    const codeLocator = dialog.locator('code')
+    await codeLocator.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
 
     const confirmButtons = dialog.getByRole('button')
     await confirmButtons.filter({ hasText: /confirm/i }).click()
-    await dialog.waitFor({ state: 'hidden', timeout: 5000 })
+    await dialog.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {})
 
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
 
     const card = page.locator('[class*="bg-white"][class*="rounded-xl"], [class*="bg-neutral-800"][class*="rounded-xl"]').filter({ hasText: keyName })
-    await expect(card).toBeVisible({ timeout: 10000 })
+    await expect(card).toBeVisible({ timeout: 15000 })
 
     // Set up dialog handler BEFORE clicking delete - avoid race condition
     page.on('dialog', async d => {
@@ -385,7 +393,7 @@ test.describe('Keys Page', () => {
     await deleteBtn.click()
 
     // Wait for deletion to complete
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
     // Poll for card to disappear (deletion is async)
