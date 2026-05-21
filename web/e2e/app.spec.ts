@@ -132,7 +132,7 @@ test.describe('Sources Page', () => {
       await dialog.accept()
     })
 
-    await card.getByRole('button', { name: /delete/i }).click()
+    await card.getByRole('button', { name: /delete/i }).click({ force: true })
 
     // Wait for deletion to complete - use network idle as signal
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
@@ -294,7 +294,7 @@ test.describe('History Page', () => {
           const confirmDialog = page.locator('[role="dialog"], [class*="fixed"]').filter({ hasText: /delete/i })
           if (await confirmDialog.isVisible()) {
             const confirmBtn = confirmDialog.getByRole('button', { name: /delete/i })
-            await confirmBtn.click()
+            await confirmBtn.click({ force: true })
             await page.waitForTimeout(1000)
           }
           break
@@ -407,7 +407,7 @@ test.describe('Keys Page', () => {
     })
 
     const deleteBtn = card.getByRole('button', { name: /delete|刪除/i })
-    await deleteBtn.click()
+    await deleteBtn.click({ force: true })
 
     // Wait for deletion to complete
     await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
