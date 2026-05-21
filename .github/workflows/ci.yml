@@ -269,18 +269,19 @@ jobs:
           # Wait for API with proper timeout
           for i in $(seq 1 60); do
             sleep 2
-            # Check if process is still running
+            # Check health first - don't misreport slow-starting API as dead
+            resp=$(curl -sf http://localhost:8000/health 2>&1)
+            if [ $? -eq 0 ]; then
+              echo "API is ready: $resp"
+              exit 0
+            fi
+            # Then check if process is still running
             if ! kill -0 $API_PID 2>/dev/null; then
               echo "Uvicorn process died! Log:"
               cat /tmp/uvicorn.log
               echo "Process status:"
               ps aux | grep -E "(uvicorn|python)" | grep -v grep || true
               exit 1
-            fi
-            resp=$(curl -sf http://localhost:8000/health 2>&1)
-            if [ $? -eq 0 ]; then
-              echo "API is ready: $resp"
-              exit 0
             fi
             echo "Waiting for API... ($((i*2))s/120s) Response: $resp"
           done
