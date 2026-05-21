@@ -97,5 +97,7 @@ node_modules/
 .serena/
 .spec-workflow/
 
+app-*/
 feature-flags-*/
+logs-*/
 settings-feature-*/
