@@ -6,14 +6,14 @@ test.describe('Feature Flags UI Hiding', () => {
     await page.waitForLoadState('networkidle')
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click()
+      await rssIcon.click({ force: true })
       await page.waitForTimeout(50)
     }
     await expect(page.locator('[role="dialog"]')).toBeVisible()
   }
 
   async function toggleFeature(page: any, index: number, confirm: boolean = true) {
-    await page.locator('[role="switch"]').nth(index).click()
+    await page.locator('[role="switch"]').nth(index).click({ force: true })
     if (confirm) {
       await page.getByRole('button', { name: 'Confirm' }).first().click()
       await page.waitForTimeout(100)

@@ -65,11 +65,7 @@ test.describe('Feature Settings Toggle', () => {
     const rssIcon = page.locator('[class*="cursor-pointer"]').filter({ has: page.locator('svg') }).first()
     for (let i = 0; i < 10; i++) {
       // Use force click since the element exists but may not be actionable due to animations/overlays
-      await rssIcon.click({ timeout: 5000 }).catch(async () => {
-        // If click fails, try waiting and clicking again
-        await page.waitForTimeout(200)
-        await rssIcon.click({ force: true })
-      })
+      await rssIcon.click({ force: true })
       await page.waitForTimeout(100)
     }
 

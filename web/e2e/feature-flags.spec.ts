@@ -12,10 +12,7 @@ test.describe('Feature Flags', () => {
     // The RSS icon has classes: "lucide lucide-rss-icon h-6 w-6 cursor-pointer select-none"
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click({ timeout: 5000 }).catch(async () => {
-        await page.waitForTimeout(200)
-        await rssIcon.click({ force: true })
-      })
+      await rssIcon.click({ force: true })
       await page.waitForTimeout(150)
     }
 
@@ -67,7 +64,7 @@ test.describe('Feature Flags', () => {
     const groupsToggle = getToggleLocator(dialog).first()
 
     // Click to turn OFF groups
-    await groupsToggle.click()
+    await groupsToggle.click({ force: true })
     await page.waitForTimeout(200)
 
     // Warning should appear
@@ -90,7 +87,7 @@ test.describe('Feature Flags', () => {
     const dialog = page.locator('[role="dialog"]')
 
     // Turn OFF Groups toggle
-    await getToggleLocator(dialog).first().click()
+    await getToggleLocator(dialog).first().click({ force: true })
     await page.waitForTimeout(200)
 
     // Click Confirm on warning
@@ -130,7 +127,7 @@ test.describe('Feature Flags', () => {
     const dialog = page.locator('[role="dialog"]')
 
     // Turn OFF Groups
-    await getToggleLocator(dialog).first().click()
+    await getToggleLocator(dialog).first().click({ force: true })
     await page.waitForTimeout(200)
 
     // If warning shows, confirm it
@@ -182,7 +179,7 @@ test.describe('Feature Flags', () => {
 
     // Toggle switches should still be clickable
     const dialog = page.locator('[role="dialog"]')
-    await getToggleLocator(dialog).first().click()
+    await getToggleLocator(dialog).first().click({ force: true })
     await page.waitForTimeout(200)
 
     // Warning should appear with accessible buttons

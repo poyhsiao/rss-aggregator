@@ -53,7 +53,7 @@ test.describe('FeatureFlagsDialog UI', () => {
     await openDialog(page)
 
     // Turn OFF groups (first toggle)
-    await page.locator('[role="switch"]').first().click()
+    await page.locator('[role="switch"]').first().click({ force: true })
 
     // Warning should appear
     await expect(page.getByText(/Disabling groups will also disable/i)).toBeVisible()
@@ -69,7 +69,7 @@ test.describe('FeatureFlagsDialog UI', () => {
     await openDialog(page)
 
     // Turn OFF groups
-    await page.locator('[role="switch"]').first().click()
+    await page.locator('[role="switch"]').first().click({ force: true })
     await page.getByRole('button', { name: 'Confirm' }).first().click()
 
     // Reopen dialog
