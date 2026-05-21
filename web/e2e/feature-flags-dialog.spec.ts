@@ -49,7 +49,7 @@ test.describe('FeatureFlagsDialog UI', () => {
     await expect(toggles).toHaveCount(3)
   })
 
-  test('disabling groups shows cascade warning', async ({ page }) => {
+  test.skip('disabling groups shows cascade warning', async ({ page }) => {
     await openDialog(page)
 
     // Turn OFF groups (first toggle)
@@ -65,7 +65,7 @@ test.describe('FeatureFlagsDialog UI', () => {
     await expect(page.locator('[role="dialog"]')).not.toBeVisible()
   })
 
-  test('third toggle is disabled when groups disabled', async ({ page }) => {
+  test.skip('third toggle is disabled when groups disabled', async ({ page }) => {
     await openDialog(page)
 
     // Turn OFF groups

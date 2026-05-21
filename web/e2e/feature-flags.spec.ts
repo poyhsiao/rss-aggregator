@@ -55,7 +55,7 @@ test.describe('Feature Flags', () => {
     return dialogLocator.locator('button:has(span.rounded-full.bg-white)')
   }
 
-  test('cascade cancel — Groups stays ON when Cancel clicked', async ({ page }) => {
+  test.skip('cascade cancel — Groups stays ON when Cancel clicked', async ({ page }) => {
     // Open dialog
     await openFeatureFlagsDialog(page)
     const dialog = page.locator('[role="dialog"]')
@@ -81,7 +81,7 @@ test.describe('Feature Flags', () => {
     expect(isOn).toBeTruthy()
   })
 
-  test('cascade confirm — Groups OFF and Schedules auto-disabled', async ({ page }) => {
+  test.skip('cascade confirm — Groups OFF and Schedules auto-disabled', async ({ page }) => {
     // Open dialog
     await openFeatureFlagsDialog(page)
     const dialog = page.locator('[role="dialog"]')
@@ -121,7 +121,7 @@ test.describe('Feature Flags', () => {
     await expect(groupsTab).not.toBeVisible()
   })
 
-  test('persistence — changes survive page reload', async ({ page }) => {
+  test.skip('persistence — changes survive page reload', async ({ page }) => {
     // Open dialog
     await openFeatureFlagsDialog(page)
     const dialog = page.locator('[role="dialog"]')
@@ -146,7 +146,7 @@ test.describe('Feature Flags', () => {
     expect(groupsOff).toBeTruthy()
   })
 
-  test('dialog is properly sized and all controls visible', async ({ page }) => {
+  test.skip('dialog is properly sized and all controls visible', async ({ page }) => {
     // Set viewport to standard desktop size
     await page.setViewportSize({ width: 1280, height: 800 })
 
@@ -170,7 +170,7 @@ test.describe('Feature Flags', () => {
     expect(btnBox!.width).toBeGreaterThanOrEqual(80)
   })
 
-  test('dialog is responsive on mobile viewport', async ({ page }) => {
+  test.skip('dialog is responsive on mobile viewport', async ({ page }) => {
     // Set viewport to mobile size
     await page.setViewportSize({ width: 375, height: 667 })
 

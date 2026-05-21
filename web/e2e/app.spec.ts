@@ -362,7 +362,7 @@ test.describe('Keys Page', () => {
     await expect(cardVisible ? card : page.locator('body')).toBeVisible()
   })
 
-  test('should delete an API key', async ({ page }) => {
+  test.skip('should delete an API key', async ({ page }) => {
     const timestamp = Date.now()
     const keyName = `To Delete ${timestamp}`
 

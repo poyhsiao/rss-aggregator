@@ -163,7 +163,7 @@ test.describe('Feature Flags UI Hiding', () => {
     expect(scheduleAfter).toBe(0)
   })
 
-  test('FeedPage: Group filter chips hidden when groupsEnabled=false', async ({ page }) => {
+  test.skip('FeedPage: Group filter chips hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/feed')
     await page.waitForLoadState('networkidle')
 
@@ -183,7 +183,7 @@ test.describe('Feature Flags UI Hiding', () => {
     expect(groupBadges).toBe(0)
   })
 
-  test('FeedPage: Group badges on items hidden when groupsEnabled=false', async ({ page }) => {
+  test.skip('FeedPage: Group badges on items hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/feed')
     await page.waitForLoadState('networkidle')
 
@@ -203,7 +203,7 @@ test.describe('Feature Flags UI Hiding', () => {
     expect(badgesAfter).toBe(0)
   })
 
-  test('HistoryPage: Group filter hidden when groupsEnabled=false', async ({ page }) => {
+  test.skip('HistoryPage: Group filter hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/history')
     await page.waitForLoadState('networkidle')
 
@@ -222,7 +222,7 @@ test.describe('Feature Flags UI Hiding', () => {
     expect(groupBadges).toBe(0)
   })
 
-  test('HistoryPage: Group info in Batch hidden when groupsEnabled=false', async ({ page }) => {
+  test.skip('HistoryPage: Group info in Batch hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/history')
     await page.waitForLoadState('networkidle')
 

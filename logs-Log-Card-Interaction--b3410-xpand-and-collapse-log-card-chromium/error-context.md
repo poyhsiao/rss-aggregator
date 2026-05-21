@@ -1,0 +1,101 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7] [cursor=pointer]
+        - generic [ref=e11]: RSS Aggregator
+      - generic [ref=e12]:
+        - button "Toggle theme" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - button "EN" [ref=e16] [cursor=pointer]:
+          - img [ref=e17]
+          - text: EN
+  - generic [ref=e21]:
+    - complementary [ref=e22]:
+      - navigation [ref=e23]:
+        - link "Feed" [ref=e24] [cursor=pointer]:
+          - /url: /
+          - img [ref=e25]
+          - generic [ref=e29]: Feed
+        - link "History" [ref=e30] [cursor=pointer]:
+          - /url: /history
+          - img [ref=e31]
+          - generic [ref=e35]: History
+        - link "Sources" [ref=e36] [cursor=pointer]:
+          - /url: /sources
+          - img [ref=e37]
+          - generic [ref=e43]: Sources
+        - link "Settings" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e45]
+          - generic [ref=e48]: Settings
+    - main [ref=e49]:
+      - generic [ref=e50]:
+        - heading "Settings" [level=1] [ref=e51] [cursor=pointer]
+        - generic [ref=e52]:
+          - button "API Keys" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+            - text: API Keys
+          - button "Statistics" [ref=e58] [cursor=pointer]:
+            - img [ref=e59]
+            - text: Statistics
+          - button "System" [ref=e62] [cursor=pointer]:
+            - img [ref=e63]
+            - text: System
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - heading "Statistics" [level=2] [ref=e68]:
+              - img [ref=e69]
+              - text: Statistics
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]: "3"
+                - generic [ref=e74]: Total Requests
+              - generic [ref=e75]:
+                - generic [ref=e76]: "0"
+                - generic [ref=e77]: Successful Fetches
+              - generic [ref=e78]:
+                - generic [ref=e79]: "3"
+                - generic [ref=e80]: Failed Fetches
+            - generic [ref=e81]:
+              - heading "Daily Trend" [level=3] [ref=e82]
+              - img [ref=e84]
+          - generic [ref=e85]:
+            - heading "Logs" [level=2] [ref=e86]:
+              - img [ref=e87]
+              - text: Logs
+            - generic [ref=e90]:
+              - button "System Logs" [ref=e91] [cursor=pointer]: System Logs
+              - button "Operation Logs" [ref=e93] [cursor=pointer]
+            - generic [ref=e95]:
+              - button "FetchError Just now Failed to fetch https://delete-1779349529921.example.com/rss.xml" [ref=e97] [cursor=pointer]:
+                - generic [ref=e98]:
+                  - generic [ref=e99]:
+                    - img [ref=e100]
+                    - generic [ref=e102]: FetchError
+                  - generic [ref=e103]:
+                    - generic [ref=e104]: Just now
+                    - img [ref=e105]
+                - paragraph [ref=e107]: Failed to fetch https://delete-1779349529921.example.com/rss.xml
+              - button "FetchError Just now Failed to fetch https://original-1779349522796.example.com/rss.xml" [ref=e109] [cursor=pointer]:
+                - generic [ref=e110]:
+                  - generic [ref=e111]:
+                    - img [ref=e112]
+                    - generic [ref=e114]: FetchError
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: Just now
+                    - img [ref=e117]
+                - paragraph [ref=e119]: Failed to fetch https://original-1779349522796.example.com/rss.xml
+              - button "FetchError Just now Failed to fetch https://1779349520191.example.com/rss.xml" [ref=e121] [cursor=pointer]:
+                - generic [ref=e122]:
+                  - generic [ref=e123]:
+                    - img [ref=e124]
+                    - generic [ref=e126]: FetchError
+                  - generic [ref=e127]:
+                    - generic [ref=e128]: Just now
+                    - img [ref=e129]
+                - paragraph [ref=e131]: Failed to fetch https://1779349520191.example.com/rss.xml
+```

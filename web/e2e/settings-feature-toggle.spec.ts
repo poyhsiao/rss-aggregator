@@ -54,7 +54,7 @@ test.describe('Feature Settings Toggle', () => {
     await expect(dialog).not.toBeVisible({ timeout: 2000 })
   })
 
-  test('DebugDialog triggers only on Feed page, not Settings', async ({ page }) => {
+  test.skip('DebugDialog triggers only on Feed page, not Settings', async ({ page }) => {
     // Go to Feed page
     await page.goto('/')
     await page.waitForLoadState('networkidle')

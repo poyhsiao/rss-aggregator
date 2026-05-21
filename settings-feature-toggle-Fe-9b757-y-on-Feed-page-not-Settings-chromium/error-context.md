@@ -1,0 +1,60 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7] [cursor=pointer]
+        - generic [ref=e11]: RSS Aggregator
+      - generic [ref=e12]:
+        - button "Toggle theme" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - button "EN" [ref=e16] [cursor=pointer]:
+          - img [ref=e17]
+          - text: EN
+  - generic [ref=e21]:
+    - complementary [ref=e22]:
+      - navigation [ref=e23]:
+        - link "Feed" [ref=e24] [cursor=pointer]:
+          - /url: /
+          - img [ref=e25]
+          - generic [ref=e29]: Feed
+        - link "History" [ref=e30] [cursor=pointer]:
+          - /url: /history
+          - img [ref=e31]
+          - generic [ref=e35]: History
+        - link "Sources" [ref=e36] [cursor=pointer]:
+          - /url: /sources
+          - img [ref=e37]
+          - generic [ref=e43]: Sources
+        - link "Settings" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e45]
+          - generic [ref=e48]: Settings
+    - main [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e52]:
+          - img [ref=e53]
+          - heading "Feed" [level=1] [ref=e57]
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - button "Sort by Time" [ref=e61] [cursor=pointer]:
+                - img [ref=e62]
+                - generic [ref=e65]: Sort by Time
+              - button "Sort by Source" [ref=e66] [cursor=pointer]:
+                - img [ref=e67]
+                - generic [ref=e71]: Sort by Source
+            - textbox "Search keywords..." [ref=e72]
+          - generic [ref=e73]:
+            - button "Refresh All" [ref=e74] [cursor=pointer]:
+              - img [ref=e75]
+              - generic [ref=e80]: Refresh All
+            - button "Preview Feed" [ref=e81] [cursor=pointer]:
+              - img [ref=e82]
+              - generic [ref=e85]: Preview Feed
+        - generic [ref=e86]:
+          - img [ref=e87]
+          - text: No articles yet
+```

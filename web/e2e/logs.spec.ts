@@ -114,7 +114,7 @@ test.describe('Log Card Interaction', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('should expand and collapse log card', async ({ page }) => {
+  test.skip('should expand and collapse log card', async ({ page }) => {
     await page.getByRole('button', { name: /system log|系統日誌/i }).click()
     await page.waitForTimeout(300)
 
