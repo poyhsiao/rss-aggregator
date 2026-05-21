@@ -96,3 +96,6 @@ node_modules/
 # IDE/Tools
 .serena/
 .spec-workflow/
+
+feature-flags-*/
+settings-feature-*/
