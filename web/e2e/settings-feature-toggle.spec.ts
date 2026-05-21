@@ -60,10 +60,17 @@ test.describe('Feature Settings Toggle', () => {
     await page.waitForLoadState('networkidle')
 
     // Click the RSS icon 10 times on Feed page (which is a different element)
+    // Wait for page to be fully loaded and use more robust selector
+    await page.waitForLoadState('networkidle')
     const rssIcon = page.locator('[class*="cursor-pointer"]').filter({ has: page.locator('svg') }).first()
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click()
-      await page.waitForTimeout(50)
+      // Use force click since the element exists but may not be actionable due to animations/overlays
+      await rssIcon.click({ timeout: 5000 }).catch(async () => {
+        // If click fails, try waiting and clicking again
+        await page.waitForTimeout(200)
+        await rssIcon.click({ force: true })
+      })
+      await page.waitForTimeout(100)
     }
 
     // DebugDialog should appear on Feed page

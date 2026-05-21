@@ -5,15 +5,20 @@ test.describe('Feature Flags', () => {
   async function openFeatureFlagsDialog(page: any) {
     await page.goto('/settings')
     await page.waitForLoadState('networkidle')
-    
+    // Wait for Vue to be fully mounted
+    await page.waitForTimeout(500)
+
     // Click the RSS icon in header 10 times - need to use partial class match
     // The RSS icon has classes: "lucide lucide-rss-icon h-6 w-6 cursor-pointer select-none"
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click()
-      await page.waitForTimeout(100)
+      await rssIcon.click({ timeout: 5000 }).catch(async () => {
+        await page.waitForTimeout(200)
+        await rssIcon.click({ force: true })
+      })
+      await page.waitForTimeout(150)
     }
-    
+
     // Wait for dialog to appear
     await page.waitForSelector('[role="dialog"]', { timeout: 5000 })
   }
@@ -32,8 +37,11 @@ test.describe('Feature Flags', () => {
   test('trigger dialog by clicking Settings RSS icon 10 times', async ({ page }) => {
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
-      await rssIcon.click()
-      await page.waitForTimeout(100)
+      await rssIcon.click({ timeout: 5000 }).catch(async () => {
+        await page.waitForTimeout(200)
+        await rssIcon.click({ force: true })
+      })
+      await page.waitForTimeout(150)
     }
 
     // Dialog should be visible

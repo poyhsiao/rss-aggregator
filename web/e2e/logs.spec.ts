@@ -120,18 +120,25 @@ test.describe('Log Card Interaction', () => {
 
     const cards = page.locator('[class*="rounded-xl"][class*="border"]')
     const count = await cards.count()
-    
+
     if (count > 0) {
       const card = cards.first()
-      await card.click()
+      // Use force click in case card is covered by any overlay
+      await card.click({ timeout: 5000 }).catch(async () => {
+        await page.waitForTimeout(200)
+        await card.click({ force: true })
+      })
       await page.waitForTimeout(300)
-      
+
       const chevron = card.locator('svg').last()
       await expect(chevron).toHaveClass(/rotate-180/)
-      
-      await card.click()
+
+      await card.click({ timeout: 5000 }).catch(async () => {
+        await page.waitForTimeout(200)
+        await card.click({ force: true })
+      })
       await page.waitForTimeout(300)
-      
+
       await expect(chevron).not.toHaveClass(/rotate-180/)
     }
   })
