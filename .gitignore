@@ -97,6 +97,17 @@ node_modules/
 .serena/
 .spec-workflow/
 
+# AI/Tool Artifacts
+.codegraph/
+.firecrawl/
+.omo/
+.playwright-mcp/
+.sisyphus/
+agentdb.rvf
+agentdb.rvf.lock
+opencode.json
+
+# CI Artifacts
 app-*/
 feature-flags-*/
 logs-*/
