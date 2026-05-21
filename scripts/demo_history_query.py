@@ -2,7 +2,6 @@
 """Test script to verify Tauri App sidecar history query functionality."""
 
 import asyncio
-import json
 import sys
 import os
 

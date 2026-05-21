@@ -13,8 +13,6 @@ Usage:
 
 import asyncio
 import json
-import os
-import sys
 from pathlib import Path
 
 
@@ -119,7 +117,7 @@ async def check_test_data():
         LIMIT 5
     """)
     batches = cursor.fetchall()
-    print(f"\nSample batches:")
+    print("\nSample batches:")
     for batch in batches:
         print(f"  Batch {batch[0]}: {batch[3]} items (expected {batch[1]})")
 
@@ -134,10 +132,7 @@ async def check_jsonrpc_api():
     try:
         from src.stdio.router import StdioRouter
         from src.stdio.protocol import JSONRPCRequest
-        from src.db.database import async_session_factory
-        from src.models import Base
-        from sqlalchemy.ext.asyncio import create_async_engine
-
+                        
         # Use Tauri App database path
         home = Path.home()
         db_path = home / "Library" / "Application Support" / "RSS Aggregator" / "rss.db"
@@ -146,8 +141,7 @@ async def check_jsonrpc_api():
         print(f"Connecting to database: {db_url}")
 
         # Create test engine
-        from src.db.database import engine
-
+        
         router = StdioRouter()
 
         # Test get_history_batches
@@ -295,7 +289,7 @@ async def create_test_data():
             batch_id
         ))
 
-    print(f"Created 3 test feed items")
+    print("Created 3 test feed items")
 
     conn.commit()
     conn.close()
@@ -330,15 +324,32 @@ async def main():
         if data_ok:
             # Check API
             api_ok = await check_jsonrpc_api()
+        else:
+            api_ok = False
+    else:
+        api_ok = False
 
     print("\n" + "=" * 60)
     print("Diagnostic complete!")
     print("=" * 60)
 
+    print("\nStatus Summary:")
+    print(f"  Database: {'✅ OK' if db_ok else '❌ Failed'}")
+    print(f"  Test Data: {'✅ OK' if data_ok else '❌ Failed'}")
+    print(f"  API Check: {'✅ OK' if api_ok else '❌ Failed'}")
+
     print("\nNext steps:")
-    print("1. If database is OK but API failed, restart the Tauri App")
-    print("2. If database is empty, the test data has been created - restart the app")
-    print("3. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
+    if db_ok and not api_ok:
+        print("1. Database is OK but API failed - restart the Tauri App")
+        print("2. Check Tauri App logs (View > Toggle Developer Tools)")
+    elif not db_ok:
+        print("1. Database issues found - test data has been created, restart the app")
+        print("2. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
+    elif data_ok and api_ok:
+        print("✅ All checks passed! The app should be working correctly.")
+    else:
+        print("1. Test data was created - restart the app")
+        print("2. If still having issues, check Tauri App logs (View > Toggle Developer Tools)")
 
 
 if __name__ == "__main__":

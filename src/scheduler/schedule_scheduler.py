@@ -55,7 +55,7 @@ class ScheduleScheduler:
             now = get_now()
             result = await session.execute(
                 select(SourceGroupSchedule).where(
-                    SourceGroupSchedule.is_enabled == True,
+                    SourceGroupSchedule.is_enabled,
                     SourceGroupSchedule.next_run_at <= now,
                 )
             )

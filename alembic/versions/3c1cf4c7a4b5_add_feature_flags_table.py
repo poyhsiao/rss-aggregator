@@ -25,17 +25,11 @@ def upgrade() -> None:
     sa.Column('key', sa.String(length=100), nullable=False),
     sa.Column('value', sa.String(length=50), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('key')
-    )
-    op.drop_table('test')
-    op.alter_column('feed_items', 'fetched_at',
-               existing_type=sa.DATETIME(),
-               nullable=True)
-    op.create_foreign_key(None, 'feed_items', 'fetch_batches', ['batch_id'], ['id'])
-    op.alter_column('fetch_batches', 'groups',
-               existing_type=sa.TEXT(),
-               nullable=False,
-               existing_server_default=sa.text("('')"))
+    sa.PrimaryKeyConstraint('key'),
+    if_not_exists=True,
+)
+    # Remove old test table if exists (was part of auto-generated migration)
+    op.execute("DROP TABLE IF EXISTS test")
     op.drop_index(op.f('ix_source_group_members_group_id'), table_name='source_group_members')
     op.drop_index(op.f('idx_schedules_is_enabled'), table_name='source_group_schedules')
     op.drop_index(op.f('uq_sources_name_active'), table_name='sources', sqlite_where=sa.text('deleted_at IS NULL'))
@@ -52,14 +46,6 @@ def downgrade() -> None:
     op.create_index(op.f('uq_sources_name_active'), 'sources', ['name'], unique=1, sqlite_where=sa.text('deleted_at IS NULL'))
     op.create_index(op.f('idx_schedules_is_enabled'), 'source_group_schedules', ['is_enabled'], unique=False)
     op.create_index(op.f('ix_source_group_members_group_id'), 'source_group_members', ['group_id'], unique=False)
-    op.alter_column('fetch_batches', 'groups',
-               existing_type=sa.TEXT(),
-               nullable=True,
-               existing_server_default=sa.text("('')"))
-    op.drop_constraint(None, 'feed_items', type_='foreignkey')
-    op.alter_column('feed_items', 'fetched_at',
-               existing_type=sa.DATETIME(),
-               nullable=False)
     op.create_table('test',
     sa.Column('id', sa.INTEGER(), nullable=True)
     )

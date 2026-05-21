@@ -40,6 +40,20 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    preview: {
+      port: 8080,
+      strictPort: true,
+      proxy: {
+        '/api': {
+          target: process.env.VITE_API_PROXY_TARGET || env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
+          changeOrigin: true,
+        },
+        '/health': {
+          target: process.env.VITE_API_PROXY_TARGET || env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:51085',
+          changeOrigin: true,
+        },
+      },
+    },
     test: {
       globals: true,
       environment: 'happy-dom',

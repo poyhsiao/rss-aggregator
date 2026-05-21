@@ -1,0 +1,142 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7] [cursor=pointer]
+          - generic [ref=e11]: RSS Aggregator
+        - generic [ref=e12]:
+          - button "Toggle theme" [ref=e13] [cursor=pointer]:
+            - img [ref=e14]
+          - button "EN" [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+            - text: EN
+    - generic [ref=e21]:
+      - complementary [ref=e22]:
+        - navigation [ref=e23]:
+          - link "Feed" [ref=e24] [cursor=pointer]:
+            - /url: /
+            - img [ref=e25]
+            - generic [ref=e29]: Feed
+          - link "History" [ref=e30] [cursor=pointer]:
+            - /url: /history
+            - img [ref=e31]
+            - generic [ref=e35]: History
+          - link "Sources" [ref=e36] [cursor=pointer]:
+            - /url: /sources
+            - img [ref=e37]
+            - generic [ref=e43]: Sources
+          - link "Settings" [ref=e44] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e45]
+            - generic [ref=e48]: Settings
+      - main [ref=e49]:
+        - generic [ref=e50]:
+          - heading "Settings" [level=1] [ref=e51] [cursor=pointer]
+          - generic [ref=e52]:
+            - button "API Keys" [ref=e53] [cursor=pointer]:
+              - img [ref=e54]
+              - text: API Keys
+            - button "Statistics" [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+              - text: Statistics
+            - button "System" [ref=e62] [cursor=pointer]:
+              - img [ref=e63]
+              - text: System
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - heading "API Keys" [level=2] [ref=e68]:
+                - img [ref=e69]
+                - text: API Keys
+              - button "Add Key" [ref=e73] [cursor=pointer]:
+                - img [ref=e74]
+                - text: Add Key
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - generic [ref=e77]:
+                  - code [ref=e78]: 9YkEVJS7...RegM
+                  - generic [ref=e79]: Test Key 1779349564726
+                - generic [ref=e80]:
+                  - generic [ref=e81]: Active
+                  - button "Copy" [ref=e82] [cursor=pointer]:
+                    - img [ref=e83]
+                    - text: Copy
+                  - button "Delete" [ref=e86] [cursor=pointer]:
+                    - img [ref=e87]
+                    - text: Delete
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - code [ref=e92]: NzKyGfWf...9Eho
+                  - generic [ref=e93]: To Delete 1779349607877
+                - generic [ref=e94]:
+                  - generic [ref=e95]: Active
+                  - button "Copy" [ref=e96] [cursor=pointer]:
+                    - img [ref=e97]
+                    - text: Copy
+                  - button "Delete" [ref=e100] [cursor=pointer]:
+                    - img [ref=e101]
+                    - text: Delete
+              - generic [ref=e104]:
+                - generic [ref=e105]:
+                  - code [ref=e106]: R9RaVgeJ...yd5A
+                  - generic [ref=e107]: To Delete 1779349733224
+                - generic [ref=e108]:
+                  - generic [ref=e109]: Active
+                  - button "Copy" [ref=e110] [cursor=pointer]:
+                    - img [ref=e111]
+                    - text: Copy
+                  - button "Delete" [ref=e114] [cursor=pointer]:
+                    - img [ref=e115]
+                    - text: Delete
+  - dialog "Feature Flags Groups Feature Enable/disable group functionality OFF ON Group Schedules Enable/disable scheduled updates for groups OFF ON Source Group Schedules Enable/disable scheduled updates for source groups OFF ON Cancel Confirm" [ref=e118]:
+    - generic [ref=e121]:
+      - generic [ref=e123]:
+        - generic [ref=e124]:
+          - img [ref=e125]
+          - generic [ref=e128]: Feature Flags
+        - button "common.close" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+      - generic [ref=e134]:
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - img [ref=e137]
+            - generic [ref=e142]:
+              - generic [ref=e143]: Groups Feature
+              - generic [ref=e144]: Enable/disable group functionality
+          - switch "OFF ON" [active] [ref=e145] [cursor=pointer]:
+            - generic [ref=e148]: "OFF"
+            - generic [ref=e149]: "ON"
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - img [ref=e152]
+            - generic [ref=e155]:
+              - generic [ref=e156]: Group Schedules
+              - generic [ref=e157]: Enable/disable scheduled updates for groups
+          - switch "OFF ON" [checked] [disabled] [ref=e158]:
+            - generic [ref=e162]: "OFF"
+            - generic [ref=e163]: "ON"
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - img [ref=e166]
+            - generic [ref=e170]:
+              - generic [ref=e171]: Source Group Schedules
+              - generic [ref=e172]: Enable/disable scheduled updates for source groups
+          - switch "OFF ON" [checked] [disabled] [ref=e173]:
+            - generic [ref=e177]: "OFF"
+            - generic [ref=e178]: "ON"
+      - generic [ref=e180]:
+        - button "Cancel" [ref=e181] [cursor=pointer]
+        - button "Confirm" [ref=e182] [cursor=pointer]
+  - dialog "Feature Flags Groups Feature Enable/disable group functionality OFF ON Group Schedules Enable/disable scheduled updates for groups OFF ON Source Group Schedules Enable/disable scheduled updates for source groups OFF ON Cancel Confirm" [ref=e183]:
+    - generic [ref=e186]:
+      - generic [ref=e188]:
+        - img [ref=e189]
+        - generic [ref=e191]: Disabling groups will also disable schedules
+      - paragraph [ref=e194]: Disabling groups will also disable schedule updates. Groups can be re-enabled anytime, but schedules will need to be manually re-enabled. Continue?
+      - generic [ref=e196]:
+        - button "Cancel" [ref=e197] [cursor=pointer]
+        - button "Confirm" [ref=e198] [cursor=pointer]
+```

@@ -173,7 +173,7 @@ class BackupService:
             "api_keys": [self._serialize_model(k) for k in api_keys],
             "preview_contents": [self._serialize_model(p) for p in preview_contents],
             "fetch_batches": [self._serialize_model(b) for b in fetch_batches],
-            "fetch_logs": [self._serialize_model(l) for l in fetch_logs],
+            "fetch_logs": [self._serialize_model(log) for log in fetch_logs],
             "stats": [self._serialize_model(s) for s in stats],
             "source_groups": [self._serialize_model(g) for g in source_groups],
             "source_group_members": [
@@ -403,9 +403,7 @@ class BackupService:
         ff_service = FeatureFlagService(self._db)
         feature_flags = await ff_service.get_all()
         data["feature_flags"] = {
-            "groups_enabled": str(feature_flags["groups_enabled"]).lower(),
-            "group_schedules_enabled": str(feature_flags["group_schedules_enabled"]).lower(),
-            "source_group_schedules_enabled": str(feature_flags["source_group_schedules_enabled"]).lower(),
+            key: str(value).lower() for key, value in feature_flags.items()
         }
 
         backup_content = BackupContent(
@@ -580,10 +578,12 @@ class BackupService:
 
             # Restore feature flags if present
             if "feature_flags" in content.data:
-                ff_service = FeatureFlagService(self._db)
-                ff_data = content.data["feature_flags"]
-                for key, value in ff_data.items():
-                    await ff_service.upsert(key, value == "true")
+                if isinstance(content.data["feature_flags"], dict):
+                    ff_service = FeatureFlagService(self._db)
+                    ff_data = content.data["feature_flags"]
+                    for key, value in ff_data.items():
+                        if isinstance(key, str) and isinstance(value, str):
+                            await ff_service.upsert(key, value.lower() == "true")
 
             await self._db.commit()
 

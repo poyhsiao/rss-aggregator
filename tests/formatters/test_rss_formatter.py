@@ -1,6 +1,5 @@
 """Tests for RssFormatter."""
 
-import pytest
 from datetime import datetime
 
 from src.formatters import RssFormatter

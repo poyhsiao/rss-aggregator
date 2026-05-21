@@ -6,9 +6,9 @@ import sys
 from typing import Any
 
 from src.config import get_settings
-get_settings.cache_clear()
-
 from src.stdio.server import StdioServer
+
+get_settings.cache_clear()
 
 
 async def main() -> None:

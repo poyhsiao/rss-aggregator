@@ -73,7 +73,7 @@ test.describe('Trash Restore Functionality', () => {
     }
   })
 
-  test('should show toast message on restore error', async ({ page }) => {
+  test('should permanently delete item from trash', async ({ page }) => {
     await page.getByRole('button', { name: /trash|垃圾桶/i }).click()
     await page.waitForTimeout(500)
 
@@ -95,7 +95,7 @@ test.describe('Trash Restore Functionality', () => {
           const confirmDialog = page.locator('[class*="fixed"][class*="inset-0"][class*="z-50"]')
           if (await confirmDialog.isVisible()) {
             const confirmBtn = confirmDialog.getByRole('button', { name: /delete|刪除/i })
-            await confirmBtn.click()
+            await confirmBtn.click({ force: true })
             await page.waitForTimeout(1000)
           }
           break

@@ -13,6 +13,11 @@ function toggle() {
     emit('update:modelValue', !props.modelValue)
   }
 }
+
+const trackWidth = 72
+const thumbSize = 40
+const padding = 5
+const thumbOnPos = trackWidth - thumbSize - padding
 </script>
 
 <template>
@@ -22,6 +27,7 @@ function toggle() {
     :aria-checked="modelValue"
     :disabled="disabled"
     class="group relative inline-flex h-11 w-[72px] items-center rounded-full transition-all duration-500 ease-out focus:outline-none focus:ring-4 focus:ring-primary-500/30 focus:ring-offset-2"
+    :style="{ '--thumb-on-pos': `${thumbOnPos}px` }"
     :class="[
       modelValue
         ? 'bg-gradient-to-b from-primary-500 to-primary-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.15),0px_4px_16px_rgba(34,197,94,0.35)]'
@@ -39,7 +45,7 @@ function toggle() {
     <!-- Thumb - iOS style: 40px diameter, sits inside track with 5px padding -->
     <span
       class="relative h-10 w-10 rounded-full bg-gradient-to-b from-white to-neutral-100 shadow-[0px_4px_8px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.15),inset_0px_1px_2px_rgba(255,255,255,1)] transition-all duration-500 ease-out"
-      :class="modelValue ? 'translate-x-[38px]' : 'translate-x-[5px]'"
+      :class="modelValue ? '[transform:translateX(var(--thumb-on-pos))]' : 'translate-x-[5px]'"
     >
       <!-- Thumb shine/gloss effect -->
       <span class="absolute inset-x-2 top-1.5 h-3 rounded-full bg-gradient-to-b from-white/60 to-transparent opacity-50" />

@@ -19,7 +19,7 @@ function toggle() {
   <button
     type="button"
     role="switch"
-    class="relative inline-flex h-10 w-18 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary-500/30 focus:ring-offset-2"
+    class="relative inline-flex h-10 w-20 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary-500/30 focus:ring-offset-2"
     :class="[
       modelValue ? 'bg-primary-600 shadow-lg shadow-primary-500/40' : 'bg-neutral-300 dark:bg-neutral-600',
       disabled && 'opacity-50 cursor-not-allowed'

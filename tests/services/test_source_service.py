@@ -100,7 +100,7 @@ async def test_get_trash_sources(source_service: SourceService):
     source = await source_service.create_source("Trash Source", "https://trash.com/rss")
     await source_service.delete_source(source.id)
 
-    active = await source_service.create_source("Active Source", "https://active.com/rss")
+    await source_service.create_source("Active Source", "https://active.com/rss")
 
     trash = await source_service.get_trash_sources()
 
