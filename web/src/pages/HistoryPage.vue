@@ -498,24 +498,4 @@ function openArticlePreview(item: HistoryItem): void {
   </div>
 </template>
 
-<style scoped>
-.preview-dialog-enter-active,
-.preview-dialog-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.preview-dialog-enter-active .rounded-2xl,
-.preview-dialog-leave-active .rounded-2xl {
-  transition: transform 0.2s ease;
-}
-
-.preview-dialog-enter-from,
-.preview-dialog-leave-to {
-  opacity: 0;
-}
-
-.preview-dialog-enter-from .rounded-2xl,
-.preview-dialog-leave-to .rounded-2xl {
-  transform: scale(0.95);
-}
 </style>
