@@ -1,11 +1,15 @@
 """Main FastAPI application."""
 
 from contextlib import asynccontextmanager
+import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from src.api.deps import set_scheduler
+
+logger = logging.getLogger(__name__)
 from src.api.routes import app_settings, backup, feed, feature_flags, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
 from src.config import settings
 from src.models.app_settings import AppSettings
@@ -83,6 +87,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "type": type(exc).__name__}
+    )
+
+app.add_exception_handler(Exception, global_exception_handler)
+
 
 app.include_router(app_settings.router, prefix="/api/v1")
 app.include_router(health.router)
