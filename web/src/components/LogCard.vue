@@ -129,6 +129,8 @@ async function copyError() {
     <button
       type="button"
       class="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-xl"
+      :aria-expanded="isExpanded"
+      aria-controls="log-content"
       @click="toggleExpand"
     >
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

@@ -377,6 +377,8 @@ function openArticlePreview(item: HistoryItem): void {
               <button
                 type="button"
                 class="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
+                :aria-expanded="expandedBatch === batch.id"
+                :aria-controls="'batch-' + batch.id"
                 @click="toggleBatch(batch.id)"
               >
                 <ChevronDown

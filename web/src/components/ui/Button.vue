@@ -35,17 +35,19 @@ const props = withDefaults(defineProps<{
   variant?: ButtonVariants['variant']
   size?: ButtonVariants['size']
   disabled?: boolean
+  ariaLabel?: string
 }>(), {
   variant: 'default',
   size: 'default',
   disabled: false,
+  ariaLabel: undefined,
 })
 
 const classes = computed(() => cn(buttonVariants({ variant: props.variant, size: props.size })))
 </script>
 
 <template>
-  <button :class="classes" :disabled="disabled">
+  <button :class="classes" :disabled="disabled" :aria-label="ariaLabel">
     <slot />
   </button>
 </template>

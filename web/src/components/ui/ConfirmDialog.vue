@@ -114,6 +114,7 @@ const iconComponent = computed(() => {
               <button
                 type="button"
                 class="px-4 py-2 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors"
+                :aria-label="cancelText"
                 @click="handleCancel"
               >
                 {{ cancelText }}
@@ -124,6 +125,7 @@ const iconComponent = computed(() => {
                   'px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors',
                   variantClasses
                 )"
+                :aria-label="confirmText"
                 @click="handleConfirm"
               >
                 {{ confirmText }}
