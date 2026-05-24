@@ -10,6 +10,7 @@ import { useToast } from "@/composables/useToast"
 import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
 import { useFeatureFlagsStore } from "@/stores/featureFlags"
+import Button from '@/components/ui/Button.vue'
 
 const { t } = useI18n()
 const featureFlagsStore = useFeatureFlagsStore()

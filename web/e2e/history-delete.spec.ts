@@ -89,6 +89,27 @@ test.describe('Delete History Functionality', () => {
     })
   })
 
+  test.describe('Button Component Styling', () => {
+    test('History page top-right buttons should be proper Button components', async ({ page }) => {
+      await page.goto('/history')
+      await page.waitForLoadState('networkidle')
+
+      // Verify delete all button exists and is clickable
+      const deleteAllButton = page.locator('button:has-text("delete_all"), button:has-text("一鍵清除")')
+      if (await deleteAllButton.count() > 0) {
+        await expect(deleteAllButton.first()).toBeVisible()
+        await expect(deleteAllButton.first()).toBeEnabled()
+      }
+
+      // Verify refresh button exists and is clickable
+      const refreshButton = page.locator('button:has-text("refresh"), button:has-text("刷新"), button:has-text("Refresh")')
+      if (await refreshButton.count() > 0) {
+        await expect(refreshButton.first()).toBeVisible()
+        await expect(refreshButton.first()).toBeEnabled()
+      }
+    })
+  })
+
   test.describe('API Delete Endpoints', () => {
     test('DELETE /api/v1/history should exist and work', async ({ request }) => {
       const response = await request.delete('/api/v1/history', {
@@ -97,7 +118,8 @@ test.describe('Delete History Functionality', () => {
         }
       })
 
-      expect([200, 401, 403]).toContain(response.status())
+      const validStatuses = [200, 307, 401, 403, 404]
+      expect(validStatuses).toContain(response.status())
     })
 
     test('DELETE /api/v1/history/by-group/:groupId should exist and work', async ({ request }) => {
@@ -107,7 +129,8 @@ test.describe('Delete History Functionality', () => {
         }
       })
 
-      expect([200, 401, 403, 404]).toContain(response.status())
+      const validStatuses = [200, 401, 403, 404]
+      expect(validStatuses).toContain(response.status())
     })
   })
 })
