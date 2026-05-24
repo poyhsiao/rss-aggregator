@@ -437,6 +437,7 @@ onMounted(() => {
         <div class="grid gap-3">
           <button
             class="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80"
+            :title="t('settings.desktop.restart')"
             @click="handleRestartBackend"
           >
             <RefreshCw class="w-4 h-4" />
