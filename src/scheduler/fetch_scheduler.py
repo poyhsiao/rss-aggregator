@@ -23,7 +23,19 @@ class FetchScheduler:
         self.max_concurrent = max_concurrent
 
     async def start(self) -> None:
+        """Start the fetch scheduler (called on app startup)."""
         logger.info("Fetch scheduler initialized (triggered by ScheduleScheduler or manual calls)")
+        asyncio.create_task(self._periodic_fetch())
+        logger.info("Background fetch loop started")
+
+    async def _periodic_fetch(self) -> None:
+        """Periodically fetch all active sources."""
+        while True:
+            try:
+                await self._check_and_fetch()
+            except Exception as e:
+                logger.error(f"Periodic fetch error: {e}")
+            await asyncio.sleep(self.check_interval)
 
     async def stop(self) -> None:
         logger.info("Fetch scheduler stopped")
