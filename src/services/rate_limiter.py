@@ -1,8 +1,8 @@
 """Rate limiting service using sliding window algorithm."""
 
+import asyncio
 import time
 from collections import defaultdict
-from threading import Lock
 from typing import Dict, List
 
 
@@ -19,9 +19,9 @@ class RateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self._requests: Dict[str, List[float]] = defaultdict(list)
-        self._lock = Lock()
+        self._lock = asyncio.Lock()
 
-    def is_allowed(self, key: str) -> bool:
+    async def is_allowed(self, key: str) -> bool:
         """Check if a request is allowed for the given key.
 
         Args:
@@ -30,7 +30,7 @@ class RateLimiter:
         Returns:
             True if the request is allowed, False if rate limited.
         """
-        with self._lock:
+        async with self._lock:
             now = time.time()
             window_start = now - self.window_seconds
 
@@ -46,7 +46,7 @@ class RateLimiter:
             self._requests[key].append(now)
             return True
 
-    def get_remaining(self, key: str) -> int:
+    async def get_remaining(self, key: str) -> int:
         """Get remaining requests for a key.
 
         Args:
@@ -55,7 +55,7 @@ class RateLimiter:
         Returns:
             Number of remaining requests in the current window.
         """
-        with self._lock:
+        async with self._lock:
             now = time.time()
             window_start = now - self.window_seconds
 
@@ -67,7 +67,7 @@ class RateLimiter:
 
             return max(0, self.max_requests - len(valid_requests))
 
-    def get_reset_time(self, key: str) -> float:
+    async def get_reset_time(self, key: str) -> float:
         """Get seconds until rate limit resets.
 
         Args:
@@ -76,7 +76,7 @@ class RateLimiter:
         Returns:
             Seconds until the rate limit window resets.
         """
-        with self._lock:
+        async with self._lock:
             requests = self._requests.get(key, [])
             if not requests:
                 return 0.0
