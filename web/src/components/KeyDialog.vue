@@ -12,9 +12,10 @@ import type { ApiKey } from '@/types/key'
 const { t } = useI18n()
 const toast = useToast()
 
-defineProps<{
+interface Props {
   open: boolean
-}>()
+}
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
@@ -116,7 +117,7 @@ async function copyKey(): Promise<void> {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open="props.open" @update:open="$emit('update:open', $event)">
     <div class="p-6">
       <h2 class="text-xl font-semibold mb-4">
         {{ showKeyDisplay ? t('keys.key_created') : t('keys.add') }}

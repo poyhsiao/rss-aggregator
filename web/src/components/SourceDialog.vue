@@ -13,10 +13,11 @@ import type { Source } from '@/types/source'
 const { t } = useI18n()
 const toast = useToast()
 
-const props = defineProps<{
+interface Props {
   open: boolean
   source?: Source | null
-}>()
+}
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
@@ -107,7 +108,7 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open="props.open" @update:open="$emit('update:open', $event)">
     <div class="p-6">
       <h2 class="text-xl font-semibold mb-4">
         {{ isEditMode ? t('sources.edit') : t('sources.add') }}
