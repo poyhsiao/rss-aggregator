@@ -55,27 +55,19 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, _from, next) => {
-  console.log('[DEBUG Router] Navigating to:', to.path)
-  console.log('[DEBUG Router] isTauri():', isTauri())
-  
   if (to.meta.requiresWeb && isTauri()) {
-    console.log('[DEBUG Router] Route requires web but in Tauri, redirecting to /')
     return next('/')
   }
 
   if (to.meta.requiresTauri && !isTauri()) {
-    console.log('[DEBUG Router] Route requires Tauri but not in Tauri, redirecting to /')
     return next('/')
   }
 
   if (isTauri() && !setupChecked && to.name !== 'setup') {
     setupChecked = true
-    console.log('[DEBUG Router] Checking first run...')
     try {
       const firstRun = await isFirstRun()
-      console.log('[DEBUG Router] isFirstRun:', firstRun)
       if (firstRun) {
-        console.log('[DEBUG Router] First run, redirecting to /setup')
         return next('/setup')
       }
     } catch (e) {
@@ -86,16 +78,13 @@ router.beforeEach(async (to, _from, next) => {
   if (to.meta.isSetup) {
     return next()
   }
-  
+
   const authStore = useAuthStore()
-  
+
   if (!authStore.isInitialized) {
-    console.log('[DEBUG Router] Initializing auth store...')
     await authStore.init()
-    console.log('[DEBUG Router] Auth store initialized')
   }
-  
-  console.log('[DEBUG Router] Proceeding to:', to.path)
+
   next()
 })
 

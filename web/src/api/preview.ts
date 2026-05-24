@@ -57,43 +57,31 @@ export async function savePreview(
 }
 
 export async function fetchAndCachePreview(url: string): Promise<PreviewContent> {
-  console.log('[PREVIEW] fetchAndCachePreview called for:', url)
-
   if (isTauri()) {
-    console.log('[PREVIEW] Tauri environment detected')
     return await fetchAndCachePreviewTauri(url)
   }
 
-  console.log('[PREVIEW] Web environment detected')
   return await api.post<PreviewContent>('/previews/fetch', { url })
 }
 
 async function fetchAndCachePreviewTauri(url: string): Promise<PreviewContent> {
-  console.log('[PREVIEW] Checking cache first via sidecar API')
-  
   try {
     const cached = await getCachedPreviewByUrl(url)
     if (cached) {
-      console.log('[PREVIEW] Cache hit:', cached.url_hash)
       return cached
     }
   } catch (cacheError) {
-    console.warn('[PREVIEW] Cache check failed, proceeding with fetch:', cacheError)
+    // Cache check failed, proceeding with fetch
   }
 
-  console.log('[PREVIEW] Cache miss, using native Tauri invoke')
-  
   const { invoke } = await import('@tauri-apps/api/core')
   const result = await invoke<TauriPreviewContent>('fetch_preview', { url })
-  console.log('[PREVIEW] Native fetch success, content length:', result?.markdown_content?.length)
 
   // Save to database via sidecar (async, but wait for result to ensure persistence)
   try {
     const saved = await savePreview(result.url, result.markdown_content, result.title || undefined)
-    console.log('[PREVIEW] Saved to database:', saved.url_hash)
     return saved
   } catch (saveError) {
-    console.warn('[PREVIEW] Failed to save to database, returning unsaved content:', saveError)
     return {
       id: 0,
       url: result.url,

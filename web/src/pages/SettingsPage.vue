@@ -151,7 +151,7 @@ async function fetchSystemLogs(): Promise<void> {
     const result = await getLogs({ limit: 100 })
     systemLogs.value = result
   } catch (error) {
-    console.error('[SettingsPage] Error fetching logs:', error)
+    // Error fetching logs
   } finally {
     logsLoading.value = false
   }
