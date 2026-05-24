@@ -187,7 +187,7 @@ class FetchService:
                     response = await client.get(url)
                     response.raise_for_status()
                     return response.text
-            except httpx.HTTPError:
+            except (httpx.HTTPError, asyncio.TimeoutError) as e:
                 if attempt < self.retry_count - 1:
                     await asyncio.sleep(self.retry_delay)
                 else:
