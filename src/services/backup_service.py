@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import io
+import json
+import logging
 from datetime import datetime, timezone, date
 from typing import TYPE_CHECKING, Any
 
@@ -20,6 +22,8 @@ from src.models import (
     Stats,
 )
 from src.services.feature_flag_service import FeatureFlagService
+from pydantic import ValidationError
+
 from src.schemas.backup import (
     BackupConfig,
     BackupContent,
@@ -51,6 +55,7 @@ class BackupService:
         """
         self._db = db
         self._password_provider = BackupPasswordProvider()
+        self._logger = logging.getLogger(__name__)
 
     async def _get_all_sources(self) -> list[Source]:
         """Get all sources from database.
@@ -601,10 +606,32 @@ class BackupService:
                 ),
             )
 
+        except ValidationError as e:
+            await self._db.rollback()
+            error_str = str(e).lower()
+            if "json" in error_str or "invalid json" in error_str:
+                self._logger.error(f"Corrupted backup file: {e}")
+                return ImportResult(success=False, message=f"Failed to parse backup file: {e}")
+            self._logger.error(f"Validation error in backup: {e}")
+            return ImportResult(success=False, message=f"Failed to import backup: {e}")
+        except json.JSONDecodeError as e:
+            await self._db.rollback()
+            self._logger.error(f"Corrupted backup file: {e}")
+            return ImportResult(success=False, message=f"Failed to parse backup file: {e}")
+        except FileNotFoundError as e:
+            await self._db.rollback()
+            self._logger.error(f"Backup file not found: {e}")
+            return ImportResult(success=False, message=f"Backup file not found: {e}")
         except ValueError as e:
+            await self._db.rollback()
+            if "version" in str(e).lower() or "incompatible" in str(e).lower():
+                self._logger.error(f"Incompatible backup version: {e}")
+                return ImportResult(success=False, message=f"Incompatible backup version: {e}")
+            self._logger.error(f"Invalid backup data: {e}")
             return ImportResult(success=False, message=f"Failed to decrypt backup: {e}")
         except Exception as e:
             await self._db.rollback()
+            self._logger.error(f"Unexpected error during import: {e}")
             return ImportResult(success=False, message=f"Failed to import backup: {e}")
 
     async def preview_backup(self, zip_data: bytes) -> BackupPreview | None:
@@ -638,5 +665,11 @@ class BackupService:
                 ),
                 config=content.config,
             )
+        except (json.JSONDecodeError, ValidationError):
+            return None
+        except FileNotFoundError:
+            return None
+        except ValueError:
+            return None
         except Exception:
             return None
