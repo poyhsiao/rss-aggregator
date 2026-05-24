@@ -14,13 +14,17 @@
     "add": "新增",
     "refresh": "刷新",
     "settings": "設定",
-    "system": "系統"
+    "system": "系統",
+    "collapse": "摺疊",
+    "expand": "展開"
   },
   "setup": {
     "step": "步驟",
     "back": "上一步",
     "next": "下一步",
     "finish": "完成",
+    "language_en": "English",
+    "language_zh": "中文",
     "welcome": {
       "title": "歡迎使用 RSS Aggregator",
       "description": "讓我們開始設定您的 RSS 聚合器，只需一分鐘。"

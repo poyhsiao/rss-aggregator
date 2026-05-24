@@ -14,13 +14,17 @@
     "add": "Add",
     "refresh": "Refresh",
     "settings": "Settings",
-    "system": "System"
+    "system": "System",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "setup": {
     "step": "Step",
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
+    "language_en": "English",
+    "language_zh": "Chinese",
     "welcome": {
       "title": "Welcome to RSS Aggregator",
       "description": "Let's set up your RSS feed aggregator. This will only take a minute."
