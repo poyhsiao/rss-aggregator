@@ -671,5 +671,6 @@ class BackupService:
             return None
         except ValueError:
             return None
-        except Exception:
+        except Exception as e:
+            self._logger.warning(f"Unexpected error previewing backup: {e}")
             return None
