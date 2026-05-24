@@ -35,8 +35,9 @@ from src.utils.time import now
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config import get_settings
 
-__version__ = "0.20.0"
+__version__ = get_settings().app_version
 
 
 class BackupService:

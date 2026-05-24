@@ -10,8 +10,10 @@ from src.schemas.backup import (
     ImportResult,
 )
 from src.services.backup_service import BackupService
+from src.config import get_settings
 
 router = APIRouter(prefix="/backup", tags=["backup"])
+settings = get_settings()
 
 
 @router.post("/export")
@@ -25,7 +27,7 @@ async def export_backup(
     Returns a downloadable ZIP file with the backup data.
     """
     zip_data = await backup_service.export_backup(options)
-    filename = backup_service._generate_backup_filename("0.10.0")
+    filename = backup_service._generate_backup_filename(settings.app_version)
 
     return StreamingResponse(
         iter([zip_data]),
