@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
@@ -32,6 +32,12 @@ class FeedItem(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default_factory=now, nullable=False, onupdate=func.now())
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None)
+
+    __table_args__ = (
+        Index("ix_feed_item_published_at", "published_at"),
+        Index("ix_feed_item_source_id", "source_id"),
+        Index("ix_feed_item_batch_id", "batch_id"),
+    )
 
     def soft_delete(self) -> None:
         self.deleted_at = now()
