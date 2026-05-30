@@ -161,7 +161,7 @@ async def require_api_key(
         )
 
     if not rate_limiter.is_allowed(x_api_key):
-        reset_time = rate_limiter.get_reset_time(x_api_key)
+        reset_time = await rate_limiter.get_reset_time(x_api_key)
         raise HTTPException(
             status_code=429,
             detail="Rate limit exceeded",
