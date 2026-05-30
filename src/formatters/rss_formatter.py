@@ -11,6 +11,18 @@ from src.utils.time import utcnow
 class RssFormatter(BaseFormatter):
     """Formatter for RSS 2.0 XML output."""
 
+    def _escape_xml(self, text: str) -> str:
+        """Escape XML special characters."""
+        return (
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+
+    def _cdata(self, text: str) -> str:
+        """Wrap text in CDATA section."""
+        return f"<![CDATA[{text}]]>"
+
     def format(self, items: List[FeedItem]) -> str:
         """Format feed items as RSS 2.0 XML.
 
@@ -37,7 +49,9 @@ class RssFormatter(BaseFormatter):
             item_elem = ET.SubElement(channel, "item")
             ET.SubElement(item_elem, "title").text = item.title
             ET.SubElement(item_elem, "link").text = item.link
-            ET.SubElement(item_elem, "description").text = item.description or ""
+            ET.SubElement(item_elem, "description").text = self._cdata(
+                item.description or ""
+            )
 
             if item.published_at:
                 ET.SubElement(item_elem, "pubDate").text = item.published_at.strftime(
@@ -49,7 +63,14 @@ class RssFormatter(BaseFormatter):
                     item_elem, "source", url=item.source.url
                 ).text = item.source.name
 
-        return ET.tostring(rss, encoding="unicode", xml_declaration=True)
+        # Use a custom approach: serialize with CDATA preserved
+        xml_str = ET.tostring(rss, encoding="unicode", xml_declaration=True)
+        # Replace XML-escaped CDATA with actual CDATA
+        return xml_str.replace(
+            "&lt;![CDATA[", "<![CDATA["
+        ).replace(
+            "]]&gt;", "]]>"
+        )
 
     def get_content_type(self) -> str:
         """Return RSS content type."""

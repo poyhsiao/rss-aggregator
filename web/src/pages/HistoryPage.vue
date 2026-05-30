@@ -11,6 +11,9 @@ import { useConfirm } from "@/composables/useConfirm"
 import { formatDate } from "@/utils/format"
 import { useFeatureFlagsStore } from "@/stores/featureFlags"
 import Button from '@/components/ui/Button.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
+import ArticlePreviewDialog from '@/components/ArticlePreviewDialog.vue'
 
 const { t } = useI18n()
 const featureFlagsStore = useFeatureFlagsStore()
@@ -491,11 +494,10 @@ function openArticlePreview(item: HistoryItem): void {
 
     <!-- Article Preview Dialog -->
     <ArticlePreviewDialog
-      v-model:open="articlePreviewOpen"
-      :url="selectedArticle?.url || ''"
+      :open="articlePreviewOpen"
+      :url="selectedArticle?.url ?? ''"
       :title="selectedArticle?.title"
+      @update:open="(open: boolean) => { articlePreviewOpen = open; if (!open) selectedArticle = null }"
     />
   </div>
 </template>
-
-</style>

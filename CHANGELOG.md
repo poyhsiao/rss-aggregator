@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.22.0] - 2026-05-30
+
+### Fixed
+
+- **History Page Button Fix** - Fixed preview and delete buttons not responding on History page
+  - Added missing component imports: ConfirmDialog, RssPreviewDialog, ArticlePreviewDialog
+  - Updated ArticlePreviewDialog prop binding from `v-model:open` to `:open` with proper event handling
+- **Rate Limiter Tests** - Improved test coverage and reliability for rate limiter service
+- **Accessibility Tests** - Updated E2E accessibility tests with improved selectors
+- **Dockerfile** - Added nginx configuration for web container
+
+### Changed
+
+- **Playwright** - Updated from v1.58.2 to v1.60.0
+
 ## [v0.21.2] - 2026-05-14
 
 ### Added

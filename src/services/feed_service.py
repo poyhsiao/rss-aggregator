@@ -199,8 +199,10 @@ class FeedService:
             item_elem = ET.SubElement(channel, "item")
             ET.SubElement(item_elem, "title").text = item.title
             ET.SubElement(item_elem, "link").text = item.link
-            ET.SubElement(item_elem, "description").text = item.description or ""
-
+            # Use CDATA so HTML tags are preserved instead of XML-escaped
+            desc = item.description or ""
+            desc_elem = ET.SubElement(item_elem, "description")
+            desc_elem.text = f"<![CDATA[{desc}]]>"
             if item.published_at:
                 ET.SubElement(item_elem, "pubDate").text = item.published_at.strftime(
                     "%a, %d %b %Y %H:%M:%S GMT"
@@ -211,7 +213,12 @@ class FeedService:
                     item_elem, "source", url=item.source.url
                 ).text = item.source.name
 
-        return ET.tostring(rss, encoding="unicode", xml_declaration=True)
+        xml_str = ET.tostring(rss, encoding="unicode", xml_declaration=True)
+        return xml_str.replace(
+            "&lt;![CDATA[", "<![CDATA["
+        ).replace(
+            "]]&gt;", "]]>"
+        )
 
     async def get_feed_items(
         self,
