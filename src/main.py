@@ -8,13 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.deps import set_scheduler
-
-logger = logging.getLogger(__name__)
 from src.api.routes import app_settings, backup, feed, feature_flags, health, history, keys, logs, previews, schedule, source_groups, sources, stats, trash
 from src.config import settings
 from src.models.app_settings import AppSettings
 from src.scheduler.fetch_scheduler import FetchScheduler
 from src.scheduler.schedule_scheduler import ScheduleScheduler
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager

@@ -1,5 +1,5 @@
 # tests/api/test_global_exception_handler.py
-import pytest
+# import pytest
 from fastapi.testclient import TestClient
 from src.main import app
 

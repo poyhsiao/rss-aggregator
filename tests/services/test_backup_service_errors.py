@@ -6,7 +6,6 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 
 from src.services.backup_service import BackupService
-from src.schemas.backup import ImportResult, BackupContent, BackupConfig
 
 
 class TestBackupServiceErrorHandling:

@@ -1,6 +1,6 @@
 # tests/api/test_backup_version.py
 """Tests for backup version dynamic reading."""
-import pytest
+# import pytest
 
 
 def test_backup_version_not_hardcoded_in_route():

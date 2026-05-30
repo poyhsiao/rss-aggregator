@@ -11,7 +11,7 @@ async def test_fetch_scheduler_starts_periodic_loop():
     session_factory = MagicMock()
     scheduler = FetchScheduler(session_factory=session_factory, check_interval=60)
 
-    with patch.object(scheduler, "_periodic_fetch", new_callable=AsyncMock) as mock_loop:
+    with patch.object(scheduler, "_periodic_fetch", new_callable=AsyncMock):
         await scheduler.start()
         await asyncio.sleep(0.01)
         await scheduler.stop()

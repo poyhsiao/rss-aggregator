@@ -1,6 +1,6 @@
 """Tests for FeedItem model database indexes."""
 
-import pytest
+# import pytest
 from sqlalchemy import inspect
 
 from src.models.feed_item import FeedItem
