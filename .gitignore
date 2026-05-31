@@ -112,3 +112,5 @@ app-*/
 feature-flags-*/
 logs-*/
 settings-feature-*/
+# Added by code-review-graph
+.code-review-graph/

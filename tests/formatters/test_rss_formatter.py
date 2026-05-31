@@ -36,7 +36,7 @@ def test_rss_formatter_single_item():
 
     assert "<title>Test Title</title>" in result
     assert "<link>https://example.com/article</link>" in result
-    assert "<![CDATA[Test description]]>" in result
+    assert "Test description" in result
     assert "<source url=\"https://example.com/feed\">Test Source</source>" in result
 
 

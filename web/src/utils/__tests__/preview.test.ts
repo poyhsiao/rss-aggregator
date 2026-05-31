@@ -73,9 +73,9 @@ describe('cleanContent', () => {
 })
 
 describe('addLineNumbers', () => {
-  it('wraps each line in code-line div with line number span', () => {
+  it('wraps each line in code-line span with line number span', () => {
     const result = addLineNumbers('line1\nline2')
-    expect(result).toContain('<div class="code-line">')
+    expect(result).toContain('<span class="code-line">')
     expect(result).toContain('<span class="code-line-number">1</span>')
     expect(result).toContain('<span class="code-line-content">line1</span>')
   })

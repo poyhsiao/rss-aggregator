@@ -32,51 +32,13 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url)
 
+  // API requests: always fetch from network, bypass cache
   if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request))
     return
   }
 
-  if (url.pathname.endsWith('.html') || url.pathname === '/') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const responseToCache = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
-          })
-          return response
-        })
-        .catch(() => {
-          return caches.match(event.request)
-        })
-    )
-    return
-  }
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response
-          }
-
-          const responseToCache = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
-          })
-
-          return response
-        })
-        .catch(() => {
-          if (event.request.destination === 'document') {
-            return caches.match('/')
-          }
-        })
-    })
-  )
+  // All other requests: always fetch from network, bypass cache
+  // This ensures users always get the latest resources
+  event.respondWith(fetch(event.request))
 })

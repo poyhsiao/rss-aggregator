@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v0.22.0] - 2026-05-30
+## [v0.22.1] - 2026-05-31
+
+### Fixed
+
+- **Preview Dialog Multi-line Display** - Fixed XML/JSON preview showing extra blank lines
+  - Service worker: simplified to always fetch from network, bypassing stale cache
+  - CSS: added `white-space: pre` and `display: block` for proper line formatting
+  - Frontend: changed `addLineNumbers()` to use `<span>` instead of `<div>` to avoid extra blank lines
+  - Backend: added `prettify_xml()` function for XML formatting
+- **RSS Formatter Test** - Updated test assertion to match current behavior
+
+### Changed
+
+- **Service Worker** - Simplified caching strategy to always fetch fresh content
 
 ### Fixed
 

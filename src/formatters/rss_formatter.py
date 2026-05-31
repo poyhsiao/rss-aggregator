@@ -8,6 +8,21 @@ from src.models import FeedItem
 from src.utils.time import utcnow
 
 
+def prettify_xml(xml_str: str) -> str:
+    """Format XML string with proper indentation."""
+    try:
+        root = ET.fromstring(xml_str)
+        ET.indent(root, space="  ")
+        result = ET.tostring(root, encoding="unicode")
+        # Restore XML declaration if original had it
+        if xml_str.startswith('<?xml'):
+            result = '<?xml version="1.0" encoding="utf-8"?>\n' + result
+        return result
+    except ET.ParseError:
+        # If parsing fails, return original
+        return xml_str
+
+
 class RssFormatter(BaseFormatter):
     """Formatter for RSS 2.0 XML output."""
 
