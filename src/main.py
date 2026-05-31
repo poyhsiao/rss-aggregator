@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
         alembic_cfg = Path(__file__).parent.parent / "alembic.ini"
         if alembic_cfg.exists():
             config = Config(str(alembic_cfg))
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, lambda: command.upgrade(config, "head"))
             print("[INFO] Database migrations completed", flush=True)
         else:
