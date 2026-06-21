@@ -85,9 +85,6 @@ jobs:
   frontend-lint:
     name: Frontend Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
 
@@ -101,20 +98,18 @@ jobs:
         with:
           version: 9
           package_json_file: web/package.json
-          cache_dependency_path: web/pnpm-lock.yaml
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: |
+          cd web && pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: |
+          cd web && pnpm lint
 
   frontend-typecheck:
     name: Frontend Type Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
 
@@ -128,20 +123,18 @@ jobs:
         with:
           version: 9
           package_json_file: web/package.json
-          cache_dependency_path: web/pnpm-lock.yaml
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: |
+          cd web && pnpm install --frozen-lockfile
 
       - name: Type check
-        run: pnpm typecheck
+        run: |
+          cd web && pnpm typecheck
 
   frontend-unit-test:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
 
@@ -155,20 +148,16 @@ jobs:
         with:
           version: 9
           package_json_file: web/package.json
-          cache_dependency_path: web/pnpm-lock.yaml
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: cd web && pnpm install --frozen-lockfile
 
       - name: Test
-        run: pnpm test:run
+        run: cd web && pnpm test:run
 
   frontend-e2e:
     name: Frontend E2E Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
 
@@ -190,22 +179,22 @@ jobs:
         with:
           version: 9
           package_json_file: web/package.json
-          cache_dependency_path: web/pnpm-lock.yaml
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: cd web && pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm playwright install --with-deps chromium
+        run: cd web && pnpm playwright install --with-deps chromium
 
       - name: Build
-        run: pnpm build
+        run: cd web && pnpm build
         env:
           VITE_API_BASE_URL: http://localhost:8000
           VITE_API_PROXY_TARGET: http://localhost:8000
 
       - name: Serve frontend (background)
         run: |
+          cd web
           export VITE_API_PROXY_TARGET=http://localhost:8000
           nohup pnpm vite preview --port 8080 --strictPort > /tmp/vite.log 2>&1 &
           # Wait for frontend to be ready
@@ -263,7 +252,7 @@ jobs:
           LOG_LEVEL: "debug"
 
       - name: E2E
-        run: pnpm test:e2e --reporter=line
+        run: cd web && pnpm test:e2e --reporter=line
         env:
           E2E_BASE_URL: http://localhost:8080
 
@@ -291,7 +280,6 @@ jobs:
         with:
           version: 9
           package_json_file: web/package.json
-          cache_dependency_path: web/pnpm-lock.yaml
 
       - name: Build frontend
         run: |
