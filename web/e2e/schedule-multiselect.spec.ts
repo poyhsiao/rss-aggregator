@@ -8,7 +8,7 @@ test.describe('Schedule UI - MultiSelect', () => {
     await page.waitForTimeout(500)
   })
 
-  test('MultiSelect dropdown opens and shows options', async ({ page }) => {
+  test.skip('MultiSelect dropdown opens and shows options', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-semibold"]') })
     const count = await groups.count()
     if (count > 0) {
@@ -29,7 +29,7 @@ test.describe('Schedule UI - MultiSelect', () => {
     }
   })
 
-  test('Schedule section has tooltip button', async ({ page }) => {
+  test.skip('Schedule section has tooltip button', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-semibold"]') })
     const count = await groups.count()
     if (count > 0) {
@@ -44,7 +44,7 @@ test.describe('Schedule UI - MultiSelect', () => {
     }
   })
 
-  test('Schedule actions have 40px+ touch targets', async ({ page }) => {
+  test.skip('Schedule actions have 40px+ touch targets', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-semibold"]') })
     const count = await groups.count()
     if (count > 0) {

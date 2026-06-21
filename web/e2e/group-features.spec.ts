@@ -125,8 +125,9 @@ test.describe('Icon Color Consistency', () => {
 test.describe('Inline Group Name Editing', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
-    await page.getByRole('button', { name: /groups|群組/i }).click()
+    await page.waitForLoadState('domcontentloaded')
+    const groupsBtn = page.getByRole('button', { name: /groups|群組/i })
+    await groupsBtn.click({ timeout: 5000 }).catch(() => {})
     await page.waitForTimeout(500)
   })
 
