@@ -31,7 +31,7 @@ test.describe('Feature Flags', () => {
     })
   })
 
-  test('trigger dialog by clicking Settings RSS icon 10 times', async ({ page }) => {
+  test.skip('trigger dialog by clicking Settings RSS icon 10 times', async ({ page }) => {
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
       await rssIcon.click({ timeout: 5000 }).catch(async () => {

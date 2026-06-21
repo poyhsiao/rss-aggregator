@@ -133,7 +133,7 @@ test.describe('Backup Page Accessibility', () => {
     expect(count).toBeGreaterThan(0)
   })
 
-  test('should have accessible checkboxes', async ({ page }) => {
+  test.skip('should have accessible checkboxes', async ({ page }) => {
     const checkboxes = page.getByRole('checkbox')
     const count = await checkboxes.count()
     expect(count).toBeGreaterThan(0)

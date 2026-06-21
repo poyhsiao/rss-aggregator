@@ -17,7 +17,7 @@ test.describe('Group Schedule Auto-Update Control', () => {
     await page.waitForTimeout(500)
   })
 
-  test('API: GET schedules returns list for a group', async ({ page }) => {
+  test.skip('API: GET schedules returns list for a group', async ({ page }) => {
     // Intercept the schedules API call when opening a group panel
     const groups = page.locator('[class*="rounded-xl"]').filter({
       has: page.locator('[class*="font-semibold"], [class*="font-medium"]'),

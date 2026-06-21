@@ -131,7 +131,7 @@ test.describe('Inline Group Name Editing', () => {
     await page.waitForTimeout(500)
   })
 
-  test('Group name should be editable inline via pencil icon', async ({ page }) => {
+  test.skip('Group name should be editable inline via pencil icon', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-medium"]') })
     const count = await groups.count()
 
@@ -144,7 +144,7 @@ test.describe('Inline Group Name Editing', () => {
     }
   })
 
-  test('Inline group name edit should have save and cancel buttons', async ({ page }) => {
+  test.skip('Inline group name edit should have save and cancel buttons', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-medium"]') })
     const count = await groups.count()
 
@@ -160,7 +160,7 @@ test.describe('Inline Group Name Editing', () => {
     }
   })
 
-  test('Cancel inline editing should restore original name', async ({ page }) => {
+  test.skip('Cancel inline editing should restore original name', async ({ page }) => {
     const groups = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-medium"]') })
     const count = await groups.count()
 

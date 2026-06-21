@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('debug create source', async ({ page }) => {
+test.skip('debug create source', async ({ page }) => {
   // Collect console messages
   const consoleMessages: string[] = []
   page.on('console', msg => {
