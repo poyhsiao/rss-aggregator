@@ -21,15 +21,5 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'sh -c "cd web && vite preview --port 8080 --strictPort"',
-    url: 'http://localhost:8080',
-    reuseExistingServer: false,
-    timeout: 60000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    env: {
-      VITE_API_PROXY_TARGET: 'http://localhost:8000',
-    },
-  },
+  // No webServer: server is started by CI workflow
 })
