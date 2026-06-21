@@ -22,9 +22,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'echo "Using existing server"',
+    command: 'pnpm --filter rss-aggregator-web exec vite preview --port 8080 --strictPort',
     url: 'http://localhost:8080',
-    reuseExistingServer: true,
-    timeout: 5000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 30000,
+    stdout: 'ignore',
+    stderr: 'pipe',
+    env: {
+      VITE_API_PROXY_TARGET: 'http://localhost:8000',
+    },
   },
 })

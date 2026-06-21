@@ -173,65 +173,29 @@ jobs:
           run_install: true
           package_json_file: web/package.json
 
-      - name: Install Playwright browsers
-        run: pnpm --filter rss-aggregator-web exec playwright install --with-deps chromium
-
       - name: Build
         run: pnpm --filter rss-aggregator-web exec vite build
         env:
           VITE_API_BASE_URL: http://localhost:8000
           VITE_API_PROXY_TARGET: http://localhost:8000
 
-      - name: Serve frontend (background)
-        run: |
-          export VITE_API_PROXY_TARGET=http://localhost:8000
-          setsid pnpm --filter rss-aggregator-web exec vite preview --port 8080 --strictPort </dev/null >/tmp/vite.log 2>&1 &
-          FRONTEND_PID=$!
-          echo "Vite preview PID: $FRONTEND_PID"
-          # Wait for frontend to be ready
-          for i in $(seq 1 60); do
-            sleep 2
-            if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
-              echo "Frontend ready"
-              exit 0
-            fi
-            echo "Waiting for frontend... ($((i*2))s/120s)"
-          done
-          echo "Frontend failed to start. Log:"
-          cat /tmp/vite.log
-          exit 1
+      - name: Install Playwright browsers
+        run: pnpm --filter rss-aggregator-web exec playwright install --with-deps chromium
 
       - name: Run API (background)
         run: |
-          set -x
           mkdir -p data
           uv run alembic upgrade head
           nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
-          API_PID=$!
-          echo "Uvicorn started with PID: $API_PID"
-          # Wait for API with proper timeout
           for i in $(seq 1 60); do
-            sleep 2
-            # Check health first - don't misreport slow-starting API as dead
-            resp=$(curl -sf http://localhost:8000/health 2>&1)
-            if [ $? -eq 0 ]; then
-              echo "API is ready: $resp"
+            sleep 1
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "API ready"
               exit 0
             fi
-            # Then check if process is still running
-            if ! kill -0 $API_PID 2>/dev/null; then
-              echo "Uvicorn process died! Log:"
-              cat /tmp/uvicorn.log
-              echo "Process status:"
-              ps aux | grep -E "(uvicorn|python)" | grep -v grep || true
-              exit 1
-            fi
-            echo "Waiting for API... ($((i*2))s/120s) Response: $resp"
           done
-          echo "API failed to start. Log:"
+          echo "API failed. Log:"
           cat /tmp/uvicorn.log
-          echo "Process status at timeout:"
-          ps aux | grep -E "(uvicorn|python)" | grep -v grep || true
           exit 1
         env:
           DATABASE_URL: sqlite+aiosqlite:///./data/rss.db
