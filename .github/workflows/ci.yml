@@ -207,7 +207,8 @@ jobs:
 
       - name: Serve frontend
         run: |
-          nohup sh -c "cd web && npx vite preview --port 8080" > /tmp/vite.log 2>&1 &
+          export VITE_API_PROXY_TARGET=http://localhost:8000
+          cd web && nohup vite preview --port 8080 > /tmp/vite.log 2>&1 &
           for i in $(seq 1 30); do
             sleep 2
             if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
