@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm --filter rss-aggregator-web exec vite preview --port 8080 --strictPort',
+    command: 'sh -c "cd web && vite preview --port 8080 --strictPort"',
     url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
