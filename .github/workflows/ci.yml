@@ -184,7 +184,10 @@ jobs:
 
       - name: Serve frontend (background)
         run: |
-          export VITE_API_PROXY_TARGET=http://localhost:8000 && nohup pnpm --filter rss-aggregator-web exec vite preview --port 8080 --strictPort > /tmp/vite.log 2>&1 &
+          export VITE_API_PROXY_TARGET=http://localhost:8000
+          setsid pnpm --filter rss-aggregator-web exec vite preview --port 8080 --strictPort </dev/null >/tmp/vite.log 2>&1 &
+          FRONTEND_PID=$!
+          echo "Vite preview PID: $FRONTEND_PID"
           # Wait for frontend to be ready
           for i in $(seq 1 60); do
             sleep 2
