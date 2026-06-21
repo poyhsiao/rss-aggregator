@@ -205,6 +205,20 @@ jobs:
           SCHEDULER_ENABLED: "false"
           LOG_LEVEL: "debug"
 
+      - name: Serve frontend
+        run: |
+          nohup sh -c "cd web && npx vite preview --port 8080" > /tmp/vite.log 2>&1 &
+          for i in $(seq 1 30); do
+            sleep 2
+            if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
+              echo "Frontend ready"
+              exit 0
+            fi
+          done
+          echo "Frontend failed. Log:"
+          cat /tmp/vite.log
+          exit 1
+
       - name: E2E
         run: pnpm --filter rss-aggregator-web exec playwright test --reporter=line
         env:
