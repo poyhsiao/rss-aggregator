@@ -208,7 +208,7 @@ jobs:
       - name: Serve frontend
         run: |
           export VITE_API_PROXY_TARGET=http://localhost:8000
-          nohup pnpm exec vite preview -- --port 8080 --outDir web/dist > /tmp/vite.log 2>&1 &
+          nohup pnpm --filter rss-aggregator-web exec vite preview -- --port 8080 --outDir web/dist > /tmp/vite.log 2>&1 &
           for i in $(seq 1 30); do
             sleep 2
             if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
