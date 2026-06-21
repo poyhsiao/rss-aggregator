@@ -100,6 +100,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          package_json_file: web/package.json
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -136,6 +137,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          package_json_file: web/package.json
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -172,6 +174,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          package_json_file: web/package.json
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -216,6 +219,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          package_json_file: web/package.json
 
       - name: Get pnpm store directory
         id: pnpm-cache
