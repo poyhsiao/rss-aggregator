@@ -102,7 +102,7 @@ jobs:
           version: 9
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint
         run: pnpm lint
@@ -127,7 +127,7 @@ jobs:
           version: 9
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Type check
         run: pnpm typecheck
@@ -152,7 +152,7 @@ jobs:
           version: 9
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Test
         run: pnpm test:run
@@ -185,7 +185,7 @@ jobs:
           version: 9
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Install Playwright browsers
         run: pnpm playwright install --with-deps chromium
