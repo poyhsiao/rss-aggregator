@@ -24,9 +24,9 @@ export default defineConfig({
   webServer: {
     command: 'sh -c "cd web && vite preview --port 8080 --strictPort"',
     url: 'http://localhost:8080',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30000,
-    stdout: 'ignore',
+    reuseExistingServer: false,
+    timeout: 60000,
+    stdout: 'pipe',
     stderr: 'pipe',
     env: {
       VITE_API_PROXY_TARGET: 'http://localhost:8000',
