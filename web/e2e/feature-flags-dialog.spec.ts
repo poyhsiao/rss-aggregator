@@ -41,12 +41,12 @@ test.describe('FeatureFlagsDialog UI', () => {
     expect(content).not.toMatch(/[⚙️👥⏰]/)
   })
 
-  test('dialog has three toggles', async ({ page }) => {
+  test('dialog has four toggles', async ({ page }) => {
     await openDialog(page)
 
-    // Find all toggle switches
+    // Find all toggle switches (Group, SourceGroupSchedules, Schedule, Share)
     const toggles = page.locator('[role="switch"]')
-    await expect(toggles).toHaveCount(3)
+    await expect(toggles).toHaveCount(4)
   })
 
   test.skip('disabling groups shows cascade warning', async ({ page }) => {
