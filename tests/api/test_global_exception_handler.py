@@ -19,8 +19,8 @@ def test_global_exception_handler_returns_json():
     assert json_data["detail"] == "Internal server error"
 
 
-def test_global_exception_handler_includes_error_type():
-    """Exception handler should include the exception type in response."""
+def test_global_exception_handler_hides_error_type():
+    """Exception handler should NOT expose exception type for security."""
     @app.get("/test-exception-type")
     async def raise_type_error():
         raise TypeError("Type error test")
@@ -30,5 +30,6 @@ def test_global_exception_handler_includes_error_type():
 
     assert response.status_code == 500
     json_data = response.json()
-    assert "type" in json_data
-    assert json_data["type"] == "TypeError"
+    assert "detail" in json_data
+    assert json_data["detail"] == "Internal server error"
+    assert "type" not in json_data

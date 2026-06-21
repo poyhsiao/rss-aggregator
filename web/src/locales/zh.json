@@ -101,7 +101,7 @@
   },
   "sources": {
     "title": "來源",
-    "add": "新增來源",
+    "add": "新增",
     "edit": "編輯來源",
     "name": "名稱",
     "url": "URL",
@@ -145,6 +145,8 @@
     "deleted": "群組已刪除",
     "delete_title": "刪除群組",
     "delete_confirm": "確定要刪除此群組嗎？群組內的來源不會被刪除。",
+    "confirm_update_title": "更新群組",
+    "confirm_update_message": "確定要更新此群組嗎？",
     "empty": "沒有群組",
     "members": "成員",
     "add_source": "新增來源",
@@ -390,6 +392,15 @@
       "label": "分享連結功能",
       "description": "啟用後可在預覽摘要中使用分享連結"
     },
+    "sourceGroupSchedules": {
+      "label": "來源群組定時更新",
+      "description": "啟用後可為各來源群組設定自動更新時間表",
+      "disabledHint": "需要先啟用群組功能"
+    },
+    "cascadeWarningTitle": "停用群組功能也將停用排程更新",
+    "cascadeWarningMessage": "停用群組功能將同時停用排程更新。群組功能可隨時重新啟用，但排程需要手動重新啟用。是否繼續？",
+    "cascadeWarningConfirm": "確認",
+    "cascadeWarningCancel": "取消",
     "apply": "套用",
     "cancel": "取消",
     "applied": "已套用設定"
@@ -433,20 +444,5 @@
     "delete": "刪除排程",
     "minutes_hint": "以 5 分鐘為間隔選擇（0, 5, 10, ... 55）",
     "multi_select_hint": "點擊可多選（桌面版按住 Ctrl/Cmd 點擊）"
-  },
-  "featureFlags": {
-    "title": "功能開關",
-    "groupsEnabled": "群組功能",
-    "groupsEnabledDesc": "啟用/停用群組功能",
-    "groupSchedulesEnabled": "群組定時更新",
-    "groupSchedulesEnabledDesc": "啟用/停用群組的定時更新功能",
-    "sourceGroupSchedulesEnabled": "來源群組定時更新",
-    "sourceGroupSchedulesEnabledDesc": "啟用/停用來源群組的定時更新功能",
-    "confirm": "確認",
-    "schedulesDisabledHint": "需要先啟用群組功能",
-    "cascadeWarningTitle": "停用群組功能也將停用排程更新",
-    "cascadeWarningMessage": "停用群組功能將同時停用排程更新。群組功能可隨時重新啟用，但排程需要手動重新啟用。是否繼續？",
-    "cascadeWarningConfirm": "確認",
-    "cascadeWarningCancel": "取消"
   }
 }

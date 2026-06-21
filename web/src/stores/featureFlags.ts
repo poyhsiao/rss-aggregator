@@ -1,34 +1,78 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { getAppSettings, updateAppSettings } from '@/api/app-settings'
+import type { AppSettingsResponse } from '@/types/app-settings'
 
 export const useFeatureFlagsStore = defineStore('featureFlags', () => {
-  const groupsEnabled = ref<boolean>(
-    localStorage.getItem('ff_groups_enabled') !== 'false'
-  )
-  const groupSchedulesEnabled = ref<boolean>(
-    localStorage.getItem('ff_group_schedules_enabled') !== 'false'
-  )
-  const sourceGroupSchedulesEnabled = ref<boolean>(
-    localStorage.getItem('ff_source_group_schedules_enabled') !== 'false'
-  )
+  const groupsEnabled = ref(false)
+  const scheduleEnabled = ref(false)
+  const sourceGroupSchedulesEnabled = ref(false)
+  const shareEnabled = ref(false)
+  const initialized = ref(false)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
 
+  // Cascade: when groupsEnabled turns OFF via UI, disable dependents.
+  // Skipped during fetchSettings to avoid resetting values loaded from API.
+  let fetching = false
   watch(groupsEnabled, (val) => {
-    localStorage.setItem('ff_groups_enabled', String(val))
-    if (!val) {
-      groupSchedulesEnabled.value = false
-      localStorage.setItem('ff_group_schedules_enabled', 'false')
+    if (!fetching && !val) {
+      scheduleEnabled.value = false
       sourceGroupSchedulesEnabled.value = false
-      localStorage.setItem('ff_source_group_schedules_enabled', 'false')
     }
   })
 
-  watch(groupSchedulesEnabled, (val) => {
-    localStorage.setItem('ff_group_schedules_enabled', String(val))
-  })
+  async function fetchSettings() {
+    loading.value = true
+    error.value = null
+    fetching = true
+    try {
+      const data: AppSettingsResponse = await getAppSettings()
+      groupsEnabled.value = data.group_enabled
+      scheduleEnabled.value = data.schedule_enabled
+      sourceGroupSchedulesEnabled.value = data.source_group_schedules_enabled
+      shareEnabled.value = data.share_enabled
+      initialized.value = true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to load settings'
+    } finally {
+      fetching = false
+      loading.value = false
+    }
+  }
 
-  watch(sourceGroupSchedulesEnabled, (val) => {
-    localStorage.setItem('ff_source_group_schedules_enabled', String(val))
-  })
+  async function saveSettings() {
+    loading.value = true
+    error.value = null
+    try {
+      const payload = {
+        group_enabled: groupsEnabled.value,
+        schedule_enabled: scheduleEnabled.value,
+        source_group_schedules_enabled: sourceGroupSchedulesEnabled.value,
+        share_enabled: shareEnabled.value,
+      }
+      const updated = await updateAppSettings(payload)
+      groupsEnabled.value = updated.group_enabled
+      scheduleEnabled.value = updated.schedule_enabled
+      sourceGroupSchedulesEnabled.value = updated.source_group_schedules_enabled
+      shareEnabled.value = updated.share_enabled
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to save settings'
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
 
-  return { groupsEnabled, groupSchedulesEnabled, sourceGroupSchedulesEnabled }
+  return {
+    groupsEnabled,
+    scheduleEnabled,
+    sourceGroupSchedulesEnabled,
+    shareEnabled,
+    initialized,
+    loading,
+    error,
+    fetchSettings,
+    saveSettings,
+  }
 })

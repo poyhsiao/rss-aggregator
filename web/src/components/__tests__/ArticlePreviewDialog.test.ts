@@ -73,6 +73,10 @@ describe('ArticlePreviewDialog', () => {
             template: '<div class="markdown-preview-mock">{{ content }}</div>',
             props: ['content'],
           },
+          FeatureDialog: {
+            template: '<div class="feature-dialog-mock" />',
+            props: ['open'],
+          },
           Teleport: true,
         },
       },
@@ -146,4 +150,12 @@ describe('ArticlePreviewDialog', () => {
       expect(closeButton.attributes('title')).toBeTruthy()
     })
   })
+
+  describe('URL Section', () => {
+  it('is no longer present after refactor', async () => {
+    const wrapper = mountComponent({ open: true })
+    // URL section 應該完全不存在
+    expect(wrapper.find('[data-testid=url-section]').exists()).toBe(false)
+  })
+})
 })

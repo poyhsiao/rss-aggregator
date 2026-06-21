@@ -9,6 +9,7 @@ class AppSettingsResponse(BaseModel):
     group_enabled: bool
     schedule_enabled: bool
     share_enabled: bool
+    source_group_schedules_enabled: bool
 
 
 class AppSettingsUpdate(BaseModel):
@@ -16,3 +17,16 @@ class AppSettingsUpdate(BaseModel):
     group_enabled: bool | None = Field(default=None)
     schedule_enabled: bool | None = Field(default=None)
     share_enabled: bool | None = Field(default=None)
+    source_group_schedules_enabled: bool | None = Field(default=None)
+
+
+class FeedUrlSettingsResponse(BaseModel):
+    """Response schema for feed URL settings."""
+
+    enabled: bool = False
+
+
+class FeedUrlSettingsRequest(BaseModel):
+    """Request schema for feed URL settings."""
+
+    enabled: bool

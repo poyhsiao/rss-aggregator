@@ -14,7 +14,7 @@ venv
 *.egg-info
 
 # Build outputs
-web/dist
+!web/dist
 dist
 build
 

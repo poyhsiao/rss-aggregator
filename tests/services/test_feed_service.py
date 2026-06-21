@@ -303,3 +303,90 @@ async def test_feed_items_filter_by_group_id_returns_empty(db_session: AsyncSess
     items = await feed_svc.get_feed_items(group_id=group.id)
 
     assert len(items) == 0
+
+
+class TestFeedServiceUrlFilter:
+    """Test url parameter filtering in _fetch_items."""
+
+    @pytest_asyncio.fixture
+    async def sample_feed_items(self, db_session: AsyncSession) -> list[FeedItem]:
+        """Create sample feed items for filtering tests."""
+        source = Source(name="Test", url="https://test.com", created_at=now())
+        db_session.add(source)
+        await db_session.flush()
+
+        items = [
+            FeedItem(
+                source_id=source.id,
+                title="Article 1",
+                link="https://example.com/article-1",
+                description="Content 1",
+                published_at=now(),
+            ),
+            FeedItem(
+                source_id=source.id,
+                title="Article 2",
+                link="https://example.com/article-2",
+                description="Content 2",
+                published_at=now(),
+            ),
+        ]
+        db_session.add_all(items)
+        await db_session.commit()
+        return items
+
+    async def test_filter_by_url_returns_matching_items(
+        self,
+        feed_service: FeedService,
+        db_session: AsyncSession,
+        sample_feed_items: list[FeedItem],
+    ) -> None:
+        """Given url parameter, should return only items with matching link."""
+        items = await feed_service.get_feed_items(
+            sort_by="published_at",
+            sort_order="desc",
+            valid_time=None,
+            keywords=None,
+            source_id=None,
+            group_id=None,
+            url="https://example.com/article-1",
+        )
+        assert len(items) == 1
+        assert items[0]["link"] == "https://example.com/article-1"
+        assert items[0]["title"] == "Article 1"
+
+    async def test_filter_by_url_returns_empty_when_no_match(
+        self,
+        feed_service: FeedService,
+        db_session: AsyncSession,
+        sample_feed_items: list[FeedItem],
+    ) -> None:
+        """Given url with no matching items, should return empty list."""
+        items = await feed_service.get_feed_items(
+            sort_by="published_at",
+            sort_order="desc",
+            valid_time=None,
+            keywords=None,
+            source_id=None,
+            group_id=None,
+            url="https://nonexistent.com/article",
+        )
+        assert len(items) == 0
+
+    async def test_filter_by_url_returns_all_when_url_not_provided(
+        self,
+        feed_service: FeedService,
+        db_session: AsyncSession,
+        sample_feed_items: list[FeedItem],
+    ) -> None:
+        """When url is None, should return all items (no filtering)."""
+        items = await feed_service.get_feed_items(
+            sort_by="published_at",
+            sort_order="desc",
+            valid_time=None,
+            keywords=None,
+            source_id=None,
+            group_id=None,
+            url=None,
+        )
+        assert len(items) == 2

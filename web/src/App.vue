@@ -2,16 +2,22 @@
 import { onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth'
+import { useFeatureFlagsStore } from '@/stores/featureFlags'
 import MainLayout from '@/layouts/MainLayout.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
 
 const { init, listenSystemPreference } = useTheme()
 const authStore = useAuthStore()
+const featureFlagsStore = useFeatureFlagsStore()
 
-onMounted(() => {
+onMounted(async () => {
   init()
   listenSystemPreference()
-  authStore.init()
+  await authStore.init()
+  // Seed feature flags from backend so pages see correct values on load
+  featureFlagsStore.fetchSettings().catch(() => {
+    /* non-blocking — use localStorage defaults as fallback */
+  })
 })
 </script>
 

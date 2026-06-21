@@ -8,7 +8,6 @@ import { useLocale } from '@/composables/useLocale'
 import { useAuthStore } from '@/stores/auth'
 import AuthDialog from '@/components/AuthDialog.vue'
 import DebugDialog from '@/components/DebugDialog.vue'
-import FeatureFlagsDialog from '@/components/FeatureFlagsDialog.vue'
 import Button from '@/components/ui/Button.vue'
 
 const route = useRoute()
@@ -21,12 +20,6 @@ useAuthStore()
 const clickCount = ref(0)
 const clickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const debugDialogOpen = ref(false)
-const settingsClickCount = ref(0)
-const settingsClickTimer = ref<ReturnType<typeof setTimeout> | null>(null)
-const featureFlagsDialogOpen = ref(false)
-
-// Prevent tree-shaking: expose for parent access
-defineExpose({ settingsClickCount, settingsClickTimer, featureFlagsDialogOpen, handleSettingsIconClick })
 
 function handleFeedIconClick(): void {
   // Only activate on Feed page
@@ -55,19 +48,6 @@ function handleFeedIconClick(): void {
   }
 }
 
-function handleSettingsIconClick(): void {
-  if (route.path !== '/settings') return
-  if (settingsClickTimer.value) clearTimeout(settingsClickTimer.value)
-  settingsClickCount.value++
-  settingsClickTimer.value = setTimeout(() => { settingsClickCount.value = 0 }, 2000)
-  if (settingsClickCount.value >= 10) {
-    featureFlagsDialogOpen.value = true
-    settingsClickCount.value = 0
-    clearTimeout(settingsClickTimer.value)
-    settingsClickTimer.value = null
-  }
-}
-
 const menuItems = computed(() => {
   const items = [
     { path: '/', label: t('nav.feed'), icon: Rss },
@@ -84,7 +64,7 @@ const menuItems = computed(() => {
     <header class="fixed top-0 left-0 right-0 h-16 border-b border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 z-40">
       <div class="flex items-center justify-between h-full px-4 md:px-6">
         <div class="flex items-center gap-3">
-          <Rss class="h-6 w-6 cursor-pointer select-none" @click="route.path === '/' ? handleFeedIconClick() : route.path === '/settings' ? handleSettingsIconClick() : null" />
+          <Rss class="h-6 w-6 cursor-pointer select-none" @click="route.path === '/' ? handleFeedIconClick() : null" />
           <span class="font-semibold text-lg hidden sm:block">{{ t('app.name') }}</span>
         </div>
         
@@ -144,6 +124,5 @@ const menuItems = computed(() => {
     
     <AuthDialog />
     <DebugDialog v-model:open="debugDialogOpen" />
-    <FeatureFlagsDialog v-model:open="featureFlagsDialogOpen" />
   </div>
 </template>

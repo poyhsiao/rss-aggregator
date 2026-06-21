@@ -2,6 +2,7 @@
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.models import Source
 
@@ -54,7 +55,7 @@ class SourceService:
         Returns:
             List of Source instances.
         """
-        query = select(Source)
+        query = select(Source).options(selectinload(Source.groups))
         if not include_deleted:
             query = query.where(Source.deleted_at.is_(None))
 

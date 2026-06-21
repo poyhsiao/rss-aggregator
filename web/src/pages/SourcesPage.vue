@@ -26,7 +26,6 @@ import RssPreviewDialog from '@/components/RssPreviewDialog.vue'
 import RestoreConflictDialog from '@/components/RestoreConflictDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
-import { useAppSettings } from '@/composables/useAppSettings'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ScheduleConfigPanel from '@/components/ScheduleConfigPanel.vue'
 import TooltipButton from '@/components/ui/TooltipButton.vue'
@@ -38,7 +37,6 @@ const { t } = useI18n()
 const featureFlagsStore = useFeatureFlagsStore()
 const toast = useToast()
 const confirm = useConfirm()
-const { fetchSettings } = useAppSettings()
 
 const activeTab = ref<'active' | 'trash' | 'groups'>('active')
 const sources = ref<Source[]>([])
@@ -320,6 +318,14 @@ async function saveGroupName(groupId: number): Promise<void> {
     toast.error(t('groups.name_required'))
     return
   }
+  const ok = await confirm.show({
+    title: t('groups.confirm_update_title'),
+    message: t('groups.confirm_update_message'),
+    confirmText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    variant: 'info',
+  })
+  if (!ok) return
   savingGroupName.value = true
   try {
     await updateGroup(groupId, { name: editingGroupName.value.trim() })
@@ -458,7 +464,7 @@ async function handleTabChange(tab: 'active' | 'trash' | 'groups'): Promise<void
 }
 
 onMounted(async () => {
-  await Promise.all([fetchSources(), fetchTrash(), fetchGroups(), fetchSettings()])
+  await Promise.all([fetchSources(), fetchTrash(), fetchGroups(), featureFlagsStore.fetchSettings()])
 })
 </script>
 
@@ -744,7 +750,7 @@ onMounted(async () => {
                   </button>
                   <div class="flex items-center gap-1.5 shrink-0">
                     <Badge v-if="featureFlagsStore.groupsEnabled" variant="secondary">{{ group.member_count }} {{ t('groups.sources_badge') }}</Badge>
-                    <Badge v-if="featureFlagsStore.groupSchedulesEnabled && group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
+                    <Badge v-if="featureFlagsStore.scheduleEnabled && group.schedule_count" class="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30">
                       <Clock class="h-3 w-3 mr-0.5" /> {{ group.schedule_count }} {{ t('groups.schedules_badge') }}
                     </Badge>
                   </div>

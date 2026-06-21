@@ -40,6 +40,7 @@ const displayTitle = computed(() => {
     return props.url
   }
 })
+
 </script>
 
 <template>
@@ -60,7 +61,7 @@ const displayTitle = computed(() => {
           </a>
         </div>
         <div class="flex items-center gap-2">
-          <a
+                    <a
             :href="url"
             target="_blank"
             rel="noopener noreferrer"

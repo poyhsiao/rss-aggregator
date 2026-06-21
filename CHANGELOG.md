@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.22.2] - 2026-06-21
+
+### Added
+
+- **Feature Settings Dialog** - Unified 4-feature toggle dialog (Group, SGS, Schedule, Share Links)
+  - 10-click easter egg on Settings page h1 to reveal
+  - Cascade warning when turning Group OFF with dependent features enabled
+  - Share Links toggle always independent from Group state
+- **Feed URL Settings** - API and UI for feed URL feature management
+  - GET/POST /api/v1/settings/feed-url endpoints
+  - feedUrlSettings store and preview dialog integration
+- **Feature Flags E2E Tests** - Comprehensive Playwright tests for toggle cascade and persistence
+
+### Changed
+
+- **FeatureFlagsDialog Removed** - Consolidated into FeatureSettingsDialog
+- **useAppSettings Removed** - Logic merged into featureFlags store
+- **source_group_schedules_enabled** - Added to app settings API and database
+
+### Fixed
+
+- **Toggle Visual State** - radix-vue SwitchRoot v-model binding corrected (v-model:checked)
+- **Cascade Watcher** - Added fetching flag to prevent resetting API-loaded values
+
 ## [v0.22.1] - 2026-05-31
 
 ### Fixed

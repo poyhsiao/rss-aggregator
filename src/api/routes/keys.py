@@ -61,7 +61,7 @@ async def list_keys(
         select(APIKey)
     )
     keys = list(result.scalars().all())
-    return [APIKeyResponse(id=k.id, key=k.key, name=k.name, is_active=k.is_active) for k in keys]
+    return [APIKeyResponse(id=k.id, key=k.key[:8] + "..." + k.key[-4:] if len(k.key) > 12 else k.key, name=k.name, is_active=k.is_active) for k in keys]
 
 
 @router.post("", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)

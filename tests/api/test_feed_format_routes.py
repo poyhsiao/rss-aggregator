@@ -175,7 +175,37 @@ class TestFeedFormatRoutes:
         data = resp.json()
         assert isinstance(data, list)
 
-    
+
+class TestFeedUrlParameter:
+    """Test url query parameter for feed filtering."""
+
+    @pytest.mark.asyncio
+    async def test_feed_with_url_filter_returns_single_item(
+        self, async_client: AsyncClient, seed_data
+    ) -> None:
+        """Given url parameter, should return only matching items."""
+        # Use the link from the first seed_data item
+        matching_link = seed_data["items"][0].link
+        resp = await async_client.get(
+            "/api/v1/feed/json",
+            params={"url": matching_link},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        # Verify only the matching item is returned
+        assert len(data) == 1
+        assert data[0]["link"] == matching_link
+
+    @pytest.mark.asyncio
+    async def test_feed_without_url_returns_all_items(
+        self, async_client: AsyncClient, seed_data
+    ) -> None:
+        """Without url parameter, should return all items."""
+        resp = await async_client.get("/api/v1/feed/json")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 2
+
 
 class TestSourceFeedFormatRoutes:
     """Tests for /sources/{source_id}/{format} endpoints."""

@@ -1,7 +1,7 @@
 """Source management API routes."""
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from src.api.deps import get_feed_service, get_scheduler, get_source_group_service, get_source_service, require_api_key
 from src.services.feed_service import FeedService
@@ -17,6 +17,16 @@ class SourceCreate(BaseModel):
 
     name: str
     url: str
+
+    @model_validator(mode="after")
+    def validate_url(self):
+        from urllib.parse import urlparse
+        parsed = urlparse(self.url)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("URL must use http or https scheme")
+        if not parsed.netloc:
+            raise ValueError("URL must have a valid host")
+        return self
 
 
 class SourceUpdate(BaseModel):

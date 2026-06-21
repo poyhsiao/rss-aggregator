@@ -33,6 +33,7 @@ class FeedService:
         keywords: str | None = None,
         source_id: int | None = None,
         group_id: int | None = None,
+        url: str | None = None,
     ) -> tuple[str, str]:
         """Get formatted feed in specified format.
 
@@ -44,6 +45,7 @@ class FeedService:
             keywords: Semicolon-separated keywords for title filtering.
             source_id: Filter by source ID (None = all sources).
             group_id: Filter by source group ID (None = all groups).
+            url: Filter by item link (None = all items).
 
         Returns:
             tuple[str, str]: (formatted content, MIME type)
@@ -55,6 +57,7 @@ class FeedService:
             keywords=keywords,
             source_id=source_id,
             group_id=group_id,
+            url=url,
         )
         return await self.format_items_as_feed(items, format, sort_by, sort_order)
 
@@ -114,6 +117,7 @@ class FeedService:
         keywords: str | None,
         source_id: int | None = None,
         group_id: int | None = None,
+        url: str | None = None,
     ) -> list[FeedItem]:
         """Fetch filtered feed items from database."""
         query = (
@@ -148,6 +152,9 @@ class FeedService:
 
         if source_id is not None:
             query = query.where(FeedItem.source_id == source_id)
+
+        if url:
+            query = query.where(FeedItem.link == url)
 
         order_col: Any
         if sort_by == "source":
@@ -228,6 +235,7 @@ class FeedService:
         keywords: str | None = None,
         source_id: int | None = None,
         group_id: int | None = None,
+        url: str | None = None,
     ) -> list[dict[str, Any]]:
         """Get feed items as list of dictionaries.
 
@@ -249,6 +257,7 @@ class FeedService:
             keywords=keywords,
             source_id=source_id,
             group_id=group_id,
+            url=url,
         )
         return [
             {

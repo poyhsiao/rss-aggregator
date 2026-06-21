@@ -92,7 +92,7 @@ def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "type": type(exc).__name__}
+        content={"detail": "Internal server error"}
     )
 
 app.add_exception_handler(Exception, global_exception_handler)

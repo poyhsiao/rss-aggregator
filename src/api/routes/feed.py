@@ -46,6 +46,10 @@ async def get_feed(
         None,
         description="Filter by source group ID",
     ),
+    url: str | None = Query(
+        None,
+        description="Filter by item link URL",
+    ),
     settings: AppSettings = Depends(get_app_settings),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
@@ -75,6 +79,7 @@ async def get_feed(
         keywords=keywords,
         source_id=source_id,
         group_id=group_id,
+        url=url,
     )
     return Response(content=content, media_type=content_type)
 
@@ -113,6 +118,10 @@ async def get_feed_by_format(
         None,
         description="Filter by source group ID",
     ),
+    url: str | None = Query(
+        None,
+        description="Filter by item link URL",
+    ),
     feed_service: FeedService = Depends(get_feed_service),
     _: str = Depends(require_api_key),
 ) -> Any:
@@ -131,6 +140,7 @@ async def get_feed_by_format(
     - keywords: Keywords for filtering (semicolon-separated)
     - source_id: Filter by source ID
     - group_id: Filter by source group ID
+    - url: Filter by item link URL
     """
     content, content_type = await feed_service.get_formatted_feed(
         format=format,
@@ -140,5 +150,6 @@ async def get_feed_by_format(
         keywords=keywords,
         source_id=source_id,
         group_id=group_id,
+        url=url,
     )
     return Response(content=content, media_type=content_type)

@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # CORS
     allowed_origins: str = ""
 
+    # Backup
+    max_backup_import_size: int = 50 * 1024 * 1024  # 50MB
+
     @property
     def is_production(self) -> bool:
         """Check if running in production environment."""

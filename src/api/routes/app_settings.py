@@ -6,7 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import get_session, require_api_key
 from src.models.app_settings import AppSettings
-from src.schemas.app_settings import AppSettingsResponse, AppSettingsUpdate
+from src.schemas.app_settings import (
+    AppSettingsResponse,
+    AppSettingsUpdate,
+    FeedUrlSettingsResponse,
+    FeedUrlSettingsRequest,
+)
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -42,8 +47,38 @@ async def update_app_settings(
     """Update global feature toggle settings (partial update supported)."""
     settings = await _get_or_create_settings(session)
     patch = data.model_dump(exclude_unset=True)
+    # Cascade: group_enabled=false → force dependents off
+    if patch.get("group_enabled") is False:
+        patch["schedule_enabled"] = False
+        patch["source_group_schedules_enabled"] = False
     for key, value in patch.items():
         setattr(settings, key, value)
     await session.commit()
     await session.refresh(settings)
     return AppSettingsResponse.model_validate(settings)
+
+
+@router.get("/feed-url", response_model=FeedUrlSettingsResponse)
+async def get_feed_url_settings(
+    session: AsyncSession = Depends(get_session),
+) -> FeedUrlSettingsResponse:
+    """Get feed URL feature toggle setting."""
+    result = await session.execute(select(AppSettings))
+    settings = result.scalars().first()
+    if settings is None:
+        return FeedUrlSettingsResponse(enabled=False)
+    return FeedUrlSettingsResponse(enabled=getattr(settings, "feed_url_enabled", False))
+
+
+@router.post("/feed-url", response_model=FeedUrlSettingsResponse)
+async def set_feed_url_settings(
+    data: FeedUrlSettingsRequest,
+    session: AsyncSession = Depends(get_session),
+    _: str = Depends(require_api_key),
+) -> FeedUrlSettingsResponse:
+    """Set feed URL feature toggle setting."""
+    settings = await _get_or_create_settings(session)
+    settings.feed_url_enabled = data.enabled
+    await session.commit()
+    await session.refresh(settings)
+    return FeedUrlSettingsResponse(enabled=settings.feed_url_enabled)

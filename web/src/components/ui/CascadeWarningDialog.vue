@@ -34,23 +34,23 @@ function handleClose() {
     <template #header>
       <div class="flex items-center gap-2 text-lg font-semibold text-amber-800 dark:text-amber-200">
         <AlertTriangle class="h-5 w-5" />
-        <span>{{ t('featureFlags.cascadeWarningTitle') }}</span>
+        <span>{{ t('featureSettings.cascadeWarningTitle') }}</span>
       </div>
     </template>
 
     <div class="py-4">
       <p class="text-sm text-neutral-600 dark:text-neutral-300">
-        {{ t('featureFlags.cascadeWarningMessage') }}
+        {{ t('featureSettings.cascadeWarningMessage') }}
       </p>
     </div>
 
     <template #footer>
       <div class="flex justify-end gap-2">
         <Button variant="outline" @click="handleCancel">
-          {{ t('featureFlags.cascadeWarningCancel') }}
+          {{ t('featureSettings.cascadeWarningCancel') }}
         </Button>
         <Button variant="default" @click="handleConfirm">
-          {{ t('featureFlags.cascadeWarningConfirm') }}
+          {{ t('featureSettings.cascadeWarningConfirm') }}
         </Button>
       </div>
     </template>

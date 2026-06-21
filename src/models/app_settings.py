@@ -20,3 +20,5 @@ class AppSettings(Base):
     group_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     schedule_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     share_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    feed_url_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    source_group_schedules_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

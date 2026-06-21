@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Braces, Check, Copy, Database, Download, FileCode, FileText, X } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
-import { useAppSettings } from "@/composables/useAppSettings";
+import { useFeatureFlagsStore } from "@/stores/featureFlags";
 import { useI18n } from "vue-i18n";
 import type { FeedParams } from "@/api/feed";
 import { buildFeedPathUrl } from "@/api/feed";
@@ -26,7 +26,7 @@ const props = withDefaults(
 const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
 const { t } = useI18n();
-const { settings, fetchSettings } = useAppSettings();
+const featureFlagsStore = useFeatureFlagsStore();
 
 const selectedFormat = ref<Format>("rss");
 const copied = ref(false);
@@ -158,7 +158,7 @@ watch(
 );
 
 onMounted(async () => {
-	await fetchSettings();
+	await featureFlagsStore.fetchSettings();
 });
 </script>
 
@@ -285,11 +285,8 @@ onMounted(async () => {
             <Download class="h-4 w-4" />
             {{ t('feed.download', { format: t(`feed.format_${selectedFormat}`) }) }}
           </Button>
-        </div>
-
-        <!-- Share Links Expanded Section (feature-gated) -->
-        <div v-if="settings.share_enabled">
           <Button
+            v-if="featureFlagsStore.shareEnabled"
             variant="outline"
             size="sm"
             @click="showApiPaths = !showApiPaths"
@@ -306,7 +303,10 @@ onMounted(async () => {
             </svg>
             {{ t('feed.share_links') }}
           </Button>
+        </div>
 
+        <!-- Share Links Expanded Section (feature-gated) -->
+        <div v-if="featureFlagsStore.shareEnabled">
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
             enter-from-class="opacity-0 max-h-0"

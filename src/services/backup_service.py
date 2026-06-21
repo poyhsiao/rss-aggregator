@@ -434,6 +434,15 @@ class BackupService:
         Returns:
             ImportResult with status and summary.
         """
+        # Check file size limit
+        max_size = get_settings().max_backup_import_size
+        if len(zip_data) > max_size:
+            self._logger.warning(f"Backup import rejected: size {len(zip_data)} exceeds limit {max_size}")
+            return ImportResult(
+                success=False,
+                message=f"Backup file too large: {len(zip_data) / 1024 / 1024:.1f}MB exceeds {max_size / 1024 / 1024:.0f}MB limit",
+            )
+
         try:
             decrypted = self._decrypt_zip(io.BytesIO(zip_data))
             content = BackupContent.model_validate_json(decrypted)
@@ -643,6 +652,12 @@ class BackupService:
         Returns:
             BackupPreview if successful, None otherwise.
         """
+        # Check file size limit
+        max_size = get_settings().max_backup_import_size
+        if len(zip_data) > max_size:
+            self._logger.warning(f"Backup preview rejected: size {len(zip_data)} exceeds limit {max_size}")
+            return None
+
         try:
             decrypted = self._decrypt_zip(io.BytesIO(zip_data))
             content = BackupContent.model_validate_json(decrypted)

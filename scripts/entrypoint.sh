@@ -28,11 +28,12 @@ cursor = conn.cursor()
 # Check if api_keys table exists and has default key
 cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name='api_keys'\")
 if cursor.fetchone():
-    cursor.execute('SELECT key FROM api_keys WHERE key = ?', ('rss-aggregator-default-key-2024',))
+    default_key = os.environ.get('DEFAULT_API_KEY', 'rss-aggregator-default-key-2024')
+    cursor.execute('SELECT key FROM api_keys WHERE key = ?', (default_key,))
     if not cursor.fetchone():
         cursor.execute('INSERT INTO api_keys (key, name, is_active, created_at, updated_at) VALUES (?, ?, 1, ?, ?)',
-            ('rss-aggregator-default-key-2024', 'Default API Key', now, now))
-        print('Created default API key')
+            (default_key, 'Default API Key', now, now))
+        print(f'Created default API key: {default_key[:8]}...')
 else:
     print('api_keys table not found, skipping default key creation')
 

@@ -145,6 +145,8 @@
     "deleted": "Group deleted",
     "delete_title": "Delete Group",
     "delete_confirm": "Are you sure you want to delete this group? Sources will NOT be deleted.",
+    "confirm_update_title": "Update Group",
+    "confirm_update_message": "Are you sure you want to update this group?",
     "empty": "No groups",
     "members": "members",
     "add_source": "Add Source",
@@ -390,6 +392,15 @@
       "label": "Share Links",
       "description": "Enable to use share link functionality in preview summaries"
     },
+    "sourceGroupSchedules": {
+      "label": "Source Group Schedules",
+      "description": "Enable to configure automatic update schedules for source groups",
+      "disabledHint": "Requires Groups Feature to be enabled"
+    },
+    "cascadeWarningTitle": "Disabling groups will also disable schedules",
+    "cascadeWarningMessage": "Disabling groups will also disable schedule updates. Groups can be re-enabled anytime, but schedules will need to be manually re-enabled. Continue?",
+    "cascadeWarningConfirm": "Confirm",
+    "cascadeWarningCancel": "Cancel",
     "apply": "Apply",
     "cancel": "Cancel",
     "applied": "Settings applied"
@@ -433,20 +444,5 @@
     "delete": "Delete schedule",
     "minutes_hint": "Select in 5-minute intervals (0, 5, 10, ... 55)",
     "multi_select_hint": "Tap to select multiple (Ctrl/Cmd+click on desktop)"
-  },
-  "featureFlags": {
-    "title": "Feature Flags",
-    "groupsEnabled": "Groups Feature",
-    "groupsEnabledDesc": "Enable/disable group functionality",
-    "groupSchedulesEnabled": "Group Schedules",
-    "groupSchedulesEnabledDesc": "Enable/disable scheduled updates for groups",
-    "sourceGroupSchedulesEnabled": "Source Group Schedules",
-    "sourceGroupSchedulesEnabledDesc": "Enable/disable scheduled updates for source groups",
-    "confirm": "Confirm",
-    "schedulesDisabledHint": "Requires Groups Feature to be enabled",
-    "cascadeWarningTitle": "Disabling groups will also disable schedules",
-    "cascadeWarningMessage": "Disabling groups will also disable schedule updates. Groups can be re-enabled anytime, but schedules will need to be manually re-enabled. Continue?",
-    "cascadeWarningConfirm": "Confirm",
-    "cascadeWarningCancel": "Cancel"
   }
 }
