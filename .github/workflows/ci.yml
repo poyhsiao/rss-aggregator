@@ -201,8 +201,7 @@ jobs:
       - name: Run API (background)
         run: |
           set -x
-          mkdir -p ../data
-          cd ..
+          mkdir -p data
           uv run alembic upgrade head
           nohup uv run uvicorn src.main:app --port 8000 > /tmp/uvicorn.log 2>&1 &
           API_PID=$!
