@@ -102,7 +102,7 @@ jobs:
 
       - name: Lint
         run: |
-          cd web && pnpm lint
+          pnpm --filter rss-aggregator-web exec vue-tsc --noEmit
 
   frontend-typecheck:
     name: Frontend Type Check
@@ -124,7 +124,7 @@ jobs:
 
       - name: Type check
         run: |
-          cd web && pnpm typecheck
+          pnpm --filter rss-aggregator-web exec vue-tsc --noEmit
 
   frontend-unit-test:
     name: Frontend Unit Tests
@@ -145,7 +145,7 @@ jobs:
           package_json_file: web/package.json
 
       - name: Test
-        run: cd web && pnpm test:run
+        run: pnpm --filter rss-aggregator-web exec vitest run
 
   frontend-e2e:
     name: Frontend E2E Tests
@@ -174,10 +174,10 @@ jobs:
           package_json_file: web/package.json
 
       - name: Install Playwright browsers
-        run: cd web && pnpm playwright install --with-deps chromium
+        run: pnpm --filter rss-aggregator-web exec playwright install --with-deps chromium
 
       - name: Build
-        run: cd web && pnpm build
+        run: pnpm --filter rss-aggregator-web exec vite build
         env:
           VITE_API_BASE_URL: http://localhost:8000
           VITE_API_PROXY_TARGET: http://localhost:8000
@@ -242,7 +242,7 @@ jobs:
           LOG_LEVEL: "debug"
 
       - name: E2E
-        run: cd web && pnpm test:e2e --reporter=line
+        run: pnpm --filter rss-aggregator-web exec playwright test --reporter=line
         env:
           E2E_BASE_URL: http://localhost:8080
 
@@ -274,7 +274,7 @@ jobs:
 
       - name: Build frontend
         run: |
-          cd web && pnpm build
+          pnpm --filter rss-aggregator-web exec vite build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
