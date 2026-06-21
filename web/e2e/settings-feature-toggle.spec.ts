@@ -11,7 +11,7 @@ test.describe('Feature Settings Toggle', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('Settings page 10-click opens FeatureSettingsDialog', async ({ page }) => {
@@ -127,7 +127,7 @@ test.describe('Feature Settings Toggle', () => {
 test.describe('Feature Settings Cascade', () => {
   test('Group OFF disables SGS and Schedule toggles', async ({ page }) => {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
       await rssIcon.click({ force: true })
@@ -152,7 +152,7 @@ test.describe('Feature Settings Cascade', () => {
 
   test('Settings persist after page reload', async ({ page }) => {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
       await rssIcon.click({ force: true })
@@ -178,7 +178,7 @@ test.describe('Feature Settings Cascade', () => {
     await page.waitForTimeout(1000)
 
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     for (let i = 0; i < 10; i++) {
       await rssIcon.click({ force: true })

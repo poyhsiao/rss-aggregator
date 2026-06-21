@@ -4,7 +4,7 @@ test.describe('Feature Flags', () => {
   // Helper: navigate to settings and open feature flags dialog
   async function openFeatureFlagsDialog(page: any) {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     // Wait for Vue to be fully mounted
     await page.waitForTimeout(500)
 
@@ -108,13 +108,13 @@ test.describe('Feature Flags', () => {
 
   test('visibility — Groups tab hidden when groups_enabled is OFF', async ({ page }) => {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.evaluate(() => {
       localStorage.setItem('ff_groups_enabled', 'false')
       localStorage.setItem('ff_group_schedules_enabled', 'false')
     })
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Groups tab should not be visible
     const groupsTab = page.locator('button', { hasText: 'groups' }).or(page.locator('button', { hasText: '群組' }))
@@ -141,7 +141,7 @@ test.describe('Feature Flags', () => {
 
     // Reload and check persistence
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     const groupsOff = await page.evaluate(() => localStorage.getItem('ff_groups_enabled') === 'false')
     expect(groupsOff).toBeTruthy()
   })

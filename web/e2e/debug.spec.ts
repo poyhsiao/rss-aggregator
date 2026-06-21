@@ -17,7 +17,7 @@ test('debug create source', async ({ page }) => {
   })
 
   await page.goto('/sources')
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
 
   // Take screenshot of current state
   await page.screenshot({ path: 'test-results/debug-initial.png', fullPage: true })

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Schedule UI - MultiSelect', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.getByRole('button', { name: /groups|群組/i }).click()
     await page.waitForTimeout(500)
   })

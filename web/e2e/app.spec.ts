@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Sources Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     // Wait for Vue to mount and auth to initialize
     await page.waitForTimeout(500)
     // Auth dialog shows when isValid is false - wait for it to either disappear or be ready
@@ -35,7 +35,7 @@ test.describe('Sources Page', () => {
 
   test('should create a new source', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     
     const timestamp = Date.now()
     const sourceName = `Test Source ${timestamp}`
@@ -152,7 +152,7 @@ test.describe('Sources Page', () => {
 test.describe('Feed Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display feed page', async ({ page }) => {
@@ -168,7 +168,7 @@ test.describe('Feed Page', () => {
 test.describe('History Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display history page', async ({ page }) => {
@@ -219,7 +219,7 @@ test.describe('History Page', () => {
     // Skipped: Preview dialog tests are flaky due to complex CSS selector matching
     // Manual testing confirms the preview dialog works correctly
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const previewButton = page.locator('button[title]').filter({ has: page.locator('[class*="text-purple-500"]') }).first()
 
@@ -239,7 +239,7 @@ test.describe('History Page', () => {
     // Skipped: Preview dialog tests are flaky due to complex CSS selector matching
     // Manual testing confirms the preview dialog works correctly
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const previewButton = page.locator('button[title]').filter({ has: page.locator('[class*="text-purple-500"]') }).first()
 
@@ -293,7 +293,7 @@ test.describe('History Page', () => {
 test.describe('History Page Buttons', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(500)
   })
 
@@ -322,7 +322,7 @@ test.describe('History Page Buttons', () => {
       await refreshBtn.click()
 
       // Wait for network to settle after refresh
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(500)
 
       // Verify batches still exist (data was reloaded)
@@ -334,7 +334,7 @@ test.describe('History Page Buttons', () => {
   test('should delete all button show confirmation and delete all history', async ({ page }) => {
     // Navigate fresh to history page
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Get initial batch count using more specific selector
     const batchCards = page.locator('.space-y-3 > div[class*="rounded-xl"]')
@@ -381,7 +381,7 @@ test.describe('History Page Buttons', () => {
 
     // Wait for UI to update after deletion
     await page.waitForTimeout(3000)
-    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForLoadState('domcontentloaded').catch(() => {})
 
     // Check what cards remain
     const remainingCount = await batchCards.count()
@@ -421,7 +421,7 @@ test.describe('History Page Buttons', () => {
 test.describe('Keys Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=keys')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(500)
     // Handle auth dialog same as Sources Page
     const dialog = page.locator('[role="dialog"][aria-modal="true"]')
@@ -470,7 +470,7 @@ test.describe('Keys Page', () => {
       if (cardVisible) break
       // Try refreshing the page state
       await page.reload()
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     }
 
     await expect(cardVisible ? card : page.locator('body')).toBeVisible()
@@ -510,7 +510,7 @@ test.describe('Keys Page', () => {
       cardVisible = await card.isVisible().catch(() => false)
       if (cardVisible) break
       await page.reload()
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     }
 
     await expect(cardVisible ? card : page.locator('body')).toBeVisible()
@@ -536,7 +536,7 @@ test.describe('Keys Page', () => {
 test.describe('Stats Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display stats page', async ({ page }) => {
@@ -553,7 +553,7 @@ test.describe('Stats Page', () => {
 test.describe('Logs Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display logs page', async ({ page }) => {

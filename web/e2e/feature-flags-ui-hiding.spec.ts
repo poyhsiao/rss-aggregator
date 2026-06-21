@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Feature Flags UI Hiding', () => {
   async function openDialog(page: any) {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     const rssIcon = page.locator('header svg[class*="h-6"]').first()
     for (let i = 0; i < 10; i++) {
       await rssIcon.click({ force: true })
@@ -34,7 +34,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test('SourcesPage: Groups Tab button hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(1000)
 
     // Should see Groups tab when enabled
@@ -55,7 +55,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test('SourcesPage: Group badge hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Switch to groups tab - skip if not visible
     const groupsTab = page.getByRole('tab', { name: /groups/i })
@@ -75,7 +75,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify badges are hidden
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.getByRole('tab', { name: /groups/i }).click()
     await page.waitForTimeout(500)
 
@@ -86,7 +86,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test('SourcesPage: Schedules badge hidden when groupSchedulesEnabled=false', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Switch to groups tab - skip if not visible
     const groupsTab = page.getByRole('tab', { name: /groups/i })
@@ -108,7 +108,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify schedule badges are hidden
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.getByRole('tab', { name: /groups/i }).click()
     await page.waitForTimeout(1000)
 
@@ -119,7 +119,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test('SourcesPage: ScheduleConfigPanel hidden when sourceGroupSchedulesEnabled=false', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Switch to groups tab - skip if not visible
     const groupsTab = page.getByRole('tab', { name: /groups/i })
@@ -148,7 +148,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify ScheduleConfigPanel is hidden
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.getByRole('tab', { name: /groups/i }).click()
     await page.waitForTimeout(500)
 
@@ -165,7 +165,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test.skip('FeedPage: Group filter chips hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group filter chips should be visible when groupsEnabled and groups exist
     // (may not show if no groups in test data)
@@ -176,7 +176,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify group filter chips are hidden
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Blue badges (group badges) should be hidden
     const groupBadges = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
@@ -185,7 +185,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test.skip('FeedPage: Group badges on items hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group badges on feed items should be visible when enabled
     const badgesBefore = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
@@ -196,7 +196,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify group badges are hidden
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group badges should be hidden
     const badgesAfter = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
@@ -205,7 +205,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test.skip('HistoryPage: Group filter hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group filter should be visible when enabled
 
@@ -215,7 +215,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify group filter is hidden
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Blue group badges should be hidden in history page
     const groupBadges = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
@@ -224,7 +224,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
   test.skip('HistoryPage: Group info in Batch hidden when groupsEnabled=false', async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group info in batches should be visible when enabled
     const groupBadgesBefore = page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()
@@ -235,7 +235,7 @@ test.describe('Feature Flags UI Hiding', () => {
 
     // Reload and verify group info in batches is hidden
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Group badges in batch should be hidden
     const groupBadgesAfter = await page.locator('.bg-blue-100, .dark\\:bg-blue-900').count()

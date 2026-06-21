@@ -18,7 +18,7 @@ test.describe('Preview Components — RSS/XML / JSON / Markdown', () => {
   // -----------------------------------------------------------------------
   async function openRssPreviewDialog(page: import('@playwright/test').Page): Promise<boolean> {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const batchCards = page.locator('[class*="bg-white"][class*="rounded-xl"]')
     const count = await batchCards.count()

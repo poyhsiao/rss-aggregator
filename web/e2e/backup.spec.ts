@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Backup Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display backup section in settings', async ({ page }) => {
@@ -119,7 +119,7 @@ test.describe('Backup Functionality', () => {
 test.describe('Backup Page Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should have proper heading structure', async ({ page }) => {
@@ -143,7 +143,7 @@ test.describe('Backup Page Accessibility', () => {
 test.describe('Backup Error Handling', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should show toast on export error', async ({ page }) => {

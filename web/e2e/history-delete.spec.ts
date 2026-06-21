@@ -3,13 +3,13 @@ import { test, expect } from '@playwright/test'
 test.describe('Delete History Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test.describe('Delete All History', () => {
     test('History page should have Delete All button', async ({ page }) => {
       await page.goto('/history')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       const deleteAllButton = page.locator('button:has-text("delete_all"), button:has-text("一鍵清除")')
 
@@ -21,7 +21,7 @@ test.describe('Delete History Functionality', () => {
 
     test('Delete All should show confirmation dialog', async ({ page }) => {
       await page.goto('/history')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       const deleteAllButton = page.locator('button:has-text("delete_all"), button:has-text("一鍵清除")')
 
@@ -45,7 +45,7 @@ test.describe('Delete History Functionality', () => {
   test.describe('Delete History By Group', () => {
     test('Sources page groups should have Delete History button', async ({ page }) => {
       await page.goto('/sources')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       const groupsButton = page.getByRole('button', { name: /groups|groups/i })
       if (await groupsButton.count() > 0) {
@@ -66,7 +66,7 @@ test.describe('Delete History Functionality', () => {
 
     test('Delete by Group should only delete that group history', async ({ page }) => {
       await page.goto('/sources')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       const groupsButton = page.getByRole('button', { name: /groups|groups/i })
       if (await groupsButton.count() > 0) {
@@ -92,7 +92,7 @@ test.describe('Delete History Functionality', () => {
   test.describe('Button Component Styling', () => {
     test('History page top-right buttons should be proper Button components', async ({ page }) => {
       await page.goto('/history')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Verify delete all button exists and is clickable
       const deleteAllButton = page.locator('button:has-text("delete_all"), button:has-text("一鍵清除")')

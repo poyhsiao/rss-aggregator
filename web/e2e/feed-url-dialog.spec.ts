@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Feed URL Dialog Feature', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/feed')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('feature toggle workflow - happy path', async ({ page }) => {

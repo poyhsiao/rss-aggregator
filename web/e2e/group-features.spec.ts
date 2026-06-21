@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Group Filter Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('Feed page group filter chips should filter items by group', async ({ page }) => {
@@ -29,7 +29,7 @@ test.describe('Group Filter Functionality', () => {
 
   test('History page group filter should filter batches by group', async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const groupChips = page.locator('[class*="rounded-full"][class*="px-3"]')
     const count = await groupChips.count()
@@ -52,7 +52,7 @@ test.describe('Group Filter Functionality', () => {
 test.describe('Icon Color Consistency', () => {
   test('Sources page action icons should have consistent colors', async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const editButtons = page.locator('button[title*="edit"], button[title*="編輯"]')
     const editCount = await editButtons.count()
@@ -73,7 +73,7 @@ test.describe('Icon Color Consistency', () => {
 
   test('Feed page action icons should have consistent colors', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const refreshBtn = page.locator('button:has-text("一鍵更新"), button:has-text("Refresh All")')
     if (await refreshBtn.isVisible()) {
@@ -92,7 +92,7 @@ test.describe('Icon Color Consistency', () => {
 
   test('History page action icons should have consistent colors', async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const cards = page.locator('[class*="rounded-xl"]').filter({ has: page.locator('[class*="font-medium"]') })
     const count = await cards.count()

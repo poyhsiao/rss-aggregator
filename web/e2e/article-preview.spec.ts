@@ -4,7 +4,7 @@ test.describe('Article Preview Feature', () => {
   test.describe('Feed Page Article Preview', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/feed')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
 
     test('should display preview button on feed items', async ({ page }) => {
@@ -129,7 +129,7 @@ test.describe('Article Preview Feature', () => {
   test.describe('History Page Article Preview', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/history')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
 
     test('should display preview button on expanded history items', async ({ page }) => {
@@ -259,7 +259,7 @@ test.describe('Article Preview Feature', () => {
   test.describe('Article Preview Caching', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/feed')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
 
     test('should load cached content faster on second open', async ({ page }) => {
@@ -325,7 +325,7 @@ test.describe('Article Preview Feature', () => {
   test.describe('Article Preview Error Handling', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/feed')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
 
     test('should show loading state while fetching', async ({ page }) => {

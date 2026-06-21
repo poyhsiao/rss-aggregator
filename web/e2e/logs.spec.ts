@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Logs in Settings Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display logs section with tabs', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('Logs in Settings Page', () => {
 test.describe('Operation Logs', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should log source creation in operation logs', async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('Operation Logs', () => {
     const sourceUrl = `https://${timestamp}.example.com/rss.xml`
 
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     
     await page.getByRole('button', { name: /add|新增/i }).click()
     await page.waitForTimeout(500)
@@ -63,7 +63,7 @@ test.describe('Operation Logs', () => {
     await expect(heading).not.toBeVisible({ timeout: 10000 })
 
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
     await page.waitForTimeout(300)
@@ -77,7 +77,7 @@ test.describe('Operation Logs', () => {
     const keyName = `Test Log Key ${timestamp}`
 
     await page.goto('/settings?tab=keys')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     await page.getByRole('button', { name: /add|新增/i }).click()
     
@@ -98,7 +98,7 @@ test.describe('Operation Logs', () => {
     await dialog.waitFor({ state: 'hidden', timeout: 5000 })
 
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     await page.getByRole('button', { name: /operation log|操作日誌/i }).click()
     await page.waitForTimeout(300)
@@ -111,7 +111,7 @@ test.describe('Operation Logs', () => {
 test.describe('Log Card Interaction', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/settings?tab=stats')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test.skip('should expand and collapse log card', async ({ page }) => {

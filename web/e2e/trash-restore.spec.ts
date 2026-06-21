@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Trash Restore Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display trash tab with items', async ({ page }) => {

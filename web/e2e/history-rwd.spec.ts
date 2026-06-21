@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('History Page RWD', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
   })
 
   test('should display history page on mobile viewport', async ({ page }) => {

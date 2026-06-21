@@ -4,7 +4,7 @@ test.describe('FeatureFlagsDialog UI', () => {
   // Ensure dialog is closed before each test to prevent state pollution
   test.beforeEach(async ({ page }) => {
     await page.goto('/sources')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     // Close any open dialogs (e.g., from previous test in same worker)
     const dialog = page.locator('[role="dialog"]')
     if (await dialog.isVisible()) {
@@ -18,7 +18,7 @@ test.describe('FeatureFlagsDialog UI', () => {
 
   async function openDialog(page: any) {
     await page.goto('/settings')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Click the h1 heading 10 times to trigger the easter egg
     const heading = page.locator('h1.text-2xl, h1.cursor-pointer')

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Group-Specific Refresh and Preview', () => {
   test('Feed page refresh all should respect selected group', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const groupChips = page.locator('[class*="rounded-full"][class*="px-3"]')
     const count = await groupChips.count()
@@ -29,7 +29,7 @@ test.describe('Group-Specific Refresh and Preview', () => {
 
   test('Feed page preview feed should respect selected group', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const groupChips = page.locator('[class*="rounded-full"][class*="px-3"]')
     const count = await groupChips.count()
@@ -78,7 +78,7 @@ test.describe('Group-Specific Refresh and Preview', () => {
 
   test('History page group filter should show only group-related batches', async ({ page }) => {
     await page.goto('/history')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const groupChips = page.locator('[class*="rounded-full"][class*="px-3"]')
     const count = await groupChips.count()
